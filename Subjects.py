@@ -28,7 +28,7 @@ class SingleObjectSubject(object):
 			overlap in the encoding of exploration between the two
 			stimuli, i.e. the between-stimulus similarity amongst haptic
 			and interaction dimensions. This is subject-specific.
-		 - type: theory implemented by the model: must be "LaF" or "CR"
+		 - type: size of label if implementing CR theory, 0 if implementing LaF
 	
 	Subject properties:
 	
