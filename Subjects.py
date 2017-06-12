@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import numpy as np
+
+import BackPropNetworks as bpn
+
+class SingleObjectSubject(object):
+	"""Class computing a participant for the first label-time study.
+	
+	In this class, the subject is trained with two single objects to
+	reproduce the setup in Twomey & Westermann (2017).
+	
+	Input parameters:
+		- stims: tuple of two stimuli of same size
+			All object-specific information is encoded into the stimuli.
+			This includes any overlap in visual/physical properties of
+			the two stimuli.
+			This also includes a label for one of the two stimuli (the
+			absence of a label being coded as zeros). The label and its
+			size in encoding are set beforehands, as it is not subject-
+			specific. 
+		- exploration: tuple of values for exploration importance and overlap
+			The first value of the tuple defines the number of units on
+			which exploration will be encoded. A bigger number of units
+			means a richer exploration of the stimulus by the subject.
+			The second value is a ratio (in [0, 1]), and defines the
+			overlap in the encoding of exploration between the two
+			stimuli, i.e. the between-stimulus similarity amongst haptic
+			and interaction dimensions. This is subject-specific.
+		 - type: theory implemented by the model: must be "LaF" or "CR"
+	
+	Subject properties:
+	
+	Subject methods:
+	
+	"""
