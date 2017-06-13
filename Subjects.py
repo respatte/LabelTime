@@ -71,3 +71,31 @@ class SingleObjectSubject(object):
 		n_hidden = int(n_input * h_ratio)
 		n_output = len(self.goals[0])
 		self.net = bpn.BackPropNetwork([n_input,n_hidden,n_output], lrn_rate)
+
+	def encode_explo(self, n_explo, ratio):
+		"""Encodes exploration of two stimuli with overlapping.
+
+		The number of overlapping units is rounded so that the number of
+		remaining units is even, which is a mathematical requirement.
+		"""
+		# Initialise exploration as ones
+		explo1 = np.ones((1,n_explo))
+		explo2 = np.ones((1,n_explo))
+		# Computes number of overlapping units
+		n_overlap = int(n_explo * ratio)
+		if (n_explo - n_overlap) % 2:
+			n_explo += 1
+		n_diff = n_explo - n_overlap
+		# Select which indices to change to zero for each explo
+		# First create a list of indices
+		i_total = np.arange(n_explo)
+		# Only keep indices with no overlap
+		i_diff = np.random.choice(i_total, size=n_diff, replace=False)
+		# Select half of the remaining indices for explo1
+		i_explo1 = np.random.choice(i_diff, size=n_diff//2, replace=False)
+		# Builds indices for explo2 as indices from i_diff not in i_explo1
+		i_explo2 = np.setdiff1d(i_diff, i_explo1, assume_unique=True)
+		# Set selected values to zero in explo1 and explo2
+		explo1[0, i_explo1] = 0
+		explo2[0, i_explo2] = 0
+		return (explo1,explo2)
