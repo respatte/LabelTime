@@ -99,3 +99,39 @@ class SingleObjectSubject(object):
 		explo1[0, i_explo1] = 0
 		explo2[0, i_explo2] = 0
 		return (explo1,explo2)
+	
+	def bg_training(self, mu_t, sigma_t, mu_p, sigma_p):
+		"""Background training of the network on both simuli.
+		
+		To mimic the experimental conditions, total play time and play
+		time per object are not strictly equal but follow a Gaussian
+		distribution.
+		To further mimic the experimental conditions, the model is
+		presented alternatively with one object then the other, for
+		differing times.
+		The number of play sessions for each object is the same to avoid
+		an overtraining of the last presented object. The total play
+		time for each object is kept within a standard deviation from
+		the mean total looking time to each object.
+		
+		"""
+		# Computing alternating playing times
+		play_times1 = []
+		sum1 = 0
+		play_times2 = []
+		sum2 = 0
+		while not (abs(sum1-mu_t) <= sigma_t and abs(sum2-mu_t) <= sigma_t):
+			play_time1 = round(np.random.normal(mu_p, sigma_p))
+			play_time2 = round(np.random.normal(mu_p, sigma_p))
+			sum1 += play_time1
+			sum2 += play_time2
+			if sum1 > (mu_t + sigma_t) or sum2 > (mu_t + sigma_t):
+				# One of the total times is too high
+				play_times1 = [play_time1]
+				sum1 = play_time1
+				play_times2 = [play_time2]
+				sum2 = play_time2
+			else:
+				play_times1.append(play_time1)
+				play_times2.append(play_time2)
+		# Computing "play" sessions
