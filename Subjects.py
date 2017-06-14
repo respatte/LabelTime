@@ -34,7 +34,7 @@ class SingleObjectSubject(object):
 		 lrn_rate -- learning rate of the backpropagation network
 	
 	Subject properties:
-		full_stims -- tuple of two stimuli of same size
+		stims -- tuple of two stimuli of same size
 			Those stimuli include both the input stimuli (object-specific)
 			and the exploration of the stimuli (subject-specific).
 			When implementing a CR model, the label part is cut off.
@@ -57,15 +57,16 @@ class SingleObjectSubject(object):
 		"""
 		# Create full stimuli
 		explo_stims = self.encode_explo(exploration[0], exploration[1])
-		self.full_stims = (np.hstack((stims[0], explo_stims[0])),
-						   np.hstack((stims[1], explo_stims[1])))
+		full_stims = (np.hstack((stims[0], explo_stims[0])),
+					  np.hstack((stims[1], explo_stims[1])))
 		# Create goals as copies of stimuli
 		self.goals = cp.deepcopy(full_stims)
 		# Delete input label if CR model
 		# m_type gives number of label units if CR, 0 if LaF
 		if m_type > 0:
-			self.full_stims = (np.delete(full_stims[0], range(m_type),axis=1),
-							   np.delete(full_stims[1], range(m_type),axis=1))
+			full_stims = (np.delete(full_stims[0], range(m_type),axis=1),
+						  np.delete(full_stims[1], range(m_type),axis=1))
+		self.stims = full_stims
 		# Create backpropagation network
 		n_input = len(self.full_stims[0])
 		n_hidden = int(n_input * h_ratio)
@@ -135,3 +136,8 @@ class SingleObjectSubject(object):
 				play_times1.append(play_time1)
 				play_times2.append(play_time2)
 		# Computing "play" sessions
+		for session in range(len(play_time1)):
+			for t1 in range(play_time1[session]):
+				self.net.run(self.stims[0],self.goals[0])
+			for t2 in range(play_time2[session]):
+				self.net.run(self.stims[1],self.goals[1])
