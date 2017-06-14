@@ -141,3 +141,41 @@ class SingleObjectSubject(object):
 				self.net.run(self.stims[0],self.goals[0])
 			for t2 in range(play_time2[session]):
 				self.net.run(self.stims[1],self.goals[1])
+	
+	def fam_training(self, test_stims, pres_time, threshold, n_trials):
+		"""Computes familiarisation training on test_stims.
+		
+		The model is presented with each stimulus, alternating, for
+		n_trials number of trials. For each trial, the model is presented
+		with each stiumulus until the network error reaches threshold
+		or for pres_time backpropagations.
+		stims is a set of two stimuli with values at zero for label and
+		exploration units.
+		
+		Return a couple (looking_times, errors).
+		looking_times is a list of the number of backpropagations per
+		trial before reaching stopping criteria. For each trial, a tuple
+		of number of backpropagations for each stimulus is recorded.
+		errors is a list of the errors per trial and per stimulus. Each
+		element of this list is a couple of two lists, one per stimulus.
+		
+		"""
+		looking_times = []
+		errors = []
+		for trial in range(n_trials):
+			errors_trial = []
+			looking_times_trial = []
+			for stim in stims:
+				errors_stim = []
+				time_left = pres_time
+				error = 1
+				while time_left > 0 and error > threshold:
+					self.net.run(stims)
+					error = self.net.error
+					errors_stim.append(error)
+					time_left -= 1
+				errors_trial.append(errors_stim)
+				looking_times_trial.append(pres_time - time_left)
+			errors.append(errors_trial)
+			looking_times.append(looking_times_trial)
+		return (looking_times, errors)
