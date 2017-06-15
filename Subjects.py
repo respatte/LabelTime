@@ -68,9 +68,9 @@ class SingleObjectSubject(object):
 						  np.delete(full_stims[1], range(m_type),axis=1))
 		self.stims = full_stims
 		# Create backpropagation network
-		n_input = len(self.stims[0])
+		n_input = self.stims[0].size
 		n_hidden = int(n_input * h_ratio)
-		n_output = len(self.goals[0])
+		n_output = self.goals[0].size
 		self.net = bpn.BackPropNetwork([n_input,n_hidden,n_output], lrn_rate)
 
 	def encode_explo(self, n_explo, ratio):
@@ -142,7 +142,8 @@ class SingleObjectSubject(object):
 			for t2 in range(play_times2[session]):
 				self.net.run(self.stims[1],self.goals[1])
 	
-	def fam_training(self, test_stims, pres_time, threshold, n_trials):
+	def fam_training(self, test_stims, test_goals,
+					 pres_time, threshold, n_trials):
 		"""Computes familiarisation training on test_stims.
 		
 		The model is presented with each stimulus, alternating, for
@@ -165,13 +166,14 @@ class SingleObjectSubject(object):
 		for trial in range(n_trials):
 			errors_trial = []
 			looking_times_trial = []
-			for stim in stims:
+			for stim in range(len(test_stims)):
 				errors_stim = []
 				time_left = pres_time
 				error = 1
 				while time_left > 0 and error > threshold:
-					self.net.run(stims)
-					error = self.net.error
+					# Goal specification necessarry for CR models
+					self.net.run(test_stims[stim], test_goals[stim])
+					error = np.linalg.norm(self.net.error)
 					errors_stim.append(error)
 					time_left -= 1
 				errors_trial.append(errors_stim)
