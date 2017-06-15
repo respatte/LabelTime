@@ -68,7 +68,7 @@ class SingleObjectSubject(object):
 						  np.delete(full_stims[1], range(m_type),axis=1))
 		self.stims = full_stims
 		# Create backpropagation network
-		n_input = len(self.full_stims[0])
+		n_input = len(self.stims[0])
 		n_hidden = int(n_input * h_ratio)
 		n_output = len(self.goals[0])
 		self.net = bpn.BackPropNetwork([n_input,n_hidden,n_output], lrn_rate)
@@ -85,7 +85,7 @@ class SingleObjectSubject(object):
 		# Computes number of overlapping units
 		n_overlap = int(n_explo * ratio)
 		if (n_explo - n_overlap) % 2:
-			n_explo += 1
+			n_overlap += 1
 		n_diff = n_explo - n_overlap
 		# Select which indices to change to zero for each explo
 		# First create a list of indices
@@ -136,10 +136,10 @@ class SingleObjectSubject(object):
 				play_times1.append(play_time1)
 				play_times2.append(play_time2)
 		# Computing "play" sessions
-		for session in range(len(play_time1)):
-			for t1 in range(play_time1[session]):
+		for session in range(len(play_times1)):
+			for t1 in range(play_times1[session]):
 				self.net.run(self.stims[0],self.goals[0])
-			for t2 in range(play_time2[session]):
+			for t2 in range(play_times2[session]):
 				self.net.run(self.stims[1],self.goals[1])
 	
 	def fam_training(self, test_stims, pres_time, threshold, n_trials):
