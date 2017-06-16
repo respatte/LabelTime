@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import copy as cp
-
 import numpy as np
 
 import BackPropNetworks as bpn
@@ -49,7 +48,7 @@ class SingleObjectSubject(object):
 	
 	"""
 
-	def __init__(self, stims, exploration, m_type, h_ratio, lrn_rate):
+	def __init__(self, stims, exploration, m_type, h_ratio, lrn_rate, momentum):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
 		See class documentation for more details about parameters.
@@ -71,7 +70,8 @@ class SingleObjectSubject(object):
 		n_input = self.stims[0].size
 		n_hidden = int(n_input * h_ratio)
 		n_output = self.goals[0].size
-		self.net = bpn.BackPropNetwork([n_input,n_hidden,n_output], lrn_rate)
+		self.net = bpn.BackPropNetwork([n_input,n_hidden,n_output],
+									   lrn_rate, momentum)
 
 	def encode_explo(self, n_explo, ratio):
 		"""Encodes exploration of two stimuli with overlapping.
