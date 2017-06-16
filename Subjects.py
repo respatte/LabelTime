@@ -69,8 +69,8 @@ class SingleObjectSubject(object):
 		self.stims = full_stims
 		# Create backpropagation network
 		n_input = self.stims[0].size
-		n_hidden = int(n_input * h_ratio)
 		n_output = self.goals[0].size
+		n_hidden = int(n_output * h_ratio)
 		if momentum:
 			self.net = bpn.BackPropNetwork([n_input, n_hidden, n_output],
 										   lrn_rate, momentum)
