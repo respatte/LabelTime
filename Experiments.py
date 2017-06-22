@@ -128,3 +128,28 @@ class SingleObjectExperiment(object):
 													  self.threshold,
 													  self.n_trials)
 		return results
+		
+	def generate_stims(self, size, ratio):
+		"""Generate two stims of given size with given overlap ratio."""
+		# Initialise exploration as ones
+		stim1 = np.ones((1,n_explo))
+		stim2 = np.ones((1,n_explo))
+		# Computes number of overlapping units
+		n_overlap = int(ratio * size)
+		if (size - n_overlap) % 2:
+			n_overlap += 1
+		n_diff = size - n_overlap
+		# Select which indices to change to zero for each explo
+		# First create a list of indices
+		i_total = np.arange(size)
+		# Only keep indices with no overlap
+		i_diff = np.random.choice(i_total, size=n_diff, replace=False)
+		# Select half of the remaining indices for stim1
+		i_stim1 = np.random.choice(i_diff, size=n_diff//2, replace=False)
+		# Builds indices for explo2 as indices from i_diff not in i_stim1
+		i_stim2 = np.setdiff1d(i_diff, i_explo1, assume_unique=True)
+		# Set selected values to zero in stim1 and stim2
+		stim1[0, i_stim1] = 0
+		stim2[0, i_stim2] = 0
+		return (stim1,stim2)
+			
