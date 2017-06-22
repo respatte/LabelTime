@@ -84,7 +84,7 @@ class SingleObjectExperiment(object):
 		for s in range(n_subjects):
 			# Code s_type (subject type) on 2 bits:
 			# 	- labbeled item (0=first item labelled, 1=second item labelled)
-			# 	- first familiarisation item (0=labelled, 1=unlabelled)
+			# 	- first familiarisation item (1=labelled, 0=unlabelled)
 			s_type = format(s%4,'03b') # type: str
 			# Add label to one stimulus, keep labelled first in couple
 			labelled_i = int(s_type[0])
@@ -101,15 +101,17 @@ class SingleObjectExperiment(object):
 			s_CR.bg_training(mu_t, sigma_t, mu_p, sigma_p)
 			# Impair subject recovery memory (hidden to output weights)
 			s_LaF.net.weights[-1] = np.random.normal(0, .5,
-													 s_LaF.net.weights[-1].shape)
+													s_LaF.net.weights[-1].shape)
 			s_CR.net.weights[-1] = np.random.normal(0, .5,
 													s_CR.net.weights[-1].shape)
-			# Create test stimuli as good size with zeros for label and exploration
+			# Prepare stimuli order for familiarisation trials
 			first_fam = int(s_type[1])
-			LaF_stims = (np.hstack((test_stim[first_fam], np.zeros((1, e_size))))
-						 np.hstack((test_stim[first_fam-1], np.zeros((1, e_size)))))
+			first_stim = first_fam * labelled_i + \
+						 (1 - first_fam) * (1 - labelled_i)
+			LaF_stims = (self.test_stims[first_stim],
+						 self.test_stims[1 - first_stim])
 			LaF_goals = LaF_stims
-			# Stimuli for CR: take LaF (already order), delete label units
+			# Stimuli for CR: take LaF (already ordered), delete label units
 			CR_stims = (np.delete(LaF_stims[0],range(l_size)),
 						np.delete(LaF_stims[1],range(l_size)))
 			CR_goals = LaF_goals
