@@ -77,8 +77,9 @@ class SingleObjectExperiment(object):
 									  ))
 						   )
 	
-	def labeltime_experiment(self):
-		# Initialise result gatherer as a dictionary (with subject number as key)
+	def run_experiment(self):
+		"""Description: TODO."""
+		# Initialise result gatherer as a dictionary (subject number as key)
 		results = {}
 		# Start running subjects
 		for s in range(n_subjects):
@@ -92,13 +93,15 @@ class SingleObjectExperiment(object):
 			no_label_stim = np.hstack((self.l_stims[0], p_stims[labbeled_i-1]))
 			bg_stims = (label_stim, no_label_stim)
 			# Create subjects for LaF and CR
-			s_LaF = SingleObjectSubject(bg_stims, (e_size, e_ratio), 0,
-										h_ratio, lrn_rate, momentum)
-			s_CR = SingleObjectSubject(bg_stims, (e_size, e_ratio), l_size,
-									   h_ratio, lrn_rate, momentum)
+			s_LaF = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
+										0, self.h_ratio,
+										self.lrn_rate, self.momentum)
+			s_CR = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
+									   self.l_size, self.h_ratio,
+									   self.lrn_rate, self.momentum)
 			# Perform background training on subjects
-			s_LaF.bg_training(mu_t, sigma_t, mu_p, sigma_p)
-			s_CR.bg_training(mu_t, sigma_t, mu_p, sigma_p)
+			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
+			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			# Impair subject recovery memory (hidden to output weights)
 			s_LaF.net.weights[-1] = np.random.normal(0, .5,
 													s_LaF.net.weights[-1].shape)
@@ -116,9 +119,12 @@ class SingleObjectExperiment(object):
 						np.delete(LaF_stims[1],range(l_size)))
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
-			results[s] = s_LaF.fam_training(LaF_stims, LaF_goals, pres_time,
-											threshold, n_trials)
+			results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
+											self.pres_time,
+											self.threshold,
+											self.n_trials)
 			results[n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
-													  pres_time, threshold,
-													  n_trials)
+													  self.pres_time,
+													  self.threshold,
+													  self.n_trials)
 		return results
