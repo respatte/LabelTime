@@ -18,7 +18,7 @@ class SingleObjectExperiment(object):
 			exploration of the stimuli (passed on to each subject).
 		n_subjects -- number of subjects to run in total per model (LaF, CR)
 	
-	SignelObjectExperiment properties:
+	SingleObjectExperiment properties:
 		mu_t, sigma_t -- total background training time distribution
 		mu_p, sigma_p -- background play session time distribution
 		pres_time -- max number of presentations at familiarisation
@@ -32,6 +32,11 @@ class SingleObjectExperiment(object):
 		p_stims -- physical values for stimuli
 		l_stims -- label values for stimuli
 		test_stims -- full stimuli (label+physical+exploration) for test trials
+	
+	SingleObjectExperiment methods:
+		run_experiment -- run a ful experiment, using only class properties
+		generate_stims -- generate physical stimuli with overlap
+		output_data -- convert results data to a csv file
 	
 	"""
 	
@@ -86,10 +91,12 @@ class SingleObjectExperiment(object):
 		results = {}
 		# Start running subjects
 		for s in range(self.n_subjects):
+			print("="*20)
+			print("Subject",s,"starting")
 			# Code s_type (subject type) on 2 bits:
 			# 	- labbeled item (0=first item labelled, 1=second item labelled)
 			# 	- first familiarisation item (1=labelled, 0=unlabelled)
-			s_type = format(s%4,'03b') # type: str
+			s_type = format(s%4,'02b') # type: str
 			# Add label to one stimulus, keep labelled first in couple
 			labelled_i = int(s_type[0])
 			label_stim = np.hstack((self.l_stims[1],
@@ -105,7 +112,9 @@ class SingleObjectExperiment(object):
 									   self.l_size, self.h_ratio,
 									   self.lrn_rate, self.momentum)
 			# Perform background training on subjects
+			print("Training LaF subject...")
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
+			print("Training CR subject...")
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			# Impair subject recovery memory (hidden to output weights)
 			s_LaF.net.weights[-1] = np.random.normal(0, .5,
@@ -120,18 +129,22 @@ class SingleObjectExperiment(object):
 						 self.test_stims[1 - first_stim])
 			LaF_goals = LaF_stims
 			# Stimuli for CR: take LaF (already ordered), delete label units
-			CR_stims = (np.delete(LaF_stims[0], range(self.l_size)),
-						np.delete(LaF_stims[1], range(self.l_size)))
+			CR_stims = (np.delete(LaF_stims[0], range(self.l_size), axis=1),
+						np.delete(LaF_stims[1], range(self.l_size), axis=1))
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
+			print("Familiarisation for LaF subject...")
 			results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
 											self.pres_time,
 											self.threshold,
 											self.n_trials)
-			results[n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
-													  self.pres_time,
-													  self.threshold,
-													  self.n_trials)
+			print("Familiarisation for CR subject...")
+			results[self.n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
+														   self.pres_time,
+														   self.threshold,
+														   self.n_trials)
+			print("Subject completed")
+		print("Experiment completed")
 		return results
 		
 	def generate_stims(self, size, ratio):
@@ -157,4 +170,64 @@ class SingleObjectExperiment(object):
 		stim1[0, i_stim1] = 0
 		stim2[0, i_stim2] = 0
 		return (stim1,stim2)
-			
+	
+	def output_data(self, data, filename):
+		"""Write data from the experiment into a filename.csv file.
+		
+		data is a dictionary structured as follows:
+		- keys = subject numbers
+			- looking_times (number of backpropagations before threshold)
+				- trial number
+					- looking time to first stimulus
+					- looking time to second stimulus
+			- errors (error of the model)
+				- trial number
+					- errors for first stimulus
+						(list of length looking time to first stimulus)
+					- errors for second stimulus
+						(list of length looking time to second stimulus)
+		Number of trials is assumed to be fixed.
+		Subject are ordered so that subject%4 in binary codes for
+			- first value: labbeled item (0=first item, 1=second item)
+			- second value: first familiarisation item (1=labelled,0=unlabelled)
+		
+		"""
+		# Define column labels
+		c_labels_LT = ','.join(["subject","trial","labelled","looking_time"])
+		c_labels_errors = ','.join(["subject","trial","labelled",
+									"i_presentation","error"])
+		rows_LT = [c_labels_LT]
+		rows_errors = [c_labels_errors]
+		# Extract number of trials
+		n_trials = len(data[0][0])
+		for subject in data:
+			# Extract first stimulus for familiarisation from subject number
+			first_fam = int(format(subject%4,'02b')[1])
+			for trial in range(n_trials):
+				for stim in range(2):
+					# Encode state for current stimulus
+					labelled_stim = (stim + first_fam) % 2
+					# Create row for looking time results
+					row = [str(subject),
+						   str(trial),
+						   str(labelled_stim),
+						   str(data[subject][0][trial][stim])
+						   ]
+					rows_LT.append(','.join(row))
+					for pres in range(len(data[subject][1][trial][stim])):
+						# Create row for error results
+						row = [str(subject),
+							   str(trial),
+							   str(labelled_stim),
+							   str(pres),
+							   str(data[subject][1][trial][stim][pres])
+							   ]
+						rows_errors.append(','.join(row))
+		# Join all rows with line breaks
+		data_LT = '\n'.join(rows_LT)
+		data_errors = '\n'.join(rows_errors)
+		# Write str results into two files with meaningful extensions
+		with open(filename+"_LT.csv", 'w') as f:
+			f.write(data_LT)
+		with open(filename+"_errors.csv", 'w') as f:
+			f.write(data_errors)
