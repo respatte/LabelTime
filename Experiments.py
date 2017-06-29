@@ -33,10 +33,6 @@ class SingleObjectExperiment(object):
 		l_stims -- label values for stimuli
 		test_stims -- full stimuli (label+physical+exploration) for test trials
 	
-	Return a dictionary of results, with subject number as key.
-	Each subject's results is a table of results as described in
-	SingleObjectSubject class.
-	
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios, n_subjects=4096):
@@ -60,6 +56,7 @@ class SingleObjectExperiment(object):
 		# e_ -> exploration
 		(self.l_size, self.p_size, self.e_size) = modality_sizes_stim
 		(self.p_ratio, self.e_ratio) = overlap_ratios
+		self.n_subjects = n_subjects
 		# Generate physical values for stimuli
 		self.p_stims = self.generate_stims(p_size, p_ratio)
 		# Generate (no_label, label) part to add to one or the other stimulus
@@ -78,11 +75,17 @@ class SingleObjectExperiment(object):
 						   )
 	
 	def run_experiment(self):
-		"""Description: TODO."""
+		"""Run a full experiment.
+		
+		Return a dictionary of results, with subject number as key.
+		Each subject's results is a table of results as described in
+		SingleObjectSubject class.
+		
+		"""
 		# Initialise result gatherer as a dictionary (subject number as key)
 		results = {}
 		# Start running subjects
-		for s in range(n_subjects):
+		for s in range(self.n_subjects):
 			# Code s_type (subject type) on 2 bits:
 			# 	- labbeled item (0=first item labelled, 1=second item labelled)
 			# 	- first familiarisation item (1=labelled, 0=unlabelled)
