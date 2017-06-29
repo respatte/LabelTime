@@ -58,7 +58,7 @@ class SingleObjectExperiment(object):
 		(self.p_ratio, self.e_ratio) = overlap_ratios
 		self.n_subjects = n_subjects
 		# Generate physical values for stimuli
-		self.p_stims = self.generate_stims(p_size, p_ratio)
+		self.p_stims = self.generate_stims(self.p_size, self.p_ratio)
 		# Generate (no_label, label) part to add to one or the other stimulus
 		label = np.ones((1, self.l_size))
 		no_label = np.zeros((1, self.l_size))
@@ -92,8 +92,10 @@ class SingleObjectExperiment(object):
 			s_type = format(s%4,'03b') # type: str
 			# Add label to one stimulus, keep labelled first in couple
 			labelled_i = int(s_type[0])
-			label_stim = np.hstack((self.l_stim[1], p_stims[labelled_i]))
-			no_label_stim = np.hstack((self.l_stims[0], p_stims[labbeled_i-1]))
+			label_stim = np.hstack((self.l_stims[1],
+									self.p_stims[labelled_i]))
+			no_label_stim = np.hstack((self.l_stims[0],
+									   self.p_stims[labelled_i-1]))
 			bg_stims = (label_stim, no_label_stim)
 			# Create subjects for LaF and CR
 			s_LaF = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
@@ -118,8 +120,8 @@ class SingleObjectExperiment(object):
 						 self.test_stims[1 - first_stim])
 			LaF_goals = LaF_stims
 			# Stimuli for CR: take LaF (already ordered), delete label units
-			CR_stims = (np.delete(LaF_stims[0],range(l_size)),
-						np.delete(LaF_stims[1],range(l_size)))
+			CR_stims = (np.delete(LaF_stims[0], range(self.l_size)),
+						np.delete(LaF_stims[1], range(self.l_size)))
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
 			results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
@@ -134,9 +136,9 @@ class SingleObjectExperiment(object):
 		
 	def generate_stims(self, size, ratio):
 		"""Generate two stims of given size with given overlap ratio."""
-		# Initialise exploration as ones
-		stim1 = np.ones((1,n_explo))
-		stim2 = np.ones((1,n_explo))
+		# Initialise stims as ones
+		stim1 = np.ones((1, size))
+		stim2 = np.ones((1, size))
 		# Computes number of overlapping units
 		n_overlap = int(ratio * size)
 		if (size - n_overlap) % 2:
@@ -150,7 +152,7 @@ class SingleObjectExperiment(object):
 		# Select half of the remaining indices for stim1
 		i_stim1 = np.random.choice(i_diff, size=n_diff//2, replace=False)
 		# Builds indices for explo2 as indices from i_diff not in i_stim1
-		i_stim2 = np.setdiff1d(i_diff, i_explo1, assume_unique=True)
+		i_stim2 = np.setdiff1d(i_diff, i_stim1, assume_unique=True)
 		# Set selected values to zero in stim1 and stim2
 		stim1[0, i_stim1] = 0
 		stim2[0, i_stim2] = 0
