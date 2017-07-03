@@ -140,18 +140,18 @@ class SingleObjectExperiment(object):
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
 			##print("Familiarisation for LaF subject...")
-			results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
-											self.pres_time,
-											self.threshold,
-											self.n_trials)
+			f_results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
+											  self.pres_time,
+											  self.threshold,
+											  self.n_trials)
 			##print("Familiarisation for CR subject...")
-			results[self.n_subjects + s] = s_CR.fam_training(CR_stims, CR_goals,
+			f_results[self.n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
 															 self.pres_time,
 															 self.threshold,
 															 self.n_trials)
 			##print("Subject completed")
 		##print("Experiment completed")
-		return results
+		return (f_results, t_results)
 		
 	def generate_stims(self, size, ratio):
 		"""Generate two stims of given size with given overlap ratio."""
