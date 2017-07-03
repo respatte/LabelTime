@@ -47,13 +47,13 @@ class SingleObjectExperiment(object):
 		
 		"""
 		# Define some fixed parameters not treated as inputs
-		self.mu_t, self.sigma_t = 18000, 500
-		self.mu_p, self.sigma_p = 3000, 100
+		self.mu_t, self.sigma_t = 9000, 500
+		self.mu_p, self.sigma_p = 1500, 100
 		self.pres_time = 100
 		self.threshold = .01
 		self.n_trials = 8
 		self.h_ratio = 19/24
-		self.lrn_rate = .2
+		self.lrn_rate = .1
 		self.momentum = .1
 		# Get meaningful short variables from input
 		# l_ -> label_
