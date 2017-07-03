@@ -91,8 +91,8 @@ class SingleObjectExperiment(object):
 		results = {}
 		# Start running subjects
 		for s in range(self.n_subjects):
-			print("="*20)
-			print("Subject",s,"starting")
+			##print("="*20)
+			##print("Subject",s,"starting")
 			# Code s_type (subject type) on 2 bits:
 			# 	- labbeled item (0=first item labelled, 1=second item labelled)
 			# 	- first familiarisation item (1=labelled, 0=unlabelled)
@@ -112,9 +112,9 @@ class SingleObjectExperiment(object):
 									   self.l_size, self.h_ratio,
 									   self.lrn_rate, self.momentum)
 			# Perform background training on subjects
-			print("Training LaF subject...")
+			##print("Training LaF subject...")
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
-			print("Training CR subject...")
+			##print("Training CR subject...")
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			# Impair subject recovery memory (hidden to output weights)
 			s_LaF.net.weights[-1] = np.random.normal(0, .5,
@@ -133,18 +133,18 @@ class SingleObjectExperiment(object):
 						np.delete(LaF_stims[1], range(self.l_size), axis=1))
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
-			print("Familiarisation for LaF subject...")
+			##print("Familiarisation for LaF subject...")
 			results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
 											self.pres_time,
 											self.threshold,
 											self.n_trials)
-			print("Familiarisation for CR subject...")
+			##print("Familiarisation for CR subject...")
 			results[self.n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
 														   self.pres_time,
 														   self.threshold,
 														   self.n_trials)
-			print("Subject completed")
-		print("Experiment completed")
+			##print("Subject completed")
+		##print("Experiment completed")
 		return results
 		
 	def generate_stims(self, size, ratio):
