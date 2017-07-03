@@ -17,6 +17,9 @@ class SingleObjectExperiment(object):
 			the stimuli. The second value is the overlap ratio in the
 			exploration of the stimuli (passed on to each subject).
 		n_subjects -- number of subjects to run in total per model (LaF, CR)
+			Is expected to be a multiple of 4, for counterbalancing purposes.
+		start_subject -- the subject number for the first subject
+			Used if the experiment is ran in multiple bashes.
 	
 	SingleObjectExperiment properties:
 		mu_t, sigma_t -- total background training time distribution
@@ -40,7 +43,8 @@ class SingleObjectExperiment(object):
 	
 	"""
 	
-	def __init__(self, modality_sizes_stim, overlap_ratios, n_subjects=4096):
+	def __init__(self, modality_sizes_stim, overlap_ratios,
+				 n_subjects=4096, start_subject=0):
 		"""Initialise a single-object labeltime experiment.
 		
 		See class documentation for more details about parameters.
@@ -62,6 +66,7 @@ class SingleObjectExperiment(object):
 		(self.l_size, self.p_size, self.e_size) = modality_sizes_stim
 		(self.p_ratio, self.e_ratio) = overlap_ratios
 		self.n_subjects = n_subjects
+		self.start_subject = start_subject
 		# Generate physical values for stimuli
 		self.p_stims = self.generate_stims(self.p_size, self.p_ratio)
 		# Generate (no_label, label) part to add to one or the other stimulus
@@ -94,7 +99,7 @@ class SingleObjectExperiment(object):
 		f_results = {} # Familiarisation results
 		t_results = {} # Training results
 		# Start running subjects
-		for s in range(self.n_subjects):
+		for s in range(self.start_subject, self.start_subject+self.n_subjects):
 			##print("="*20)
 			##print("Subject",s,"starting")
 			# Code s_type (subject type) on 2 bits:
