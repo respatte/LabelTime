@@ -216,7 +216,8 @@ class SingleObjectExperiment(object):
 		rows_LT = [c_labels_LT]
 		rows_errors = [c_labels_errors]
 		# Extract number of trials
-		n_trials = len(data[0][0])
+		k = list(data.keys())[0]
+		n_trials = len(data[k][0])
 		for subject in data:
 			# Extract first stimulus for familiarisation from subject number
 			first_fam = int(format(subject%4,'02b')[1])

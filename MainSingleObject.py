@@ -12,7 +12,7 @@ def main():
 		print("=" * 40)
 		print("Starting runs for explo_ratio =", explo_ratio)
 		condition = SingleObjectExperiment((1,10,8),(.1,explo_ratio),24,
-										   24*i)
+										   48*i)
 		results = condition.run_experiment()
 		condition.output_data(results[0],
 							  "Results/SingleObjectExperiment_explo" +\
