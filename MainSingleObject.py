@@ -9,7 +9,7 @@ def main():
 		t = time.time()
 		print("=" * 40)
 		print("Starting runs for explo_ratio =", explo_ratio)
-		condition = SingleObjectExperiment((1,10,8),(.1,explo_ratio),1024)
+		condition = SingleObjectExperiment((1,10,8),(.1,explo_ratio),24)
 		results = condition.run_experiment()
 		condition.output_data(results,
 							  "SingleObjectExperiment_explo" + str(explo_ratio))
