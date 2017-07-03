@@ -122,11 +122,17 @@ class SingleObjectExperiment(object):
 			##print("Training CR subject...")
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			t_results[self.n_subjects + s] = s_CR
-			# Impair subject recovery memory (hidden to output weights)
+			# Impair subject recovery memory (hidden to output)
+			# Weights are set to a normal distribution
+			# Momentum is deleted
 			s_LaF.net.weights[-1] = np.random.normal(0, .5,
 													s_LaF.net.weights[-1].shape)
+			for layer in range(s_LaF.net.n_layers-1):
+				s_LaF.net.inertia[0][layer] *= 0
 			s_CR.net.weights[-1] = np.random.normal(0, .5,
 													s_CR.net.weights[-1].shape)
+			for layer in range(s_CR.net.n_layers-1):
+				s_CR.net.inertia[0][layer] *= 0
 			# Prepare stimuli order for familiarisation trials
 			first_fam = int(s_type[1])
 			first_stim = first_fam * labelled_i + \
