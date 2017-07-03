@@ -47,14 +47,14 @@ class SingleObjectExperiment(object):
 		
 		"""
 		# Define some fixed parameters not treated as inputs
-		self.mu_t, self.sigma_t = 9000, 500
-		self.mu_p, self.sigma_p = 1500, 100
+		self.mu_t, self.sigma_t = 10500, 100
+		self.mu_p, self.sigma_p = 1500, 50
 		self.pres_time = 100
 		self.threshold = .01
 		self.n_trials = 8
 		self.h_ratio = 19/24
 		self.lrn_rate = .1
-		self.momentum = .1
+		self.momentum = .05
 		# Get meaningful short variables from input
 		# l_ -> label_
 		# p_ -> physical
@@ -123,14 +123,14 @@ class SingleObjectExperiment(object):
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			t_results[self.n_subjects + s] = s_CR
 			# Impair subject recovery memory (hidden to output)
-			# Weights are set to a normal distribution
+			# Weights are set to pre-train random values
 			# Momentum is deleted
-			s_LaF.net.weights[-1] = np.random.normal(0, .5,
-													s_LaF.net.weights[-1].shape)
+			(m, n) = s_LaF.net.neurons[-2].size, s_LaF.net.neurons[-1].size
+			s_LaF.net.weights[-1] = s_LaF.net.init_weights_matrix(m, n)
 			for layer in range(s_LaF.net.n_layers-1):
 				s_LaF.net.inertia[0][layer] *= 0
-			s_CR.net.weights[-1] = np.random.normal(0, .5,
-													s_CR.net.weights[-1].shape)
+			(m, n) = s_CR.net.neurons[-2].size, s_CR.net.neurons[-1].size
+			s_CR.net.weights[-1] = s_CR.net.init_weights_matrix(m, n)
 			for layer in range(s_CR.net.n_layers-1):
 				s_CR.net.inertia[0][layer] *= 0
 			# Prepare stimuli order for familiarisation trials
