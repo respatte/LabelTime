@@ -82,13 +82,17 @@ class SingleObjectExperiment(object):
 	def run_experiment(self):
 		"""Run a full experiment.
 		
-		Return a dictionary of results, with subject number as key.
-		Each subject's results is a table of results as described in
-		SingleObjectSubject class.
+		Return a tuple of results for familiarisation and training. Results
+		are recorded in dictionaries, with subject number as key.
+		Each subject's familiarisation results is a table of results as
+		described in SingleObjectSubject class.
+		Each subject's training results is a the subject itself after
+		background training. This allows us to find any information we want.
 		
 		"""
 		# Initialise result gatherer as a dictionary (subject number as key)
-		results = {}
+		f_results = {} # Familiarisation results
+		t_results = {} # Training results
 		# Start running subjects
 		for s in range(self.n_subjects):
 			##print("="*20)
@@ -114,8 +118,10 @@ class SingleObjectExperiment(object):
 			# Perform background training on subjects
 			##print("Training LaF subject...")
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
+			t_results[s] = s_LaF
 			##print("Training CR subject...")
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
+			t_results[self.n_subjects + s] = s_CR
 			# Impair subject recovery memory (hidden to output weights)
 			s_LaF.net.weights[-1] = np.random.normal(0, .5,
 													s_LaF.net.weights[-1].shape)
@@ -139,10 +145,10 @@ class SingleObjectExperiment(object):
 											self.threshold,
 											self.n_trials)
 			##print("Familiarisation for CR subject...")
-			results[self.n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
-														   self.pres_time,
-														   self.threshold,
-														   self.n_trials)
+			results[self.n_subjects + s] = s_CR.fam_training(CR_stims, CR_goals,
+															 self.pres_time,
+															 self.threshold,
+															 self.n_trials)
 			##print("Subject completed")
 		##print("Experiment completed")
 		return results
