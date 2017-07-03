@@ -18,6 +18,7 @@ def main():
 							  str(explo_ratio))
 		t = time.gmtime(time.time() - t)
 		print("Condition finished in", time.strftime("%H:%M:%S",t))
+	return results
 
 
 if __name__ == "__main__":
