@@ -210,10 +210,19 @@ class SingleObjectExperiment(object):
 		
 		"""
 		# Define column labels
-		c_labels_LT = ','.join(["subject", "model", "trial", "labelled",
+		c_labels_LT = ','.join(["subject",
+								"model",
+								"explo_overlap",
+								"trial",
+								"labelled",
 								"looking_time"])
-		c_labels_errors = ','.join(["subject", "model", "trial", "labelled",
-									"i_presentation", "error"])
+		c_labels_errors = ','.join(["subject",
+									"model",
+									"explo_overlap",
+									"trial",
+									"labelled",
+									"i_presentation",
+									"error"])
 		rows_LT = [c_labels_LT]
 		rows_errors = [c_labels_errors]
 		# Extract number of trials
@@ -232,6 +241,7 @@ class SingleObjectExperiment(object):
 					# Create row for looking time results
 					row = [str(subject),
 						   str(model),
+						   str(self.e_ratio),
 						   str(trial),
 						   str(labelled_stim),
 						   str(data[subject][0][trial][stim])
@@ -241,6 +251,7 @@ class SingleObjectExperiment(object):
 						# Create row for error results
 						row = [str(subject),
 							   str(model),
+							   str(self.e_ratio),
 							   str(trial),
 							   str(labelled_stim),
 							   str(pres),
