@@ -89,8 +89,9 @@ class SingleObjectExperiment(object):
 		
 		Return a tuple of results for familiarisation and training. Results
 		are recorded in dictionaries, with subject number as key.
-		Each subject's familiarisation results is a table of results as
-		described in SingleObjectSubject class.
+		Each subject's familiarisation results is a tuple of results as
+		described in SingleObjectSubject class, with an extra value for
+		exploration overlap appended to it.
 		Each subject's training results is a the subject itself after
 		background training. This allows us to find any information we want.
 		
@@ -155,11 +156,13 @@ class SingleObjectExperiment(object):
 												self.pres_time,
 												self.threshold,
 												self.n_trials)
+			f_results[s+1] += (self.e_ratio,) # Adding a tuple with one value
 			##print("Familiarisation for CR subject...")
 			f_results[-(s+1)] = s_CR.fam_training(CR_stims, CR_goals,
 												  self.pres_time,
 												  self.threshold,
 												  self.n_trials)
+			f_results[-(s+1)] += (self.e_ratio,) # Adding a tuple with one value
 			##print("Subject completed")
 		##print("Experiment completed")
 		return (f_results, t_results)
@@ -203,6 +206,7 @@ class SingleObjectExperiment(object):
 						(list of length looking time to first stimulus)
 					- errors for second stimulus
 						(list of length looking time to second stimulus)
+			- explo_ratio (exploration overlap ratio for subject)
 		Number of trials is assumed to be fixed.
 		Subject are ordered so that subject%4 in binary codes for
 			- first value: labbeled item (0=first item, 1=second item)
@@ -241,7 +245,7 @@ class SingleObjectExperiment(object):
 					# Create row for looking time results
 					row = [str(subject),
 						   str(model),
-						   str(self.e_ratio),
+						   str(data[subject][2]),
 						   str(trial),
 						   str(labelled_stim),
 						   str(data[subject][0][trial][stim])
@@ -251,7 +255,7 @@ class SingleObjectExperiment(object):
 						# Create row for error results
 						row = [str(subject),
 							   str(model),
-							   str(self.e_ratio),
+							   str(data[subject][2]),
 							   str(trial),
 							   str(labelled_stim),
 							   str(pres),
@@ -263,6 +267,6 @@ class SingleObjectExperiment(object):
 		data_errors = '\n'.join(rows_errors)
 		# Write str results into two files with meaningful extensions
 		with open(filename+"_LT.csv", 'w') as f:
-			f.write(data_LT)
+			f.write(data_LT + "\n")
 		with open(filename+"_errors.csv", 'w') as f:
-			f.write(data_errors)
+			f.write(data_errors + "\n")
