@@ -191,8 +191,10 @@ class SingleObjectExperiment(object):
 		stim2[0, i_stim2] = 0
 		return (stim1,stim2)
 	
-	def output_data(self, data, filename):
+	def output_data(data, filename):
 		"""Write data from the experiment into a filename.csv file.
+
+		Class-wide (not instance-specific) method.
 		
 		data is a dictionary structured as follows:
 		- keys = subject numbers
