@@ -123,10 +123,10 @@ class SingleObjectExperiment(object):
 			# Perform background training on subjects
 			##print("Training LaF subject...")
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
-			t_results[s] = s_LaF
+			t_results[s+1] = s_LaF
 			##print("Training CR subject...")
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
-			t_results[self.n_subjects + s] = s_CR
+			t_results[-(s+1)] = s_CR
 			# Impair subject recovery memory (hidden to output)
 			# Weights are set to pre-train random values
 			# Momentum is deleted
@@ -151,15 +151,15 @@ class SingleObjectExperiment(object):
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
 			##print("Familiarisation for LaF subject...")
-			f_results[s] = s_LaF.fam_training(LaF_stims, LaF_goals,
-											  self.pres_time,
-											  self.threshold,
-											  self.n_trials)
+			f_results[s+1] = s_LaF.fam_training(LaF_stims, LaF_goals,
+												self.pres_time,
+												self.threshold,
+												self.n_trials)
 			##print("Familiarisation for CR subject...")
-			f_results[self.n_subjects+s] = s_CR.fam_training(CR_stims, CR_goals,
-															 self.pres_time,
-															 self.threshold,
-															 self.n_trials)
+			f_results[-(s+1)] = s_CR.fam_training(CR_stims, CR_goals,
+												  self.pres_time,
+												  self.threshold,
+												  self.n_trials)
 			##print("Subject completed")
 		##print("Experiment completed")
 		return (f_results, t_results)
@@ -210,15 +210,19 @@ class SingleObjectExperiment(object):
 		
 		"""
 		# Define column labels
-		c_labels_LT = ','.join(["subject","trial","labelled","looking_time"])
-		c_labels_errors = ','.join(["subject","trial","labelled",
-									"i_presentation","error"])
+		c_labels_LT = ','.join(["subject", "model", "trial", "labelled",
+								"looking_time"])
+		c_labels_errors = ','.join(["subject", "model", "trial", "labelled",
+									"i_presentation", "error"])
 		rows_LT = [c_labels_LT]
 		rows_errors = [c_labels_errors]
 		# Extract number of trials
 		k = list(data.keys())[0]
 		n_trials = len(data[k][0])
 		for subject in data:
+			# Extract model from sign of subject number
+			# 0:LaF, 1:CR
+			model = int(subject < 0)
 			# Extract first stimulus for familiarisation from subject number
 			first_fam = int(format(subject%4,'02b')[1])
 			for trial in range(n_trials):
@@ -227,6 +231,7 @@ class SingleObjectExperiment(object):
 					labelled_stim = (stim + first_fam) % 2
 					# Create row for looking time results
 					row = [str(subject),
+						   str(model),
 						   str(trial),
 						   str(labelled_stim),
 						   str(data[subject][0][trial][stim])
@@ -235,6 +240,7 @@ class SingleObjectExperiment(object):
 					for pres in range(len(data[subject][1][trial][stim])):
 						# Create row for error results
 						row = [str(subject),
+							   str(model),
 							   str(trial),
 							   str(labelled_stim),
 							   str(pres),
