@@ -234,6 +234,9 @@ class SingleObjectExperiment(object):
 		# Extract number of trials
 		k = list(data.keys())[0]
 		n_trials = len(data[k][0])
+		# Prepare meaningful coding for model
+		models = ("LaF", "CR")
+		labelled = ("no_label", "label")
 		for subject in data:
 			# Extract model from sign of subject number
 			# 0:LaF, 1:CR
@@ -246,20 +249,20 @@ class SingleObjectExperiment(object):
 					labelled_stim = (stim + first_fam) % 2
 					# Create row for looking time results
 					row = [str(subject),
-						   str(model),
+						   models[model],
 						   str(data[subject][2]),
 						   str(trial),
-						   str(labelled_stim),
+						   labelled[labelled_stim],
 						   str(data[subject][0][trial][stim])
 						   ]
 					rows_LT.append(','.join(row))
 					for pres in range(len(data[subject][1][trial][stim])):
 						# Create row for error results
 						row = [str(subject),
-							   str(model),
+							   models[model],
 							   str(data[subject][2]),
 							   str(trial),
-							   str(labelled_stim),
+							   labelled[labelled_stim],
 							   str(pres),
 							   str(data[subject][1][trial][stim][pres])
 							   ]
