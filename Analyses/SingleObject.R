@@ -2,8 +2,6 @@
 library(ggplot2)
 library(dplyr)
 library(lme4)
-library(sjPlot)
-library(languageR)
 
 # DATA HANDLING
 # Import data
