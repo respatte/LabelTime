@@ -58,10 +58,10 @@ def main_multiproc():
 		f_results.update(results[0])
 	SingleObjectExperiment.output_data(f_results,"Results/SingleObject")
 	total = time.gmtime(time.time() - total)
-	print("="*17,
-		  "Total run time for serial version :",
+	print("="*15,
+		  "Total run time for multi-proc version :",
 		  time.strftime("%H:%M:%S",total),
-		  "="*17)
+		  "="*15)
 
 if __name__ == "__main__":
 	##main()
