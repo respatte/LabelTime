@@ -26,7 +26,7 @@ def main():
 	t_results = []
 	f_results = {}
 	for i, explo_ratio in enumerate(explo_ratios):
-		results = run_subjects(24, explo_ratio, i, verbose=True)
+		results = run_subjects(4, explo_ratio, i, verbose=True)
 		t_results.append(results[1])
 		f_results.update(results[0])
 	SingleObjectExperiment.output_data(f_results,"Results/SingleObject")
@@ -46,7 +46,7 @@ def main_multiproc():
 	with Pool(processes=5) as pool:
 		for i, explo_ratio in enumerate(explo_ratios):
 			async_results[i] = pool.apply_async(run_subjects,
-												(24, explo_ratio, i))
+												(4, explo_ratio, i))
 		pool.close()
 		pool.join()
 	# Get the results from subprocesses and combine them
