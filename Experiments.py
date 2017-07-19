@@ -44,7 +44,7 @@ class SingleObjectExperiment(object):
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0):
+				 n_subjects=4096, start_subject=0, memories=1):
 		"""Initialise a single-object labeltime experiment.
 		
 		See class documentation for more details about parameters.
@@ -54,11 +54,16 @@ class SingleObjectExperiment(object):
 		self.mu_t, self.sigma_t = 10500, 100
 		self.mu_p, self.sigma_p = 1500, 50
 		self.pres_time = 100
-		self.threshold = .01
+		self.threshold = 1e-5
 		self.n_trials = 8
 		self.h_ratio = 19/24
-		self.lrn_rate = .1
-		self.momentum = .05
+		self.memories = memories
+		if memories == 1:
+			self.lrn_rate = .2
+			self.momentum = .1
+		elif memories == 2:
+			self.lrn_rate = (.001, .2)
+			self.momentum = (.0005, .1)
 		# Get meaningful short variables from input
 		# l_ -> label_
 		# p_ -> physical
@@ -117,10 +122,12 @@ class SingleObjectExperiment(object):
 			# Create subjects for LaF and CR
 			s_LaF = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
 										0, self.h_ratio,
-										self.lrn_rate, self.momentum)
+										self.lrn_rate, self.momentum,
+										self.memories)
 			s_CR = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
 									   self.l_size, self.h_ratio,
-									   self.lrn_rate, self.momentum)
+									   self.lrn_rate, self.momentum,
+									   self.memories)
 			# Perform background training on subjects
 			##print("Training LaF subject...")
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
@@ -131,14 +138,58 @@ class SingleObjectExperiment(object):
 			# Impair subject recovery memory (hidden to output)
 			# Weights are set to pre-train random values
 			# Momentum is deleted
-			(m, n) = s_LaF.net.neurons[-2].size, s_LaF.net.neurons[-1].size
-			s_LaF.net.weights[-1] = s_LaF.net.init_weights_matrix(m, n)
-			for layer in range(s_LaF.net.n_layers-1):
-				s_LaF.net.inertia[0][layer] *= 0
-			(m, n) = s_CR.net.neurons[-2].size, s_CR.net.neurons[-1].size
-			s_CR.net.weights[-1] = s_CR.net.init_weights_matrix(m, n)
-			for layer in range(s_CR.net.n_layers-1):
-				s_CR.net.inertia[0][layer] *= 0
+			if self.memories == 1:
+				# Deal with simple back-prop networks
+				# LaF subject
+				(m, n) = s_LaF.net.neurons[-2].size, s_LaF.net.neurons[-1].size
+				s_LaF.net.weights[-1] = s_LaF.net.init_weights_matrix(m, n)
+				for layer in range(s_LaF.net.n_layers-1):
+					s_LaF.net.inertia[0][layer] *= 0
+				for _ in range(len(s_LaF.net.inertia)-1):
+					s_LaF.net.inertia.pop()
+				# CR subject
+				(m, n) = s_CR.net.neurons[-2].size, s_CR.net.neurons[-1].size
+				s_CR.net.weights[-1] = s_CR.net.init_weights_matrix(m, n)
+				for layer in range(s_CR.net.n_layers-1):
+					s_CR.net.inertia[0][layer] *= 0
+				for _ in range(len(s_CR.net.inertia)-1):
+					s_CR.net.inertia.pop()
+			elif self.memories == 2:
+				# Deal with DualMemoryNetworks
+				# First deal with LTM subnetwork
+				# LaF subject
+				(m, n) = (s_LaF.net.LTM.neurons[-2].size,
+						  s_LaF.net.LTM.neurons[-1].size)
+				s_LaF.net.LTM.weights[-1] = s_LaF.net.init_weights_matrix(m, n)
+				for layer in range(s_LaF.net.LTM.n_layers-1):
+					s_LaF.net.LTM.inertia[0][layer] *= 0
+				for _ in range(len(s_LaF.net.LTM.inertia)-1):
+					s_LaF.net.LTM.inertia.pop()
+				# CR subject
+				(m, n) = (s_CR.net.LTM.neurons[-2].size,
+						  s_CR.net.LTM.neurons[-1].size)
+				s_CR.net.LTM.weights[-1] = s_CR.net.init_weights_matrix(m, n)
+				for layer in range(s_CR.net.LTM.n_layers-1):
+					s_CR.net.LTM.inertia[0][layer] *= 0
+				for _ in range(len(s_CR.net.LTM.inertia)-1):
+					s_CR.net.LTM.inertia.pop()
+				# Then deal with STM subnetwork
+				# LaF subject
+				(m, n) = (s_LaF.net.STM.neurons[-2].size,
+						  s_LaF.net.STM.neurons[-1].size)
+				s_LaF.net.STM.weights[-1] = s_LaF.net.init_weights_matrix(m, n)
+				for layer in range(s_LaF.net.STM.n_layers-1):
+					s_LaF.net.STM.inertia[0][layer] *= 0
+				for _ in range(len(s_LaF.net.STM.inertia)-1):
+					s_LaF.net.STM.inertia.pop()
+				# CR subject
+				(m, n) = (s_CR.net.STM.neurons[-2].size,
+						  s_CR.net.STM.neurons[-1].size)
+				s_CR.net.STM.weights[-1] = s_CR.net.init_weights_matrix(m, n)
+				for layer in range(s_CR.net.STM.n_layers-1):
+					s_CR.net.STM.inertia[0][layer] *= 0
+				for _ in range(len(s_CR.net.STM.inertia)-1):
+					s_CR.net.STM.inertia.pop()
 			# Prepare stimuli order for familiarisation trials
 			first_fam = int(s_type[1])
 			first_stim = first_fam * labelled_i + \

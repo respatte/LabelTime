@@ -6,7 +6,7 @@ from multiprocessing import Pool
 
 from Experiments import SingleObjectExperiment
 
-def run_subjects(n_subjects, explo_ratio, bash_i, verbose=False):
+def run_subjects(n_subjects, explo_ratio, bash_i, memories=1, verbose=False):
 	if verbose:
 		t = time.time()
 		print("=" * 40)
@@ -42,21 +42,32 @@ def main_multiproc():
 	warnings.filterwarnings("ignore")
 	explo_ratios = [.25,.375,.5,.625,.75]
 	# Start the subprocesses
-	async_results = {}
-	with Pool(processes=5) as pool:
+	async_results_bpn = {}
+	async_results_dmn = {}
+	with Pool(processes=10) as pool:
 		for i, explo_ratio in enumerate(explo_ratios):
-			async_results[i] = pool.apply_async(run_subjects,
-												(4, explo_ratio, i))
+			async_results_bpn[i] = pool.apply_async(run_subjects,
+													(8, explo_ratio, i))
+			async_results_dmn[i] = pool.apply_async(run_subjects,
+													(8, explo_ratio, i, 2))
 		pool.close()
 		pool.join()
 	# Get the results from subprocesses and combine them
-	t_results = []
-	f_results = {}
+	t_results_bpn = []
+	f_results_bpn = {}
+	t_results_dmn = []
+	f_results_dmn = {}
 	for i in range(len(explo_ratios)):
-		results = async_results[i].get()
-		t_results.append(results[1])
-		f_results.update(results[0])
-	SingleObjectExperiment.output_data(f_results,"Results/SingleObject")
+		results_bpn = async_results_bpn[i].get()
+		results_dmn = async_results_dmn[i].get()
+		t_results_bpn.append(results_bpn[1])
+		f_results_bpn.update(results_bpn[0])
+		t_results_dmn.append(results_dmn[1])
+		f_results_dmn.update(results_dmn[0])
+	SingleObjectExperiment.output_data(f_results_bpn,
+									   "Results/SingleObject_BPN")
+	SingleObjectExperiment.output_data(f_results_dmn,
+									   "Results/SingleObject_DMN")
 	total = time.gmtime(time.time() - total)
 	print("="*15,
 		  "Total run time for multi-proc version :",
