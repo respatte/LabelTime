@@ -65,9 +65,9 @@ def main_multiproc():
 		t_results_dmn.append(results_dmn[1])
 		f_results_dmn.update(results_dmn[0])
 	SingleObjectExperiment.output_data(f_results_bpn,
-									   "Results/SingleObject_BPN")
+									   "Results/SingleObject_BPN_big")
 	SingleObjectExperiment.output_data(f_results_dmn,
-									   "Results/SingleObject_DMN")
+									   "Results/SingleObject_DMN_big")
 	total = time.gmtime(time.time() - total)
 	print("="*15,
 		  "Total run time for multi-proc version :",
