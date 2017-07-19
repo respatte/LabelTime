@@ -59,11 +59,11 @@ class SingleObjectExperiment(object):
 		self.h_ratio = 19/24
 		self.memories = memories
 		if memories == 1:
-			self.lrn_rate = .2
-			self.momentum = .1
+			self.lrn_rate = .1
+			self.momentum = .05
 		elif memories == 2:
-			self.lrn_rate = (.001, .2)
-			self.momentum = (.0005, .1)
+			self.lrn_rate = (.001, .1)
+			self.momentum = (.0005, .05)
 		# Get meaningful short variables from input
 		# l_ -> label_
 		# p_ -> physical
