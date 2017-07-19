@@ -54,7 +54,7 @@ class SingleObjectExperiment(object):
 		self.mu_t, self.sigma_t = 10500, 100
 		self.mu_p, self.sigma_p = 1500, 50
 		self.pres_time = 100
-		self.threshold = 1e-5
+		self.threshold = 1e-3
 		self.n_trials = 8
 		self.h_ratio = 19/24
 		self.memories = memories
