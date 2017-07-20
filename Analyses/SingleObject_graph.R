@@ -47,7 +47,11 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 
 # DATA HANDLING
 # Import data
-single_obj.data <- read.csv("../Results/SingleObject_BPN_LT.csv", head=TRUE)
+# Choose the data to import (BPN/DMN, 40 subjects or 5000 subjects)
+#single_obj.data <- read.csv("../Results/SingleObject_BPN_LT.csv", head=TRUE)
+#single_obj.data <- read.csv("../Results/SingleObject_DMN_LT.csv", head=TRUE)
+#single_obj.data <- read.csv("../Results/SingleObject_BPN_big_LT.csv", head=TRUE)
+#single_obj.data <- read.csv("../Results/SingleObject_DMN_big_LT.csv", head=TRUE)
 # Set all factor variables to factors
 single_obj.data$subject <- as.factor(single_obj.data$subject)
 single_obj.data$explo_overlap <- as.factor(single_obj.data$explo_overlap)
