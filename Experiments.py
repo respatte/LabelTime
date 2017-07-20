@@ -60,7 +60,7 @@ class SingleObjectExperiment(object):
 		self.memories = memories
 		if memories == 1:
 			self.lrn_rate = .1
-			self.momentum = .05
+			self.momentum = .1
 		elif memories == 2:
 			self.lrn_rate = (.001, .1)
 			self.momentum = (.0005, .05)
