@@ -54,16 +54,16 @@ class SingleObjectExperiment(object):
 		self.mu_t, self.sigma_t = 10500, 100
 		self.mu_p, self.sigma_p = 1500, 50
 		self.pres_time = 100
-		self.threshold = 1e-5
+		self.threshold = 1e-3
 		self.n_trials = 8
 		self.h_ratio = 19/24
 		self.memories = memories
 		if memories == 1:
-			self.lrn_rate = .2
-			self.momentum = .1
+			self.lrn_rate = .1
+			self.momentum = .05
 		elif memories == 2:
-			self.lrn_rate = (.001, .2)
-			self.momentum = (.0005, .1)
+			self.lrn_rate = (.001, .1)
+			self.momentum = (.0005, .05)
 		# Get meaningful short variables from input
 		# l_ -> label_
 		# p_ -> physical

@@ -5,7 +5,7 @@ library(lme4)
 
 # DATA HANDLING
 # Import data
-single_obj.data <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
+single_obj.data <- read.csv("../Results/SingleObject_BPN_LT.csv", head=TRUE)
 # Set all factor variables to factors
 single_obj.data$subject <- as.factor(single_obj.data$subject)
 single_obj.data$explo_overlap <- as.factor(single_obj.data$explo_overlap)
