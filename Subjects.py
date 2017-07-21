@@ -28,13 +28,14 @@ class SingleObjectSubject(object):
 			overlap in the encoding of exploration between the two
 			stimuli, i.e. the between-stimulus similarity amongst haptic
 			and interaction dimensions. This is subject-specific.
-		m_type -- size of label if implementing CR, 0 if implementing LaF
+		theory -- size of label if implementing CR, 0 if implementing LaF
 		h_ratio -- ratio of hidden neurons compared to input neurons
 		lrn_rate -- learning rate(s) of the backpropagation network
 		momentum -- influence of inertial term in [0, 1], or function
-		memories -- number of parallel memories (1 or 2)
-			If using memories=2, then learning rate and momentum must be
-			given for both memories and lateral connections.
+		model -- model used for neural network (BPN or DMN)
+			If using DMN (DualMemoryNetwork), then learning rate and
+			momentum must be given for both memories and lateral
+			connections.
 			See BackPropNetworks.DualMemoryNetwork documentation for more
 			precision.
 	
@@ -56,7 +57,7 @@ class SingleObjectSubject(object):
 	"""
 
 	def __init__(self, stims, exploration, m_type, h_ratio, lrn_rate,
-				 momentum=None, memories=1):
+				 momentum=None, model="BPN"):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
 		See class documentation for more details about parameters.
@@ -70,23 +71,23 @@ class SingleObjectSubject(object):
 		self.goals = cp.deepcopy(full_stims)
 		# Delete input label if CR model
 		# m_type gives number of label units if CR, 0 if LaF
-		if m_type > 0:
-			full_stims = (np.delete(full_stims[0], range(m_type),axis=1),
-						  np.delete(full_stims[1], range(m_type),axis=1))
+		if theory > 0:
+			full_stims = (np.delete(full_stims[0], range(theory),axis=1),
+						  np.delete(full_stims[1], range(theory),axis=1))
 		self.stims = full_stims
 		# Create backpropagation network
 		n_input = self.stims[0].size
 		n_output = self.goals[0].size
 		n_hidden = int(n_output * h_ratio)
-		self.memories = memories
-		if memories == 1:
+		self.model = model
+		if model == "BPN":
 			if momentum:
 				self.net = bpn.BackPropNetwork([n_input, n_hidden, n_output],
 											   lrn_rate, momentum)
 			else:
 				self.net = bpn.BackPropNetwork([n_input, n_hidden, n_output],
 											   lrn_rate)
-		elif memories == 2:
+		elif model == "DMN":
 			if momentum:
 				self.net = bpn.DualMemoryNetwork([[n_input,
 												   n_hidden,
@@ -98,12 +99,14 @@ class SingleObjectSubject(object):
 												   n_output]] * 2,
 												 lrn_rate)
 	
-	def __getattr__(self, impaired):
+	# Create impaired as an access-only property
+	@property
+	def impaired(self):
 		"""Access the network to impair when needed"""
-		if self.memories == 2:
-			return self.net.STM
-		elif self.memories == 1:
+		if self.model == "BPN":
 			return self.net
+		elif self.model == "DMN":
+			return self.net.STM
 
 	def encode_explo(self, n_explo, ratio):
 		"""Encodes exploration of two stimuli with overlapping.

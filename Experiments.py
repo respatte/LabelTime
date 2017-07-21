@@ -20,6 +20,7 @@ class SingleObjectExperiment(object):
 			Is expected to be a multiple of 4, for counterbalancing purposes.
 		start_subject -- the subject number for the first subject
 			Used if the experiment is ran in multiple bashes.
+		model -- model used for neural network (BPN or DMN)
 	
 	SingleObjectExperiment properties:
 		mu_t, sigma_t -- total background training time distribution
@@ -44,7 +45,7 @@ class SingleObjectExperiment(object):
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0, memories=1):
+				 n_subjects=4096, start_subject=0, model="BPN"):
 		"""Initialise a single-object labeltime experiment.
 		
 		See class documentation for more details about parameters.
@@ -57,11 +58,11 @@ class SingleObjectExperiment(object):
 		self.threshold = 1e-3
 		self.n_trials = 8
 		self.h_ratio = 19/24
-		self.memories = memories
-		if memories == 1:
+		self.model = model
+		if model == "BPN":
 			self.lrn_rate = .1
 			self.momentum = .05
-		elif memories == 2:
+		elif model == "DMN":
 			self.lrn_rate = (.001, .1)
 			self.momentum = (.0005, .05)
 		# Get meaningful short variables from input
@@ -121,11 +122,11 @@ class SingleObjectExperiment(object):
 			s_LaF = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
 										0, self.h_ratio,
 										self.lrn_rate, self.momentum,
-										self.memories)
+										self.model)
 			s_CR = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
 									   self.l_size, self.h_ratio,
 									   self.lrn_rate, self.momentum,
-									   self.memories)
+									   self.model)
 			# Perform background training on subjects
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			t_results[s+1] = s_LaF
