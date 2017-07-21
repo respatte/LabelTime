@@ -56,7 +56,7 @@ class SingleObjectSubject(object):
 	
 	"""
 
-	def __init__(self, stims, exploration, m_type, h_ratio, lrn_rate,
+	def __init__(self, stims, exploration, theory, h_ratio, lrn_rate,
 				 momentum=None, model="BPN"):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
