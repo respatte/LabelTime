@@ -106,8 +106,6 @@ class SingleObjectExperiment(object):
 		t_results = {} # Training results
 		# Start running subjects
 		for s in range(self.start_subject, self.start_subject+self.n_subjects):
-			##print("="*20)
-			##print("Subject",s,"starting")
 			# Code s_type (subject type) on 2 bits:
 			# 	- labbeled item (0=first item labelled, 1=second item labelled)
 			# 	- first familiarisation item (1=labelled, 0=unlabelled)
@@ -129,10 +127,8 @@ class SingleObjectExperiment(object):
 									   self.lrn_rate, self.momentum,
 									   self.memories)
 			# Perform background training on subjects
-			##print("Training LaF subject...")
 			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			t_results[s+1] = s_LaF
-			##print("Training CR subject...")
 			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
 			t_results[-(s+1)] = s_CR
 			# Impair subject recovery memory (hidden to output)
@@ -202,20 +198,16 @@ class SingleObjectExperiment(object):
 						np.delete(LaF_stims[1], range(self.l_size), axis=1))
 			CR_goals = LaF_goals
 			# Run and record familiarisation training
-			##print("Familiarisation for LaF subject...")
 			f_results[s+1] = s_LaF.fam_training(LaF_stims, LaF_goals,
 												self.pres_time,
 												self.threshold,
 												self.n_trials)
 			f_results[s+1] += (self.e_ratio,) # Adding a tuple with one value
-			##print("Familiarisation for CR subject...")
 			f_results[-(s+1)] = s_CR.fam_training(CR_stims, CR_goals,
 												  self.pres_time,
 												  self.threshold,
 												  self.n_trials)
 			f_results[-(s+1)] += (self.e_ratio,) # Adding a tuple with one value
-			##print("Subject completed")
-		##print("Experiment completed")
 		return (f_results, t_results)
 		
 	def generate_stims(self, size, ratio):
