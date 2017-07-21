@@ -51,6 +51,7 @@ class SingleObjectSubject(object):
 		encode_explo -- encode stimuli exploration given importance and overlap
 		bg_training -- trains network on stimuli before familiarisation trials
 		fam_training -- performs familiarisation trials as in T&W2017
+		impair_memory -- impairs the memory, typically between training and test
 	
 	"""
 
@@ -95,6 +96,13 @@ class SingleObjectSubject(object):
 												   n_hidden,
 												   n_output]] * 2,
 												 lrn_rate)
+	
+	def __getattr__(self, impaired):
+		"""Access the network to impair when needed"""
+		if self.memories == 2:
+			return self.net.STM
+		elif self.memories == 1:
+			return self.net
 
 	def encode_explo(self, n_explo, ratio):
 		"""Encodes exploration of two stimuli with overlapping.
@@ -204,3 +212,43 @@ class SingleObjectSubject(object):
 			errors.append(errors_trial)
 			looking_times.append(looking_times_trial)
 		return (looking_times, errors)
+	
+	def impair_memory(self, connections, method=None, inertia=True):
+		"""Impair subject's memory at given level of connections.
+		
+		Method is a string that will be evaluated. Result is added to
+		selected weight matrix. A typical example is to use a uniform
+		distribution to add noise to the weight matrix. In the method,
+		parameters for size must be called m (rows) and n (columns),
+		and are extracted from the selected weight matrix before the
+		function is evaluated.
+		If no method is given, reset connections using initialisation
+		function from the network.
+		For a dual memory network subject, only STM is affected.
+		
+		If inertia is set to False, then the inertia of the model is not
+		erased. Default behaviour is to reinitialise inertia to zeros.
+		
+		Actions are performed in place, no return of the function.
+		
+		"""
+		for c in connections:
+			# Get shape from selected weight matrix
+			# Since this information takes the bias weights into account,
+			# we don't need to deal with presence/absence of bias here.
+			m, n = self.impaired.weights[c].shape
+			if method:
+				# Add the evaluated method to the matrix
+				self.impaired.weights[c] += eval(method)
+			else:
+				# Reinitialise the wmatrix
+				self.impaired.weights[c] = self.net.init_weight_matrix(m, n,
+																	 bias=False)
+		if inertia:
+			# Reset last inertia to zeros for all layers
+			for layer in range(self.impaired.n_layers-1):
+				self.impaired.inertia[0][layer] *= 0
+			# Delete older inertia
+			for _ in range(len(self.impaired.inertia)-1):
+				self.impaired.inertia.pop()
+				
