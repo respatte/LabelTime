@@ -45,19 +45,21 @@ class SingleObjectExperiment(object):
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0, model="BPN"):
+				 n_subjects=4096, start_subject=0, model="BPN",
+				 theta_t=(10500, 100), theta_p=(1500, 50),
+				 pres_time=100, threshold=1e-3, n_trials=8,
+				 h_ratio=19/24):
 		"""Initialise a single-object labeltime experiment.
 		
 		See class documentation for more details about parameters.
 		
 		"""
-		# Define some fixed parameters not treated as inputs
-		self.mu_t, self.sigma_t = 10500, 100
-		self.mu_p, self.sigma_p = 1500, 50
-		self.pres_time = 100
-		self.threshold = 1e-3
-		self.n_trials = 8
-		self.h_ratio = 19/24
+		self.mu_t, self.sigma_t = theta_t
+		self.mu_p, self.sigma_p = theta_p
+		self.pres_time = pres_time
+		self.threshold = threshold
+		self.n_trials = n_trials
+		self.h_ratio = h_ratio
 		self.model = model
 		if model == "BPN":
 			self.lrn_rate = .1
