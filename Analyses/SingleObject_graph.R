@@ -52,6 +52,8 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 #single_obj.data <- read.csv("../Results/SingleObject_DMN_LT.csv", head=TRUE)
 #single_obj.data <- read.csv("../Results/SingleObject_BPN_big_LT.csv", head=TRUE)
 #single_obj.data <- read.csv("../Results/SingleObject_DMN_big_LT.csv", head=TRUE)
+#single_obj.data <- read.csv("../Results/SingleObject_BPN_ImpairUniform_LT.csv", head=TRUE)
+single_obj.data <- read.csv("../Results/SingleObject_DMN_ImpairUniform_LT.csv", head=TRUE)
 # Set all factor variables to factors
 single_obj.data$subject <- as.factor(single_obj.data$subject)
 single_obj.data$explo_overlap <- as.factor(single_obj.data$explo_overlap)
@@ -84,18 +86,4 @@ single_obj.data.plot <- ggplot(single_obj.data.sum, aes(x = trial,
 						geom_point(position=position_dodge(0.1),
 								   size=2, fill="white")
 ggsave("../Results/MeanCI.pdf", plot = single_obj.data.plot,
-	   height = 4, width = 9)
-# Graph from data, geom_smooth fitted
-single_obj.data.plot <- ggplot(single_obj.data) +
-						geom_smooth(size = .2,
-									mapping = aes(trial, looking_time,
-												  colour = labelled),
-									method = "loess") +
-						facet_grid(.~model) +
-						scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
-						xlab("Trial") + ylab("Looking time") + theme_bw() +
-						scale_fill_brewer(palette = "Dark2") +
-						scale_colour_discrete(name = "Condition",
-											  labels = c("label","no label"))
-ggsave("../Results/Smooth.pdf", plot = single_obj.data.plot,
 	   height = 4, width = 9)
