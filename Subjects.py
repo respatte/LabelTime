@@ -78,6 +78,7 @@ class SingleObjectSubject(object):
 		n_input = self.stims[0].size
 		n_output = self.goals[0].size
 		n_hidden = int(n_output * h_ratio)
+		self.memories = memories
 		if memories == 1:
 			if momentum:
 				self.net = bpn.BackPropNetwork([n_input, n_hidden, n_output],
@@ -216,6 +217,8 @@ class SingleObjectSubject(object):
 	def impair_memory(self, connections, method=None, inertia=True):
 		"""Impair subject's memory at given level of connections.
 		
+		Connections is a list of at least one connection index as
+		described BackPropNetworks.
 		Method is a string that will be evaluated. Result is added to
 		selected weight matrix. A typical example is to use a uniform
 		distribution to add noise to the weight matrix. In the method,
@@ -242,7 +245,7 @@ class SingleObjectSubject(object):
 				self.impaired.weights[c] += eval(method)
 			else:
 				# Reinitialise the wmatrix
-				self.impaired.weights[c] = self.net.init_weight_matrix(m, n,
+				self.impaired.weights[c] = self.net.init_weights_matrix(m, n,
 																	 bias=False)
 		if inertia:
 			# Reset last inertia to zeros for all layers
