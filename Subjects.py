@@ -70,7 +70,7 @@ class SingleObjectSubject(object):
 		# Create goals as copies of stimuli
 		self.goals = cp.deepcopy(full_stims)
 		# Delete input label if CR model
-		# m_type gives number of label units if CR, 0 if LaF
+		# theory gives number of label units if CR, 0 if LaF
 		if theory > 0:
 			full_stims = (np.delete(full_stims[0], range(theory),axis=1),
 						  np.delete(full_stims[1], range(theory),axis=1))
