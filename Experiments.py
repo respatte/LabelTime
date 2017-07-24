@@ -114,7 +114,7 @@ class SingleObjectExperiment(object):
 								self.models[model])
 		# Perform background training on subject
 		s.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
-		t_results[subject_i] = s
+		t_result = s
 		# Impair subject recovery memory (hidden to output)
 		method = "np.random.uniform(.1, .5, (m,n)) * "
 		method += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
@@ -131,13 +131,13 @@ class SingleObjectExperiment(object):
 			test_stims = (np.delete(test_stims[0], range(self.l_size), axis=1),
 						  np.delete(test_stims[1], range(self.l_size), axis=1))
 		# Run and record familiarisation training
-		f_results[s] = s.fam_training(test_stims, test_goals,
-									  self.pres_time,
-									  self.threshold,
-									  self.n_trials)
+		f_result = s.fam_training(test_stims, test_goals,
+								  self.pres_time,
+								  self.threshold,
+								  self.n_trials)
 		# Adding a tuple with one value for exploration overlap ratio
-		f_results[s] += (self.e_ratio,)
-		return (f_results, t_results)
+		f_result += (self.e_ratio,)
+		return (f_result, t_result)
 		
 	def run_experiment(self):
 		"""Run a full experiment.
@@ -156,7 +156,9 @@ class SingleObjectExperiment(object):
 		t_results = {} # Training results
 		# Start running subjects
 		for s in range(self.start_subject, self.start_subject+self.n_subjects):
-			
+			tmp_results = self.run_subject(s)
+			f_results[s] = tmp_results[0]
+			t_results[s] = tmp_results[1]
 		return (f_results, t_results)
 		
 	def generate_stims(self, size, ratio):
