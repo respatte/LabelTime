@@ -28,7 +28,8 @@ class SingleObjectSubject(object):
 			overlap in the encoding of exploration between the two
 			stimuli, i.e. the between-stimulus similarity amongst haptic
 			and interaction dimensions. This is subject-specific.
-		theory -- size of label if implementing CR, 0 if implementing LaF
+		theory -- theory implemented (CR or LaF)
+		l_size -- label size
 		h_ratio -- ratio of hidden neurons compared to input neurons
 		lrn_rate -- learning rate(s) of the backpropagation network
 		momentum -- influence of inertial term in [0, 1], or function
@@ -71,9 +72,9 @@ class SingleObjectSubject(object):
 		self.goals = cp.deepcopy(full_stims)
 		# Delete input label if CR model
 		# theory gives number of label units if CR, 0 if LaF
-		if theory > 0:
-			full_stims = (np.delete(full_stims[0], range(theory),axis=1),
-						  np.delete(full_stims[1], range(theory),axis=1))
+		if theory == "CR":
+			full_stims = (np.delete(full_stims[0], range(l_size), axis=1),
+						  np.delete(full_stims[1], range(l_size), axis=1))
 		self.stims = full_stims
 		# Create backpropagation network
 		n_input = self.stims[0].size
@@ -88,10 +89,20 @@ class SingleObjectSubject(object):
 				self.net = bpn.BackPropNetwork([n_input, n_hidden, n_output],
 											   lrn_rate)
 		elif model == "DMN":
+			# Compute layer sizes for STM (without label output)
+			# Label deleted within DualMemoryNetwork model to fit goal to size
+			n_input_STM = n_input
+			n_output_STM = n_output - l_size
+			n_hidden_STM = int(n_output_STM * h_ratio)
+			# Create the network
 			if momentum:
 				self.net = bpn.DualMemoryNetwork([[n_input,
 												   n_hidden,
-												   n_output]] * 2,
+												   n_output],
+												  [n_input_STM,
+												   n_hidden_STM,
+												   n_output_STM]
+												 ],
 												 lrn_rate, momentum=momentum)
 			else:
 				self.net = bpn.DualMemoryNetwork([[n_input,
