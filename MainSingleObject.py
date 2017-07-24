@@ -23,11 +23,11 @@ def main():
 	total = time.time()
 	warnings.filterwarnings("ignore")
 	explo_ratios = [.25,.375,.5,.625,.75]
-	t_results = []
+	t_results = {}
 	f_results = {}
 	for i, explo_ratio in enumerate(explo_ratios):
-		results = run_subjects(4, explo_ratio, i, verbose=True)
-		t_results.append(results[1])
+		results = run_subjects(32, explo_ratio, i, verbose=True)
+		t_results.update(results[1])
 		f_results.update(results[0])
 	SingleObjectExperiment.output_data(f_results,"Results/SingleObject")
 	total = time.gmtime(time.time() - total)
@@ -75,5 +75,5 @@ def main_multiproc():
 		  "="*15)
 
 if __name__ == "__main__":
-	##main()
-	main_multiproc()
+	main()
+	##main_multiproc()
