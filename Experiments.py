@@ -17,7 +17,7 @@ class SingleObjectExperiment(object):
 			the stimuli. The second value is the overlap ratio in the
 			exploration of the stimuli (passed on to each subject).
 		n_subjects -- number of subjects to run in total per model (LaF, CR)
-			Is expected to be a multiple of 4, for counterbalancing purposes.
+			Is expected to be a multiple of 16, for counterbalancing purposes.
 		start_subject -- the subject number for the first subject
 			Used if the experiment is ran in multiple bashes.
 		model -- model used for neural network (BPN or DMN)
@@ -45,7 +45,7 @@ class SingleObjectExperiment(object):
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0, model="BPN",
+				 n_subjects=4096, start_subject=0,
 				 theta_t=(10500, 100), theta_p=(1500, 50),
 				 pres_time=100, threshold=1e-3, n_trials=8,
 				 h_ratio=19/24):
@@ -60,13 +60,10 @@ class SingleObjectExperiment(object):
 		self.threshold = threshold
 		self.n_trials = n_trials
 		self.h_ratio = h_ratio
-		self.model = model
-		if model == "BPN":
-			self.lrn_rate = .1
-			self.momentum = .05
-		elif model == "DMN":
-			self.lrn_rate = (.001, .1)
-			self.momentum = (.0005, .05)
+		# Model list, learning rates and momenta list for each model
+		self.models = ["BPN","DMN"]
+		self.lrn_rates = [.1, (.001, .1)]
+		self.momenta = [.05, (.0005, .05)]
 		# Get meaningful short variables from input
 		# l_ -> label_
 		# p_ -> physical
@@ -92,6 +89,56 @@ class SingleObjectExperiment(object):
 									  ))
 						   )
 	
+	def run_subject(self, subject_i):
+		"""Run a single subject with parameters depending on subject number."""
+		# TODO
+		# Code s_type (subject type) on 4 bits:
+		# 	- labbeled item (0=first item labelled, 1=second item labelled)
+		# 	- first familiarisation item (1=labelled, 0=unlabelled)
+		#	- theory (0=LaF, 1=CR)
+		#	- model (0=BPN, 1=DMN)
+		s_type = format(subject_i%16,'04b') # type: str
+		# Add label to one stimulus, keep labelled first in couple
+		labelled_i = int(s_type[0])
+		label_stim = np.hstack((self.l_stims[1],
+								self.p_stims[labelled_i]))
+		no_label_stim = np.hstack((self.l_stims[0],
+								   self.p_stims[1-labelled_i]))
+		bg_stims = (label_stim, no_label_stim)
+		# Create subjects
+		theory = int(s_type[2])
+		model = int(s_type[3])
+		s = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
+								theory * self.l_size, self.h_ratio,
+								self.lrn_rates[model], self.momenta[model],
+								self.models[model])
+		# Perform background training on subject
+		s.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
+		t_results[subject_i] = s
+		# Impair subject recovery memory (hidden to output)
+		method = "np.random.uniform(.1, .5, (m,n)) * "
+		method += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
+		s.impair_memory([1], method)
+		# Prepare stimuli order for familiarisation trials
+		first_fam = int(s_type[1])
+		first_stim = first_fam * labelled_i + \
+					 (1 - first_fam) * (1 - labelled_i)
+		test_stims = (self.test_stims[first_stim],
+					  self.test_stims[1 - first_stim])
+		test_goals = test_stims
+		# Stimuli for CR: delete label units
+		if theory:
+			test_stims = (np.delete(test_stims[0], range(self.l_size), axis=1),
+						  np.delete(test_stims[1], range(self.l_size), axis=1))
+		# Run and record familiarisation training
+		f_results[s] = s.fam_training(test_stims, test_goals,
+									  self.pres_time,
+									  self.threshold,
+									  self.n_trials)
+		# Adding a tuple with one value for exploration overlap ratio
+		f_results[s] += (self.e_ratio,)
+		return (f_results, t_results)
+		
 	def run_experiment(self):
 		"""Run a full experiment.
 		
@@ -109,60 +156,7 @@ class SingleObjectExperiment(object):
 		t_results = {} # Training results
 		# Start running subjects
 		for s in range(self.start_subject, self.start_subject+self.n_subjects):
-			# Code s_type (subject type) on 2 bits:
-			# 	- labbeled item (0=first item labelled, 1=second item labelled)
-			# 	- first familiarisation item (1=labelled, 0=unlabelled)
-			s_type = format(s%4,'02b') # type: str
-			# Add label to one stimulus, keep labelled first in couple
-			labelled_i = int(s_type[0])
-			label_stim = np.hstack((self.l_stims[1],
-									self.p_stims[labelled_i]))
-			no_label_stim = np.hstack((self.l_stims[0],
-									   self.p_stims[labelled_i-1]))
-			bg_stims = (label_stim, no_label_stim)
-			# Create subjects for LaF and CR
-			s_LaF = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
-										0, self.h_ratio,
-										self.lrn_rate, self.momentum,
-										self.model)
-			s_CR = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
-									   self.l_size, self.h_ratio,
-									   self.lrn_rate, self.momentum,
-									   self.model)
-			# Perform background training on subjects
-			s_LaF.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
-			t_results[s+1] = s_LaF
-			s_CR.bg_training(self.mu_t, self.sigma_t, self.mu_p, self.sigma_p)
-			t_results[-(s+1)] = s_CR
-			# Impair subject recovery memory (hidden to output)
-			# Weights are set to pre-train random values
-			# Momentum is deleted
-			method = "np.random.uniform(.1, .5, (m,n)) * "
-			method += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
-			s_LaF.impair_memory([1], method)
-			s_CR.impair_memory([1], method)
-			# Prepare stimuli order for familiarisation trials
-			first_fam = int(s_type[1])
-			first_stim = first_fam * labelled_i + \
-						 (1 - first_fam) * (1 - labelled_i)
-			LaF_stims = (self.test_stims[first_stim],
-						 self.test_stims[1 - first_stim])
-			LaF_goals = LaF_stims
-			# Stimuli for CR: take LaF (already ordered), delete label units
-			CR_stims = (np.delete(LaF_stims[0], range(self.l_size), axis=1),
-						np.delete(LaF_stims[1], range(self.l_size), axis=1))
-			CR_goals = LaF_goals
-			# Run and record familiarisation training
-			f_results[s+1] = s_LaF.fam_training(LaF_stims, LaF_goals,
-												self.pres_time,
-												self.threshold,
-												self.n_trials)
-			f_results[s+1] += (self.e_ratio,) # Adding a tuple with one value
-			f_results[-(s+1)] = s_CR.fam_training(CR_stims, CR_goals,
-												  self.pres_time,
-												  self.threshold,
-												  self.n_trials)
-			f_results[-(s+1)] += (self.e_ratio,) # Adding a tuple with one value
+			
 		return (f_results, t_results)
 		
 	def generate_stims(self, size, ratio):
