@@ -47,13 +47,7 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 
 # DATA HANDLING
 # Import data
-# Choose the data to import (BPN/DMN, 40 subjects or 5000 subjects)
-#single_obj.data <- read.csv("../Results/SingleObject_BPN_LT.csv", head=TRUE)
-#single_obj.data <- read.csv("../Results/SingleObject_DMN_LT.csv", head=TRUE)
-#single_obj.data <- read.csv("../Results/SingleObject_BPN_big_LT.csv", head=TRUE)
-#single_obj.data <- read.csv("../Results/SingleObject_DMN_big_LT.csv", head=TRUE)
-#single_obj.data <- read.csv("../Results/SingleObject_BPN_ImpairUniform_LT.csv", head=TRUE)
-single_obj.data <- read.csv("../Results/SingleObject_DMN_ImpairUniform_LT.csv", head=TRUE)
+single_obj.data <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
 # Set all factor variables to factors
 single_obj.data$subject <- as.factor(single_obj.data$subject)
 single_obj.data$explo_overlap <- as.factor(single_obj.data$explo_overlap)
@@ -61,7 +55,8 @@ single_obj.data$explo_overlap <- as.factor(single_obj.data$explo_overlap)
 single_obj.data$trial <- single_obj.data$trial + 1
 # Summarising data for mean+CI graph
 single_obj.data.sum <- summarySE(single_obj.data, measurevar="looking_time",
-								 groupvars=c("labelled","model","trial"),
+								 groupvars=c("labelled","model",
+											 "theory","trial"),
 								 conf.interval=.89)
 
 # GENERATING GRAPHS
@@ -71,7 +66,7 @@ single_obj.data.plot <- ggplot(single_obj.data.sum, aes(x = trial,
 														colour = labelled,
 														group = labelled,
 														shape = labelled)) +
-						facet_grid(.~model) +
+						facet_grid(model~theory) +
 						scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
 						xlab("Trial") + ylab("Looking time") + theme_bw() +
 						scale_fill_brewer(palette = "Dark2") +
@@ -86,4 +81,4 @@ single_obj.data.plot <- ggplot(single_obj.data.sum, aes(x = trial,
 						geom_point(position=position_dodge(0.1),
 								   size=2, fill="white")
 ggsave("../Results/MeanCI.pdf", plot = single_obj.data.plot,
-	   height = 4, width = 9)
+	   height = 8, width = 9)
