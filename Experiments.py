@@ -219,12 +219,14 @@ class SingleObjectExperiment(object):
 		"""
 		# Define column labels
 		c_labels_LT = ','.join(["subject",
+								"theory",
 								"model",
 								"explo_overlap",
 								"trial",
 								"labelled",
 								"looking_time"])
 		c_labels_errors = ','.join(["subject",
+									"theory",
 									"model",
 									"explo_overlap",
 									"trial",
@@ -236,21 +238,24 @@ class SingleObjectExperiment(object):
 		# Extract number of trials
 		k = list(data.keys())[0]
 		n_trials = len(data[k][0])
-		# Prepare meaningful coding for model
-		models = ("LaF", "CR")
+		# Prepare meaningful coding for parameters
+		theories = ("LaF", "CR")
+		models = ("BPN", "DMN")
 		labelled = ("no_label", "label")
+		pres_time = 100
 		for subject in data:
-			# Extract model from sign of subject number
-			# 0:LaF, 1:CR
-			model = int(subject < 0)
-			# Extract first stimulus for familiarisation from subject number
-			first_fam = int(format(subject%4,'02b')[1])
+			# Extract information from subject number
+			s_type = format(subject%16,'04b')
+			theory = int(s_type[2])
+			model = int(s_type[3])
+			first_fam = int(s_type[1])
 			for trial in range(n_trials):
 				for stim in range(2):
 					# Encode state for current stimulus
 					labelled_stim = (stim + first_fam) % 2
 					# Create row for looking time results
 					row = [str(subject),
+						   theories[theory],
 						   models[model],
 						   str(data[subject][2]),
 						   str(trial),
@@ -258,15 +263,21 @@ class SingleObjectExperiment(object):
 						   str(data[subject][0][trial][stim])
 						   ]
 					rows_LT.append(','.join(row))
-					for pres in range(len(data[subject][1][trial][stim])):
+					for pres in range(pres_time):
+						# Get error or NA if subject "looked away"
+						try:
+							res = data[subject][1][trial][stim][pres]
+						except IndexError:
+							res = "NA"
 						# Create row for error results
 						row = [str(subject),
+							   theories[theory],
 							   models[model],
 							   str(data[subject][2]),
 							   str(trial),
 							   labelled[labelled_stim],
 							   str(pres),
-							   str(data[subject][1][trial][stim][pres])
+							   str(res)
 							   ]
 						rows_errors.append(','.join(row))
 		# Join all rows with line breaks
