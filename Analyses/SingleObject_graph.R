@@ -70,18 +70,19 @@ single_obj.data.plot <- ggplot(single_obj.data.sum, aes(x = trial,
 						scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
 						xlab("Trial") + ylab("Looking time") + theme_bw() +
 						scale_fill_brewer(palette = "Dark2") +
-						scale_shape_discrete(name = "Condition",
+						scale_shape_manual(name = "Condition",
 											 breaks = c("label","no_label"),
-											 labels = c("label","no label")) +
+											 labels = c("label","no label"),
+											 values = c(21,24)) +
 						scale_colour_discrete(name = "Condition",
 											  breaks = c("label","no_label"),
 											  labels = c("label","no label")) +
 						geom_errorbar(aes(ymin=looking_time-ci,
 										  ymax=looking_time+ci),
 									  colour="black", width=.1,
-									  position=position_dodge(0.1)) +
-						geom_line(position=position_dodge(0.1)) +
-						geom_point(position=position_dodge(0.1),
-								   size=2, fill="white")
+									  position=position_dodge(0.2)) +
+						geom_line(position=position_dodge(0.2)) +
+						geom_point(position=position_dodge(0.2),
+								   size=1.5, fill="white")
 ggsave("../Results/MeanCI.pdf", plot = single_obj.data.plot,
 	   height = 8, width = 9)
