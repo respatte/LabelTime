@@ -53,16 +53,16 @@ def main_multiproc():
 		pool.close()
 		pool.join()
 	# Get the results from subprocesses and combine them
-	t_results_bpn = []
+	t_results_bpn = {}
 	f_results_bpn = {}
-	t_results_dmn = []
+	t_results_dmn = {}
 	f_results_dmn = {}
 	for i in range(len(explo_ratios)):
 		results_bpn = async_results_bpn[i].get()
 		results_dmn = async_results_dmn[i].get()
-		t_results_bpn.append(results_bpn[1])
+		t_results_bpn.update(results_bpn[1])
 		f_results_bpn.update(results_bpn[0])
-		t_results_dmn.append(results_dmn[1])
+		t_results_dmn.update(results_dmn[1])
 		f_results_dmn.update(results_dmn[0])
 	SingleObjectExperiment.output_data(f_results_bpn,
 									   "Results/SingleObject_BPN")
