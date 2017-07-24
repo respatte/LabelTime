@@ -61,6 +61,8 @@ class SingleObjectExperiment(object):
 		self.threshold = threshold
 		self.n_trials = n_trials
 		self.h_ratio = h_ratio
+		# Theory list
+		self.theories = ["LaF", "CR"]
 		# Model list, learning rates and momenta list for each model
 		self.models = ["BPN","DMN"]
 		self.lrn_rates = [.1, (.001, .1)]
@@ -109,7 +111,8 @@ class SingleObjectExperiment(object):
 		theory = int(s_type[2])
 		model = int(s_type[3])
 		s = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
-								theory * self.l_size, self.h_ratio,
+								self.theories[theory], self.l_size,
+								self.h_ratio,
 								self.lrn_rates[model], self.momenta[model],
 								self.models[model])
 		# Perform background training on subject
