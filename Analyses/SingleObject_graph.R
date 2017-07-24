@@ -71,8 +71,11 @@ single_obj.data.plot <- ggplot(single_obj.data.sum, aes(x = trial,
 						xlab("Trial") + ylab("Looking time") + theme_bw() +
 						scale_fill_brewer(palette = "Dark2") +
 						scale_shape_discrete(name = "Condition",
-											 labels = c("label","no label"),
-											 solid=FALSE) +
+											 breaks = c("label","no_label"),
+											 labels = c("label","no label")) +
+						scale_colour_discrete(name = "Condition",
+											  breaks = c("label","no_label"),
+											  labels = c("label","no label")) +
 						geom_errorbar(aes(ymin=looking_time-ci,
 										  ymax=looking_time+ci),
 									  colour="black", width=.1,
