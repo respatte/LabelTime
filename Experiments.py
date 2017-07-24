@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import numpy as np
+from multiprocessing import Pool
 
 from Subjects import *
 
@@ -152,13 +153,21 @@ class SingleObjectExperiment(object):
 		
 		"""
 		# Initialise result gatherer as a dictionary (subject number as key)
-		f_results = {} # Familiarisation results
-		t_results = {} # Training results
+		f_results_async = {} # Familiarisation results
+		t_results_async = {} # Training results
 		# Start running subjects
-		for s in range(self.start_subject, self.start_subject+self.n_subjects):
-			tmp_results = self.run_subject(s)
-			f_results[s] = tmp_results[0]
-			t_results[s] = tmp_results[1]
+		with Pool() as pool:
+			for s in range(self.start_subject,
+						   self.start_subject + self.n_subjects):
+				f_results_async[s] = pool.apply_async(run_subject, (self, s))
+			pool.close()
+			pool.join()
+		f_results = {}
+		t_results = {}
+		for s in range(self.start_subject,
+					   self.start_subject + self.n_subjects):
+			f_results[s] = f_results_async[s].get()
+			t_results[s] = t_results_async[s].get()
 		return (f_results, t_results)
 		
 	def generate_stims(self, size, ratio):
