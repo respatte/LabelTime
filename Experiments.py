@@ -92,7 +92,6 @@ class SingleObjectExperiment(object):
 	
 	def run_subject(self, subject_i):
 		"""Run a single subject with parameters depending on subject number."""
-		# TODO
 		# Code s_type (subject type) on 4 bits:
 		# 	- labbeled item (0=first item labelled, 1=second item labelled)
 		# 	- first familiarisation item (1=labelled, 0=unlabelled)
@@ -153,21 +152,21 @@ class SingleObjectExperiment(object):
 		
 		"""
 		# Initialise result gatherer as a dictionary (subject number as key)
-		f_results_async = {} # Familiarisation results
-		t_results_async = {} # Training results
+		results_async = {}
 		# Start running subjects
 		with Pool() as pool:
 			for s in range(self.start_subject,
 						   self.start_subject + self.n_subjects):
-				f_results_async[s] = pool.apply_async(run_subject, (self, s))
+				results_async[s] = pool.apply_async(self.run_subject, (s,))
 			pool.close()
 			pool.join()
 		f_results = {}
 		t_results = {}
 		for s in range(self.start_subject,
 					   self.start_subject + self.n_subjects):
-			f_results[s] = f_results_async[s].get()
-			t_results[s] = t_results_async[s].get()
+			tmp_results = results_async[s].get()
+			f_results[s] = tmp_results[0]
+			t_results[s] = tmp_results[1]
 		return (f_results, t_results)
 		
 	def generate_stims(self, size, ratio):
