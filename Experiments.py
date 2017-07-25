@@ -31,7 +31,7 @@ class Experiment(object):
 		momentum -- momentum parameter for the network
 		l_size, p_size, e_size -- modlity sizes for label, physical, exploration
 		p_ratio, e_ratio -- overlap ratios for physical and exploration values
-		p_stims -- physical values for stimuli
+		p_proto -- physical values for prototypes
 		l_stims -- label values for stimuli
 		test_stims -- full stimuli (label+physical+exploration) for test trials
 	
@@ -314,6 +314,7 @@ class SingleObjectExperiment(Experiment):
 	SingleObjectExperiment methods:
 		run_experiment -- run a ful experiment, using only class properties
 		generate_stims -- generate physical stimuli with overlap
+		create_subject_stims -- create stimuli for background training
 		output_data -- convert results data to a csv file
 	
 	"""
@@ -338,7 +339,7 @@ class SingleObjectExperiment(Experiment):
 		del self.p_proto
 	
 	def create_subject_stims(self, s_type):
-		"""Create a stimuli for the subject depending on subject number."""
+		"""Create stimuli for the subject depending on subject number."""
 		# Add label to one stimulus, keep labelled first in couple
 		labelled_i = int(s_type[0])
 		label_stim = np.hstack((self.l_stims[1],
@@ -346,3 +347,81 @@ class SingleObjectExperiment(Experiment):
 		no_label_stim = np.hstack((self.l_stims[0],
 								   self.p_stims[1-labelled_i]))
 		return (label_stim, no_label_stim)
+
+class CategoryExperiment(Experiment):
+	"""Class computing a full labeltime experiment with categories.
+	
+	Input parameters:
+		modality_sizes_stim -- tuple of 3 values for stimulus modality sizes
+			Values are given in this order: label_size, physical_size,
+			exploration_size. They encode the number of units on which
+			to encode each dimension of the stimuli.
+		overlap_ratios -- tuple of two overlap ratio values in [0, 1]
+			The first value is the overlap ratio for physical values of
+			the stimuli. The second value is the overlap ratio in the
+			exploration of the stimuli (passed on to each subject).
+		n_exemplars -- number of exemplars to generate per category
+		n_subjects -- number of subjects to run in total per model (LaF, CR)
+			Is expected to be a multiple of 16, for counterbalancing purposes.
+		start_subject -- the subject number for the first subject
+			Used if the experiment is ran in multiple bashes.
+		cat_method -- method used to create a category
+			Values can be either 'continuous' to add continuous noise to
+			prototypes to create a category, or 'discrete' to add discrete
+			noise (i.e. a bits are changed from 0 to 1 and vice versa).
+	
+	SingleObjectExperiment properties:
+		mu_p, sigma_p -- background play session time distribution
+		n_days -- number of days of background training
+		pres_time -- max number of presentations at familiarisation
+		threshold -- "looking away" threshold at familiarisation
+		n_trials -- number of familiarisation trials
+		h_ratio -- n_hidden_neurons / n_output_neurons ratio
+		lrn_rate -- learning rate for the network
+		momentum -- momentum parameter for the network
+		l_size, p_size, e_size -- modlity sizes for label, physical, exploration
+		p_ratio, e_ratio -- overlap ratios for physical and exploration values
+		p_proto -- physical values for prototypes
+		l_stims -- label values for stimuli
+		test_stims -- full stimuli (label+physical+exploration) for test trials
+	
+	SingleObjectExperiment methods:
+		run_experiment -- run a ful experiment, using only class properties
+		generate_stims -- generate physical stimuli with overlap
+		create_subject_stims -- create stimuli for background training
+		output_data -- convert results data to a csv file
+	
+	"""
+	
+	def __init__(self, modality_sizes_stim, overlap_ratios, n_exemplars=4,
+				 n_subjects=4096, start_subject=0, theta_p=(1500, 50),
+				 n_days=7, pres_time=100, threshold=1e-3, n_trials=8,
+				 h_ratio=19/24, cat_method="continuous"):
+		"""Initialise a single-object labeltime experiment.
+		
+		See class documentation for more details about parameters.
+		
+		"""
+		Experiment.__init__(self, modality_sizes_stim, overlap_ratios,
+							n_subjects, start_subject, pres_time, threshold,
+							n_trials, h_ratio)
+		mu_p, sigma_p = theta_p
+		self.bg_parameters = n_days, mu_p, sigma_p
+		self.cat_method = cat_method
+		self.n_exemplars = n_exemplars
+	
+	def create_subject_stims(self, s_type):
+		"""Create stimuli for the subject depending on subject number."""
+		# Add label to one stimulus, keep labelled first in couple
+		labelled_i = int(s_type[0])
+		# Create sets of stimuli without label first
+		label_stims = generate_category(self.p_proto[labelled_i],
+										self.n_exemplars, self.cat_method)
+		no_label_stims = generate_category(self.p_proto[1-labelled_i],
+										   self.n_exemplars, self.cat_method)
+		for stim in range(self.n_exemplars):
+			label_stims[stim] = np.hstack((self.l_stims[1],
+										   label_stims[stim]))
+			no_label_stims[stim] = np.hstack((self.l_stims[0],
+											  no_label_stims[stim]))
+		return (label_stims, no_label_stims)
