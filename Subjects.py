@@ -365,6 +365,7 @@ class CategorySubject(Subject):
 			precision.
 	
 	Subject properties:
+		n_stims -- number of stimuli in each category
 		proto_stims -- tuple of two prototype stimuli of same size
 			When implementing a CR model, the label part is cut off.
 		stims -- tuple of two stimuli lists of same size
@@ -391,10 +392,11 @@ class CategorySubject(Subject):
 		"""
 		Subject.__init__(self, stims, (0,0), theory, l_size, h_ratio,
 						 lrn_rate, momentum, model)
+		self.n_stims = len(stims[0])
 		self.goals = stims
 		if theory == "CR":
 			self.stims = ([],[])
-			for stim in len(stims[0]):
+			for stim in range(self.n_stims):
 				self.stims[0].append(np.delete(stims[0][stim],
 											   range(l_size),
 											   axis=1))
@@ -403,3 +405,23 @@ class CategorySubject(Subject):
 											   axis=1))
 		else:
 			self.stims = stims
+	
+	def bg_training(self, n_days, mu_p, sigma_p):
+		"""Background training of the network on both simuli.
+		
+		To mimic the experimental conditions, exposition time per object
+		per session is not fixed but follows a Gaussian distribution.
+		To further mimic the experimental conditions, the model is
+		presented alternatively with one object then the other, for
+		differing times.
+		The whole set of stimuli from both categories is presented for
+		n_days times, alternating between stimuli fron each category.
+		
+		"""
+		for day in range(n_days):
+			for stim in range(self.n_stims):
+				for i in range(round(np.random.normal(mu_p, sigma_p))):
+					self.net.run(self.stims[0][stim],self.goals[0][stim])
+				for i in range(round(np.random.normal(mu_p, sigma_p))):
+					self.net.run(self.stims[1][stim],self.goals[1][stim])
+	
