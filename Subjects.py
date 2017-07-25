@@ -61,7 +61,12 @@ class Subject(object):
 		
 		"""
 		# Create full stimuli
-		explo_proto = self.encode_explo(exploration[0], exploration[1])
+		# Create exploration if necessary
+		if exploration[0]:
+			explo_proto = self.encode_explo(exploration[0], exploration[1])
+		else:
+			# Create array of with no columns
+			explo_proto = (np.zeros((1, 0)), np.zeros((1, 0)))
 		full_proto = (np.hstack((proto[0], explo_proto[0])),
 					  np.hstack((proto[1], explo_proto[1])))
 		# Create proto_goals as copies of stimuli
@@ -330,4 +335,71 @@ class SingleObjectSubject(Subject):
 			errors.append(errors_trial)
 			looking_times.append(looking_times_trial)
 		return (looking_times, errors)
-				
+
+class CategorySubject(Subject):
+	"""Class computing a participant for the second labeltime study.
+	
+	In this class, the subject is trained with two sets of objects to
+	reproduce the setup in Twomey & Westermann (in progress).
+	
+	Input parameters:
+		proto -- tuple of two prototype of same size
+			All object-specific information is encoded into the stimuli.
+			This includes any overlap in visual/physical properties of
+			the two stimuli.
+			This also includes a label for one of the two stimuli (the
+			absence of a label being coded as zeros). The label and its
+			size in encoding are set beforehands, as it is not subject-
+			specific.
+		stims -- tuple of two stimulus lists (derived from the prototypes)
+		theory -- theory implemented (CR or LaF)
+		l_size -- label size
+		h_ratio -- ratio of hidden neurons compared to input neurons
+		lrn_rate -- learning rate(s) of the backpropagation network
+		momentum -- influence of inertial term in [0, 1], or function
+		model -- model used for neural network (BPN or DMN)
+			If using DMN (DualMemoryNetwork), then learning rate and
+			momentum must be given for both memories and lateral
+			connections.
+			See BackPropNetworks.DualMemoryNetwork documentation for more
+			precision.
+	
+	Subject properties:
+		proto_stims -- tuple of two prototype stimuli of same size
+			When implementing a CR model, the label part is cut off.
+		stims -- tuple of two stimuli lists of same size
+			When implementing a CR model, the label part is cut off.
+		proto_goals, goals -- training goals for the network
+			Same as proto_stims and stims, keeping the label for both theories.
+		net -- backpropagation network used for learning
+		impair -- target network for memory impairment
+	
+	Subject methods:
+		encode_explo -- encode stimuli exploration given importance and overlap
+		bg_training -- trains network on stimuli before familiarisation trials
+		fam_training -- performs familiarisation trials as in T&W2017
+		impair_memory -- impairs the memory, typically between training and test
+	
+	"""
+	
+	def __init__(self, proto, stims, theory, l_size, h_ratio, lrn_rate,
+				 momentum, model):
+		"""Initialise a simple labeltime subject for K&W_inprogress.
+		
+		See class documentation for more details about parameters.
+		
+		"""
+		Subject.__init__(self, stims, (0,0), theory, l_size, h_ratio,
+						 lrn_rate, momentum, model)
+		self.goals = stims
+		if theory == "CR":
+			self.stims = ([],[])
+			for stim in len(stims[0]):
+				self.stims[0].append(np.delete(stims[0][stim],
+											   range(l_size),
+											   axis=1))
+				self.stims[1].append(np.delete(stims[1][stim],
+											   range(l_size),
+											   axis=1))
+		else:
+			self.stims = stims
