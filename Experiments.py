@@ -425,3 +425,24 @@ class CategoryExperiment(Experiment):
 			no_label_stims[stim] = np.hstack((self.l_stims[0],
 											  no_label_stims[stim]))
 		return (label_stims, no_label_stims)
+	
+	def generate_category(self, prototype, n_exemplars, cat_method):
+		"""Generate a category around a prototype."""
+		n = 0
+		steps = 0
+		exemplars = [prototype] # Initialise exemplars list with prototype
+		while n < n_exemplars and steps < 100000:
+			steps += 1
+			if cat_method == "continuous":
+				new_exemplar = prototype + np.random.uniform(-.5, .5,
+															 prototype.shape)
+			for exemplar in exemplars:
+				if np.linalg.norm(exemplar - new_exemplar) < 1:
+					new_exemplar = None
+					break
+			if new_exemplar is not None:
+				exemplars.append(new_exemplar)
+				n += 1
+		if steps == 100000:
+			raise(NotImplementedError)
+		return exemplars[1:] # Return all exemplars but first (prototype)
