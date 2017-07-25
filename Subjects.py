@@ -393,7 +393,7 @@ class CategorySubject(Subject):
 		See class documentation for more details about parameters.
 		
 		"""
-		Subject.__init__(self, stims, (0,0), theory, l_size, h_ratio,
+		Subject.__init__(self, proto, (0,0), theory, l_size, h_ratio,
 						 lrn_rate, momentum, model)
 		self.n_stims = len(stims[0])
 		self.goals = stims
@@ -423,7 +423,7 @@ class CategorySubject(Subject):
 		
 		"""
 		n_days, mu_p, sigma_p = bg_parameters
-		for day in range(n_days):
+		for day in range(n_days*2): # Story read twice in a row each day
 			for stim in range(self.n_stims):
 				for i in range(round(np.random.normal(mu_p, sigma_p))):
 					self.net.run(self.stims[0][stim],self.goals[0][stim])

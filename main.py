@@ -4,7 +4,7 @@ import time
 import warnings
 from multiprocessing import Pool
 
-from Experiments import SingleObjectExperiment
+from Experiments import *
 
 def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 				 verbose=False):

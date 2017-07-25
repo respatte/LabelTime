@@ -117,15 +117,9 @@ class Experiment(object):
 		#	- model (0=BPN, 1=DMN)
 		s_type = format(subject_i%16,'04b') # type: str
 		# Get background stimuli
-		bg_stim = self.create_subject_stims(s_type)
+		bg_stims = self.create_subject_stims(s_type)
 		# Create subjects
-		theory = int(s_type[2])
-		model = int(s_type[3])
-		s = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
-								self.theories[theory], self.l_size,
-								self.h_ratio,
-								self.lrn_rates[model], self.momenta[model],
-								self.models[model])
+		s = self.create_subject(bg_stims, s_type)
 		# Perform background training on subject
 		s.bg_training(self.bg_parameters)
 		t_result = s
@@ -134,6 +128,7 @@ class Experiment(object):
 		method += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 		s.impair_memory([1], method)
 		# Prepare stimuli order for familiarisation trials
+		labelled_i = int(s_type[0])
 		first_fam = int(s_type[1])
 		first_stim = first_fam * labelled_i + \
 					 (1 - first_fam) * (1 - labelled_i)
@@ -141,7 +136,8 @@ class Experiment(object):
 					  self.test_stims[1 - first_stim])
 		test_goals = test_stims
 		# Stimuli for CR: delete label units
-		if theory == "CR":
+		theory = int(s_type[2])
+		if theory:
 			test_stims = (np.delete(test_stims[0], range(self.l_size), axis=1),
 						  np.delete(test_stims[1], range(self.l_size), axis=1))
 		# Run and record familiarisation training
@@ -347,6 +343,17 @@ class SingleObjectExperiment(Experiment):
 		no_label_stim = np.hstack((self.l_stims[0],
 								   self.p_stims[1-labelled_i]))
 		return (label_stim, no_label_stim)
+	
+	def create_subject(self, bg_stims, s_type):
+		"""Create subject for experiment depending on subject number."""
+		theory = int(s_type[2])
+		model = int(s_type[3])
+		s = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
+								self.theories[theory], self.l_size,
+								self.h_ratio,
+								self.lrn_rates[model], self.momenta[model],
+								self.models[model])
+		return s
 
 class CategoryExperiment(Experiment):
 	"""Class computing a full labeltime experiment with categories.
@@ -393,8 +400,9 @@ class CategoryExperiment(Experiment):
 	
 	"""
 	
-	def __init__(self, modality_sizes_stim, overlap_ratios, n_exemplars=4,
+	def __init__(self, modality_sizes_stim, overlap_ratios,
 				 n_subjects=4096, start_subject=0, theta_p=(1500, 50),
+				 n_exemplars=4,
 				 n_days=7, pres_time=100, threshold=1e-3, n_trials=8,
 				 h_ratio=19/24, cat_method="continuous"):
 		"""Initialise a single-object labeltime experiment.
@@ -415,16 +423,28 @@ class CategoryExperiment(Experiment):
 		# Add label to one stimulus, keep labelled first in couple
 		labelled_i = int(s_type[0])
 		# Create sets of stimuli without label first
-		label_stims = generate_category(self.p_proto[labelled_i],
-										self.n_exemplars, self.cat_method)
-		no_label_stims = generate_category(self.p_proto[1-labelled_i],
-										   self.n_exemplars, self.cat_method)
+		l_stims = self.generate_category(self.p_proto[labelled_i],
+										 self.n_exemplars, self.cat_method)
+		no_l_stims = self.generate_category(self.p_proto[1-labelled_i],
+											self.n_exemplars, self.cat_method)
+		# Add label
 		for stim in range(self.n_exemplars):
-			label_stims[stim] = np.hstack((self.l_stims[1],
-										   label_stims[stim]))
-			no_label_stims[stim] = np.hstack((self.l_stims[0],
-											  no_label_stims[stim]))
-		return (label_stims, no_label_stims)
+			l_stims[stim] = np.hstack((self.l_stims[1],
+									   l_stims[stim]))
+			no_l_stims[stim] = np.hstack((self.l_stims[0],
+										  no_l_stims[stim]))
+		return (l_stims, no_l_stims)
+	
+	def create_subject(self, bg_stims, s_type):
+		"""Create subject for experiment depending on subject number."""
+		theory = int(s_type[2])
+		model = int(s_type[3])
+		# Use test_stims instead of p_proto as label is already included
+		# (important for size only, not used in learning)
+		s = CategorySubject(self.test_stims, bg_stims, self.theories[theory],
+							self.l_size, self.h_ratio, self.lrn_rates[model],
+							self.momenta[model], self.models[model])
+		return s
 	
 	def generate_category(self, prototype, n_exemplars, cat_method):
 		"""Generate a category around a prototype."""
