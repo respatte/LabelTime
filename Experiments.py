@@ -152,74 +152,6 @@ class Experiment(object):
 		# Adding a tuple with one value for exploration overlap ratio
 		f_result += (self.e_ratio,)
 		return (f_result, t_result)
-	
-class SingleObjectExperiment(Experiment):
-	"""Class computing a full labeltime experiment with single objects.
-	
-	Input parameters:
-		modality_sizes_stim -- tuple of 3 values for stimulus modality sizes
-			Values are given in this order: label_size, physical_size,
-			exploration_size. They encode the number of units on which
-			to encode each dimension of the stimuli.
-		overlap_ratios -- tuple of two overlap ratio values in [0, 1]
-			The first value is the overlap ratio for physical values of
-			the stimuli. The second value is the overlap ratio in the
-			exploration of the stimuli (passed on to each subject).
-		n_subjects -- number of subjects to run in total per model (LaF, CR)
-			Is expected to be a multiple of 16, for counterbalancing purposes.
-		start_subject -- the subject number for the first subject
-			Used if the experiment is ran in multiple bashes.
-	
-	SingleObjectExperiment properties:
-		mu_t, sigma_t -- total background training time distribution
-		mu_p, sigma_p -- background play session time distribution
-		pres_time -- max number of presentations at familiarisation
-		threshold -- "looking away" threshold at familiarisation
-		n_trials -- number of familiarisation trials
-		h_ratio -- n_hidden_neurons / n_output_neurons ratio
-		lrn_rate -- learning rate for the network
-		momentum -- momentum parameter for the network
-		l_size, p_size, e_size -- modlity sizes for label, physical, exploration
-		p_ratio, e_ratio -- overlap ratios for physical and exploration values
-		p_stims -- physical values for stimuli
-		l_stims -- label values for stimuli
-		test_stims -- full stimuli (label+physical+exploration) for test trials
-	
-	SingleObjectExperiment methods:
-		run_experiment -- run a ful experiment, using only class properties
-		generate_stims -- generate physical stimuli with overlap
-		output_data -- convert results data to a csv file
-	
-	"""
-	
-	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0,
-				 theta_t=(10500, 100), theta_p=(1500, 50),
-				 pres_time=100, threshold=1e-3, n_trials=8,
-				 h_ratio=19/24):
-		"""Initialise a single-object labeltime experiment.
-		
-		See class documentation for more details about parameters.
-		
-		"""
-		Experiment.__init__(self, modality_sizes_stim, overlap_ratios,
-							n_subjects, start_subject, pres_time, threshold,
-							n_trials, h_ratio)
-		mu_t, sigma_t = theta_t
-		mu_p, sigma_p = theta_p
-		self.bg_parameters = mu_t, sigma_t, mu_p, sigma_p
-		self.p_stims = self.p_proto
-		del self.p_proto
-	
-	def create_subject_stims(self, s_type):
-		"""Create a stimuli for the subject depending on subject number."""
-		# Add label to one stimulus, keep labelled first in couple
-		labelled_i = int(s_type[0])
-		label_stim = np.hstack((self.l_stims[1],
-								self.p_stims[labelled_i]))
-		no_label_stim = np.hstack((self.l_stims[0],
-								   self.p_stims[1-labelled_i]))
-		return (label_stim, no_label_stim)
 		
 	def run_experiment(self):
 		"""Run a full experiment.
@@ -346,3 +278,71 @@ class SingleObjectExperiment(Experiment):
 			f.write(data_LT + "\n")
 		with open(filename+"_errors.csv", 'w') as f:
 			f.write(data_errors + "\n")
+	
+class SingleObjectExperiment(Experiment):
+	"""Class computing a full labeltime experiment with single objects.
+	
+	Input parameters:
+		modality_sizes_stim -- tuple of 3 values for stimulus modality sizes
+			Values are given in this order: label_size, physical_size,
+			exploration_size. They encode the number of units on which
+			to encode each dimension of the stimuli.
+		overlap_ratios -- tuple of two overlap ratio values in [0, 1]
+			The first value is the overlap ratio for physical values of
+			the stimuli. The second value is the overlap ratio in the
+			exploration of the stimuli (passed on to each subject).
+		n_subjects -- number of subjects to run in total per model (LaF, CR)
+			Is expected to be a multiple of 16, for counterbalancing purposes.
+		start_subject -- the subject number for the first subject
+			Used if the experiment is ran in multiple bashes.
+	
+	SingleObjectExperiment properties:
+		mu_t, sigma_t -- total background training time distribution
+		mu_p, sigma_p -- background play session time distribution
+		pres_time -- max number of presentations at familiarisation
+		threshold -- "looking away" threshold at familiarisation
+		n_trials -- number of familiarisation trials
+		h_ratio -- n_hidden_neurons / n_output_neurons ratio
+		lrn_rate -- learning rate for the network
+		momentum -- momentum parameter for the network
+		l_size, p_size, e_size -- modlity sizes for label, physical, exploration
+		p_ratio, e_ratio -- overlap ratios for physical and exploration values
+		p_stims -- physical values for stimuli
+		l_stims -- label values for stimuli
+		test_stims -- full stimuli (label+physical+exploration) for test trials
+	
+	SingleObjectExperiment methods:
+		run_experiment -- run a ful experiment, using only class properties
+		generate_stims -- generate physical stimuli with overlap
+		output_data -- convert results data to a csv file
+	
+	"""
+	
+	def __init__(self, modality_sizes_stim, overlap_ratios,
+				 n_subjects=4096, start_subject=0,
+				 theta_t=(10500, 100), theta_p=(1500, 50),
+				 pres_time=100, threshold=1e-3, n_trials=8,
+				 h_ratio=19/24):
+		"""Initialise a single-object labeltime experiment.
+		
+		See class documentation for more details about parameters.
+		
+		"""
+		Experiment.__init__(self, modality_sizes_stim, overlap_ratios,
+							n_subjects, start_subject, pres_time, threshold,
+							n_trials, h_ratio)
+		mu_t, sigma_t = theta_t
+		mu_p, sigma_p = theta_p
+		self.bg_parameters = mu_t, sigma_t, mu_p, sigma_p
+		self.p_stims = self.p_proto
+		del self.p_proto
+	
+	def create_subject_stims(self, s_type):
+		"""Create a stimuli for the subject depending on subject number."""
+		# Add label to one stimulus, keep labelled first in couple
+		labelled_i = int(s_type[0])
+		label_stim = np.hstack((self.l_stims[1],
+								self.p_stims[labelled_i]))
+		no_label_stim = np.hstack((self.l_stims[0],
+								   self.p_stims[1-labelled_i]))
+		return (label_stim, no_label_stim)
