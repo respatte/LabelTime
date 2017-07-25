@@ -50,6 +50,7 @@ class Subject(object):
 	Subject methods:
 		encode_explo -- encode stimuli exploration given importance and overlap
 		impair_memory -- impairs the memory, typically between training and test
+		fam_training -- performs familiarisation trials as in T&W2017
 	
 	"""
 	
@@ -187,6 +188,46 @@ class Subject(object):
 			# Delete older inertia
 			for _ in range(len(self.impaired.inertia)-1):
 				self.impaired.inertia.pop()
+	
+	def fam_training(self, test_stims, test_goals,
+					 pres_time, threshold, n_trials):
+		"""Computes familiarisation training on test_stims.
+		
+		The model is presented with each stimulus, alternating, for
+		n_trials number of trials. For each trial, the model is presented
+		with each stiumulus until the network error reaches threshold
+		or for pres_time backpropagations.
+		stims is a set of two stimuli with values at zero for label and
+		exploration units.
+		
+		Return a couple (looking_times, errors).
+		looking_times is a list of the number of backpropagations per
+		trial before reaching stopping criteria. For each trial, a tuple
+		of number of backpropagations for each stimulus is recorded.
+		errors is a list of the errors per trial and per stimulus. Each
+		element of this list is a couple of two lists, one per stimulus.
+		
+		"""
+		looking_times = []
+		errors = []
+		for trial in range(n_trials):
+			errors_trial = []
+			looking_times_trial = []
+			for stim in range(len(test_stims)):
+				errors_stim = []
+				time_left = pres_time
+				error = 1
+				while time_left > 0 and error > threshold:
+					# Goal specification necessarry for CR models
+					self.net.run(test_stims[stim], test_goals[stim])
+					error = np.linalg.norm(self.net.error)
+					errors_stim.append(error)
+					time_left -= 1
+				errors_trial.append(errors_stim)
+				looking_times_trial.append(pres_time - time_left)
+			errors.append(errors_trial)
+			looking_times.append(looking_times_trial)
+		return (looking_times, errors)
 
 class SingleObjectSubject(Subject):
 	"""Class computing a participant for the first labeltime study.
@@ -255,9 +296,10 @@ class SingleObjectSubject(Subject):
 		self.goals = self.proto_goals
 		del self.proto_goals
 	
-	def bg_training(self, mu_t, sigma_t, mu_p, sigma_p):
+	def bg_training(self, bg_parameters):
 		"""Background training of the network on both simuli.
 		
+		bg_parameters is a tuple with values mu_t, sigma_t, mu_p, sigma_p.
 		To mimic the experimental conditions, total play time and play
 		time per object are not strictly equal but follow a Gaussian
 		distribution.
@@ -270,6 +312,7 @@ class SingleObjectSubject(Subject):
 		the mean total looking time to each object.
 		
 		"""
+		mu_t, sigma_t, mu_p, sigma_p = bg_parameters
 		# Computing alternating playing times
 		play_times1 = []
 		sum1 = 0
@@ -295,46 +338,6 @@ class SingleObjectSubject(Subject):
 				self.net.run(self.stims[0],self.goals[0])
 			for t2 in range(play_times2[session]):
 				self.net.run(self.stims[1],self.goals[1])
-	
-	def fam_training(self, test_stims, test_goals,
-					 pres_time, threshold, n_trials):
-		"""Computes familiarisation training on test_stims.
-		
-		The model is presented with each stimulus, alternating, for
-		n_trials number of trials. For each trial, the model is presented
-		with each stiumulus until the network error reaches threshold
-		or for pres_time backpropagations.
-		stims is a set of two stimuli with values at zero for label and
-		exploration units.
-		
-		Return a couple (looking_times, errors).
-		looking_times is a list of the number of backpropagations per
-		trial before reaching stopping criteria. For each trial, a tuple
-		of number of backpropagations for each stimulus is recorded.
-		errors is a list of the errors per trial and per stimulus. Each
-		element of this list is a couple of two lists, one per stimulus.
-		
-		"""
-		looking_times = []
-		errors = []
-		for trial in range(n_trials):
-			errors_trial = []
-			looking_times_trial = []
-			for stim in range(len(test_stims)):
-				errors_stim = []
-				time_left = pres_time
-				error = 1
-				while time_left > 0 and error > threshold:
-					# Goal specification necessarry for CR models
-					self.net.run(test_stims[stim], test_goals[stim])
-					error = np.linalg.norm(self.net.error)
-					errors_stim.append(error)
-					time_left -= 1
-				errors_trial.append(errors_stim)
-				looking_times_trial.append(pres_time - time_left)
-			errors.append(errors_trial)
-			looking_times.append(looking_times_trial)
-		return (looking_times, errors)
 
 class CategorySubject(Subject):
 	"""Class computing a participant for the second labeltime study.
@@ -406,9 +409,10 @@ class CategorySubject(Subject):
 		else:
 			self.stims = stims
 	
-	def bg_training(self, n_days, mu_p, sigma_p):
+	def bg_training(self, bg_parameters):
 		"""Background training of the network on both simuli.
 		
+		bg_parameters is a tuple with values n_days, mu_p, sigma_p.
 		To mimic the experimental conditions, exposition time per object
 		per session is not fixed but follows a Gaussian distribution.
 		To further mimic the experimental conditions, the model is
@@ -418,6 +422,7 @@ class CategorySubject(Subject):
 		n_days times, alternating between stimuli fron each category.
 		
 		"""
+		n_days, mu_p, sigma_p = bg_parameters
 		for day in range(n_days):
 			for stim in range(self.n_stims):
 				for i in range(round(np.random.normal(mu_p, sigma_p))):
