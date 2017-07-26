@@ -93,27 +93,65 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 # DATA HANDLING
 # Import data, either from Category or SingleObject
-exp <- "SingleObject"
-#exp <- "Category"
-LT.data <- read.csv(paste0("../Results/",exp,"_LT.csv"), head=TRUE)
+SObj <- "SingleObject"
+Cate <- "Category"
+LT.SObj <- read.csv(paste0("../Results/",SObj,"_LT.csv"), head=TRUE)
+LT.Cate <- read.csv(paste0("../Results/",Cate,"_LT.csv"), head=TRUE)
 # Set all factor variables to factors
-LT.data$subject <- as.factor(LT.data$subject)
-LT.data$explo_overlap <- as.factor(LT.data$explo_overlap)
+LT.SObj$subject <- as.factor(LT.SObj$subject)
+LT.SObj$explo_overlap <- as.factor(LT.SObj$explo_overlap)
+LT.Cate$subject <- as.factor(LT.Cate$subject)
+LT.Cate$explo_overlap <- as.factor(LT.Cate$explo_overlap)
 # Transform trial number to start at 1
-LT.data$trial <- LT.data$trial + 1
+LT.SObj$trial <- LT.SObj$trial + 1
+LT.Cate$trial <- LT.Cate$trial + 1
 # Summarising data for mean+CI graph
-LT.data.sum <- summarySE(LT.data, measurevar="looking_time",
+LT.SObj.sum <- summarySE(LT.SObj, measurevar="looking_time",
+								groupvars=c("labelled","model",
+											"theory","trial"),
+								conf.interval=.89)
+LT.Cate.sum <- summarySE(LT.Cate, measurevar="looking_time",
 								groupvars=c("labelled","model",
 											"theory","trial"),
 								conf.interval=.89)
 
 # GENERATING GRAPHS
 # Graph from data (not models), mean and error bars (CI)
-LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
+LT.SObj.plot <- ggplot(LT.SObj.sum, aes(x = trial,
 										y = looking_time,
 										colour = labelled,
 										shape = labelled)) +
-				ggtitle(paste0("Results from the ",exp," experiment")) +
+				ggtitle(paste0("Results from the ",SObj," experiment")) +
+				facet_grid(model~theory) +
+				scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
+				scale_y_continuous(limits = c(15,65)) +
+				xlab("Trial") + ylab("Looking time") + theme_bw() +
+				theme(panel.grid.minor.x=element_blank(),
+					  plot.title = element_text(size=20,
+												face="bold",
+												hjust=0.5),
+					  axis.title = element_text(size=14),
+					  legend.position = "none") +
+				scale_fill_brewer(palette = "Dark2") +
+				scale_shape_manual(name = "Condition",
+								   breaks = c("label","no_label"),
+								   labels = c("label","no label"),
+								   values = c(21,24)) +
+				scale_colour_discrete(name = "Condition",
+									  breaks = c("label","no_label"),
+									  labels = c("label","no label")) +
+				geom_errorbar(aes(ymin=looking_time-ci,
+								  ymax=looking_time+ci),
+							  colour="black", width=.1,
+							  position=position_dodge(0.3)) +
+				geom_line(position=position_dodge(0.3)) +
+				geom_point(position=position_dodge(0.3),
+						   size=1.5, fill="white")
+LT.Cate.plot <- ggplot(LT.Cate.sum, aes(x = trial,
+										y = looking_time,
+										colour = labelled,
+										shape = labelled)) +
+				ggtitle(paste0("Results from the ",Cate," experiment")) +
 				facet_grid(model~theory) +
 				scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
 				scale_y_continuous(limits = c(15,65)) +
@@ -138,5 +176,8 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
 				geom_line(position=position_dodge(0.3)) +
 				geom_point(position=position_dodge(0.3),
 						   size=1.5, fill="white")
-ggsave(paste0("../Results/Mean+CI_",exp,".pdf"), plot = LT.data.plot,
-	   height = 8, width = 9)
+
+ggsave(paste0("../Results/Mean+CI.pdf"), plot = multiplot(LT.SObj.plot,
+														  LT.Cate.plot,
+														  cols = 2),
+	   height = 8, width = 16)
