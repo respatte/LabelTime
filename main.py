@@ -16,11 +16,11 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 		else:
 			print("Starting runs for CategoryExperiment")
 	if experiment == "SingleObject":
-		condition = SingleObjectExperiment((1,10,8), (.1,explo_ratio),
+		condition = SingleObjectExperiment((4,10,8), (.1,explo_ratio),
 										   n_subjects, n_subjects*bash_i,
 										   pps=3)
 	elif experiment == "Category":
-		condition = CategoryExperiment((1,10,0), (.1, 0),
+		condition = CategoryExperiment((4,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
 									   pps=3, theta_p=(100, 5))
 	noise = "np.random.uniform(.1, .3, (m,n)) * "
