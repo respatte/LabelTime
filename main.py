@@ -24,7 +24,10 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 		condition = CategoryExperiment((1,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
 									   theta_p=(150, 5))
-	results = condition.run_experiment()
+	noise = "np.random.uniform(.1, .5, (m,n)) * "
+	noise += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
+	reinit = None
+	results = condition.run_experiment(method=reinit)
 	if verbose:
 		t = time.gmtime(time.time() - t)
 		print("Runs finished in", time.strftime("%H:%M:%S",t))

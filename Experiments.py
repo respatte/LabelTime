@@ -108,7 +108,7 @@ class Experiment(object):
 		stim2[0, i_stim2] = 0
 		return (stim1,stim2)
 	
-	def run_subject(self, subject_i):
+	def run_subject(self, subject_i, method):
 		"""Run familiarisation for a single subject."""
 		# Code s_type (subject type) on 4 bits:
 		# 	- labbeled item (0=first item labelled, 1=second item labelled)
@@ -124,8 +124,6 @@ class Experiment(object):
 		s.bg_training(self.bg_parameters)
 		t_result = s
 		# Impair subject recovery memory (hidden to output)
-		method = "np.random.uniform(.1, .5, (m,n)) * "
-		method += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 		s.impair_memory([1], method)
 		# Prepare stimuli order for familiarisation trials
 		labelled_i = int(s_type[0])
@@ -149,7 +147,7 @@ class Experiment(object):
 		f_result += (self.e_ratio,)
 		return (f_result, t_result)
 		
-	def run_experiment(self):
+	def run_experiment(self, method=None):
 		"""Run a full experiment.
 		
 		Return a tuple of results for familiarisation and training. Results
@@ -167,7 +165,8 @@ class Experiment(object):
 		with Pool() as pool:
 			for s in range(self.start_subject,
 						   self.start_subject + self.n_subjects):
-				results_async[s] = pool.apply_async(self.run_subject, (s,))
+				results_async[s] = pool.apply_async(self.run_subject,
+													(s, method))
 			pool.close()
 			pool.join()
 		f_results = {}
