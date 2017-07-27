@@ -18,8 +18,8 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 	if experiment == "SingleObject":
 		condition = SingleObjectExperiment((8,10,8), (.1,explo_ratio),
 										   n_subjects, n_subjects*bash_i,
-										   pps=1, h_ratio=.6, pres_time=40,
-										   theta_p=(1,0))
+										   pps=1, pres_time=40,
+										   theta_t=(4200, 40), theta_p=(1,0))
 	elif experiment == "Category":
 		condition = CategoryExperiment((8,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
