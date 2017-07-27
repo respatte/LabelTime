@@ -17,10 +17,13 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 			print("Starting runs for CategoryExperiment")
 	if experiment == "SingleObject":
 		condition = SingleObjectExperiment((1,10,8), (.1,explo_ratio),
-										   n_subjects, n_subjects*bash_i)
+										   n_subjects, n_subjects*bash_i,
+										   theta_t=(1050, 10),
+										   theta_p=(150, 5))
 	elif experiment == "Category":
 		condition = CategoryExperiment((1,10,0), (.1, 0),
-									   n_subjects, n_subjects*bash_i)
+									   n_subjects, n_subjects*bash_i,
+									   theta_p=(150, 5))
 	results = condition.run_experiment()
 	if verbose:
 		t = time.gmtime(time.time() - t)
@@ -35,13 +38,13 @@ def main():
 	t_results = {}
 	f_results = {}
 	for i, explo_ratio in enumerate(explo_ratios):
-		results_SO = run_subjects(32, "SingleObject", i, explo_ratio,
+		results_SO = run_subjects(16, "SingleObject", i, explo_ratio,
 								  verbose=True)
 		t_results.update(results_SO[1])
 		f_results.update(results_SO[0])
 	Experiment.output_data(f_results, "Results/SingleObject")
 	# Run Category experiment
-	results_C = run_subjects(32*5, "Category", verbose=True)
+	results_C = run_subjects(16*5, "Category", verbose=True)
 	Experiment.output_data(results_C[0], "Results/Category")
 	total = time.gmtime(time.time() - total)
 	print("="*27,
