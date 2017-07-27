@@ -316,8 +316,8 @@ class SingleObjectExperiment(Experiment):
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios,
 				 n_subjects=4096, start_subject=0,
-				 theta_t=(10500, 100), theta_p=(1500, 50),
-				 pres_time=100, threshold=1e-3, n_trials=8,
+				 theta_t=(1050, 10), theta_p=(150, 5),
+				 pres_time=10, pps=10 threshold=1e-3, n_trials=8,
 				 h_ratio=19/24):
 		"""Initialise a single-object labeltime experiment.
 		
@@ -325,10 +325,10 @@ class SingleObjectExperiment(Experiment):
 		
 		"""
 		Experiment.__init__(self, modality_sizes_stim, overlap_ratios,
-							n_subjects, start_subject, pres_time, threshold,
+							n_subjects, start_subject, pres_time*pps, threshold,
 							n_trials, h_ratio)
-		mu_t, sigma_t = theta_t
-		mu_p, sigma_p = theta_p
+		mu_t, sigma_t = theta_t[0]*pps, theta_t[1]*pps
+		mu_p, sigma_p = theta_p[0]*pps, theta_p[1]*pps
 		self.bg_parameters = mu_t, sigma_t, mu_p, sigma_p
 		self.p_stims = self.p_proto
 		del self.p_proto
@@ -400,7 +400,7 @@ class CategoryExperiment(Experiment):
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0, theta_p=(1500, 50),
+				 n_subjects=4096, start_subject=0, theta_p=(150, 5), pps=10,
 				 n_exemplars=4,
 				 n_days=7, pres_time=100, threshold=1e-3, n_trials=8,
 				 h_ratio=19/24, cat_method="continuous"):
@@ -410,9 +410,9 @@ class CategoryExperiment(Experiment):
 		
 		"""
 		Experiment.__init__(self, modality_sizes_stim, overlap_ratios,
-							n_subjects, start_subject, pres_time, threshold,
+							n_subjects, start_subject, pres_time*pps, threshold,
 							n_trials, h_ratio)
-		mu_p, sigma_p = theta_p
+		mu_p, sigma_p = theta_p[0]*pps, theta_p[1]*pps
 		self.bg_parameters = n_days, mu_p, sigma_p
 		self.cat_method = cat_method
 		self.n_exemplars = n_exemplars
