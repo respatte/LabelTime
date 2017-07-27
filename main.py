@@ -26,7 +26,7 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 									   n_subjects, n_subjects*bash_i,
 									   theta_p=(450, 15),
 									   pres_time=30)
-	noise = "np.random.uniform(.01, 1, (m,n)) * "
+	noise = "np.random.uniform(.01, .5, (m,n)) * "
 	noise += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 	reinit = None
 	results = condition.run_experiment(method=noise)
