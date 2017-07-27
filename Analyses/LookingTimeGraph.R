@@ -139,11 +139,11 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
 				scale_colour_discrete(name = "Condition",
 									  breaks = c("label","no_label"),
 									  labels = c("label","no label")) +
+				geom_line(position=position_dodge(0.3)) +
 				geom_errorbar(aes(ymin=looking_time-ci,
 								  ymax=looking_time+ci),
 							  colour="black", width=.2,
 							  position=position_dodge(0.3)) +
-				geom_line(position=position_dodge(0.3)) +
 				geom_point(position=position_dodge(0.3),
 						   size=1.5, fill="white")
 
