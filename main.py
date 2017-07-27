@@ -22,8 +22,8 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 	elif experiment == "Category":
 		condition = CategoryExperiment((1,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
-									   pps=3)
-	noise = "np.random.uniform(.2, .5, (m,n)) * "
+									   pps=3, theta_p=(100, 5))
+	noise = "np.random.uniform(.1, .3, (m,n)) * "
 	noise += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 	reinit = None
 	results = condition.run_experiment(method=noise)
