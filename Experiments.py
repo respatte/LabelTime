@@ -317,7 +317,7 @@ class SingleObjectExperiment(Experiment):
 	def __init__(self, modality_sizes_stim, overlap_ratios,
 				 n_subjects=4096, start_subject=0,
 				 theta_t=(1050, 10), theta_p=(150, 5),
-				 pres_time=10, pps=10 threshold=1e-3, n_trials=8,
+				 pres_time=10, pps=10, threshold=1e-3, n_trials=8,
 				 h_ratio=19/24):
 		"""Initialise a single-object labeltime experiment.
 		
@@ -402,7 +402,7 @@ class CategoryExperiment(Experiment):
 	def __init__(self, modality_sizes_stim, overlap_ratios,
 				 n_subjects=4096, start_subject=0, theta_p=(150, 5), pps=10,
 				 n_exemplars=4,
-				 n_days=7, pres_time=100, threshold=1e-3, n_trials=8,
+				 n_days=7, pres_time=10, threshold=1e-3, n_trials=8,
 				 h_ratio=19/24, cat_method="continuous"):
 		"""Initialise a single-object labeltime experiment.
 		

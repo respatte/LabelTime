@@ -23,7 +23,7 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 		condition = CategoryExperiment((1,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
 									   pps=3)
-	noise = "np.random.uniform(.01, .5, (m,n)) * "
+	noise = "np.random.uniform(.2, .5, (m,n)) * "
 	noise += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 	reinit = None
 	results = condition.run_experiment(method=noise)
@@ -40,13 +40,13 @@ def main():
 	t_results = {}
 	f_results = {}
 	for i, explo_ratio in enumerate(explo_ratios):
-		results_SO = run_subjects(32, "SingleObject", i, explo_ratio,
+		results_SO = run_subjects(16, "SingleObject", i, explo_ratio,
 								  verbose=True)
 		t_results.update(results_SO[1])
 		f_results.update(results_SO[0])
 	Experiment.output_data(f_results, "Results/SingleObject")
 	# Run Category experiment
-	results_C = run_subjects(32*5, "Category", verbose=True)
+	results_C = run_subjects(16*5, "Category", verbose=True)
 	Experiment.output_data(results_C[0], "Results/Category")
 	total = time.gmtime(time.time() - total)
 	print("="*27,
