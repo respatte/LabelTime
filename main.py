@@ -18,15 +18,15 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 	if experiment == "SingleObject":
 		condition = SingleObjectExperiment((1,10,8), (.1,explo_ratio),
 										   n_subjects, n_subjects*bash_i,
-										   theta_t=(4200, 40),
-										   theta_p=(600, 20),
-										   pres_time=40)
+										   theta_t=(3150, 30),
+										   theta_p=(450, 15),
+										   pres_time=30)
 	elif experiment == "Category":
 		condition = CategoryExperiment((1,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
-									   theta_p=(600, 20),
-									   pres_time=40)
-	noise = "np.random.uniform(.1, .5, (m,n)) * "
+									   theta_p=(450, 15),
+									   pres_time=30)
+	noise = "np.random.uniform(.01, 1, (m,n)) * "
 	noise += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 	reinit = None
 	results = condition.run_experiment(method=noise)
