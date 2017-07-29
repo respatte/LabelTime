@@ -36,56 +36,73 @@ LT.training$experiment <- factor(LT.training$experiment,
 								 labels = c("Category",
 											"Single Object"))
 
-# MODELS
+# MODELS -- FIXED EFFECTS
 # Test main effects against intercept only
 LT.intercept <- lmer(looking_time ~ 1 +
 					 (1 + trial + labelled | subject),
 					 data = LT.training
 					 )
-LT.main_effect.1 <- update(LT.intercept, . ~ . + trial)
-LT.main_effect.2 <- update(LT.intercept, . ~ . + labelled)
-LT.main_effect.3 <- update(LT.intercept, . ~ . + theory)
-LT.main_effect.4 <- update(LT.intercept, . ~ . + experiment)
-LT.main_effect.comparison <- anova(LT.intercept,
-								   LT.main_effect.1,
-								   LT.main_effect.2,
-								   LT.main_effect.3,
-								   LT.main_effect.4)
-print(LT.main_effect.comparison)
+#LT.main_effect.1 <- update(LT.intercept, . ~ . + trial)
+#LT.main_effect.2 <- update(LT.intercept, . ~ . + labelled)
+#LT.main_effect.3 <- update(LT.intercept, . ~ . + theory)
+#LT.main_effect.4 <- update(LT.intercept, . ~ . + experiment)
+#LT.main_effect.comparison <- anova(LT.intercept,
+#								   LT.main_effect.1,
+#								   LT.main_effect.2,
+#								   LT.main_effect.3,
+#								   LT.main_effect.4)
+#print(LT.main_effect.comparison)
 LT.main_effect <- update(LT.intercept, . ~ . + trial + theory + experiment)
 # Test 2-way interactions against intercept + main effects
-LT.2_way.1 <- update(LT.main_effect, . ~ . + trial:labelled)
-LT.2_way.2 <- update(LT.main_effect, . ~ . + trial:theory)
-LT.2_way.3 <- update(LT.main_effect, . ~ . + trial:experiment)
-LT.2_way.4 <- update(LT.main_effect, . ~ . + labelled:theory)
-LT.2_way.5 <- update(LT.main_effect, . ~ . + labelled:experiment)
-LT.2_way.6 <- update(LT.main_effect, . ~ . + theory:experiment)
-LT.2_way.comparison <- anova(LT.main_effect,
-							 LT.2_way.1,
-							 LT.2_way.2,
-							 LT.2_way.3,
-							 LT.2_way.4,
-							 LT.2_way.5,
-							 LT.2_way.6)
-print(LT.2_way.comparison)
+#LT.2_way.1 <- update(LT.main_effect, . ~ . + trial:labelled)
+#LT.2_way.2 <- update(LT.main_effect, . ~ . + trial:theory)
+#LT.2_way.3 <- update(LT.main_effect, . ~ . + trial:experiment)
+#LT.2_way.4 <- update(LT.main_effect, . ~ . + labelled:theory)
+#LT.2_way.5 <- update(LT.main_effect, . ~ . + labelled:experiment)
+#LT.2_way.6 <- update(LT.main_effect, . ~ . + theory:experiment)
+#LT.2_way.comparison <- anova(LT.main_effect,
+#							 LT.2_way.1,
+#							 LT.2_way.2,
+#							 LT.2_way.3,
+#							 LT.2_way.4,
+#							 LT.2_way.5,
+#							 LT.2_way.6)
+#print(LT.2_way.comparison)
 LT.2_way <- update(LT.main_effect, . ~ . + trial:labelled + labelled:theory)
 # Test 3-way interactions agains intercept + main effects + 2-way interaction
-LT.3_way.1 <- update(LT.2_way, . ~ . + trial:labelled:theory)
+#LT.3_way.1 <- update(LT.2_way, . ~ . + trial:labelled:theory)
 LT.3_way.2 <- update(LT.2_way, . ~ . + trial:labelled:experiment)
-LT.3_way.3 <- update(LT.2_way, . ~ . + trial:theory:experiment)
-LT.3_way.4 <- update(LT.2_way, . ~ . + labelled:theory:experiment)
-LT.3_way.comparison <- anova(LT.2_way,
-							 LT.3_way.1,
-							 LT.3_way.2,
-							 LT.3_way.3,
-							 LT.3_way.4)
-print(LT.3_way.comparison)
+#LT.3_way.3 <- update(LT.2_way, . ~ . + trial:theory:experiment)
+#LT.3_way.4 <- update(LT.2_way, . ~ . + labelled:theory:experiment)
+#LT.3_way.comparison <- anova(LT.2_way,
+#							 LT.3_way.1,
+#							 LT.3_way.2,
+#							 LT.3_way.3,
+#							 LT.3_way.4)
+#print(LT.3_way.comparison)
 LT.3_way <- LT.3_way.2
 # Test 4-way interaction against intercept + main effects + 2/3-way interactions
-LT.4_way <- update(LT.3_way, . ~ . + trial:labelled:theory:experiment)
-LT.4_way.comparison <- anova(LT.3_way, LT.4_way)
-print(LT.4_way.comparison)
-LT.final <- LT.3_way
+#LT.4_way <- update(LT.3_way, . ~ . + trial:labelled:theory:experiment)
+#LT.4_way.comparison <- anova(LT.3_way, LT.4_way)
+#print(LT.4_way.comparison)
+LT.fixed <- LT.3_way
+
+# MODELS -- RANDOM EFFECTS
+LT.random.0 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
+LT.random.2 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
+LT.random.3 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
+LT.random.4 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
+LT.random.5 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
+LT.random.6 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.random.comparison <- anova(LT.random.0,
+							  LT.random.2,
+							  LT.random.3,
+							  LT.random.4,
+							  LT.random.5,
+							  LT.random.6)
+print(LT.random.comparison)
+LT.final <- LT.random.6
+
 ## Models for LaF only -- There's no point running models without main effect of trial
 ## Including only main effect for trial
 #single_obj.LaF.lmer.trial_only <- lmer(looking_time ~ trial +
