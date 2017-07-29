@@ -3,10 +3,15 @@ library(ggplot2)
 library(dplyr)
 library(lme4)
 
+# DIVERSION
+# Create a diversion of standard output to a file (to save results)
+# sink(file="lmer_results", append=TRUE, type="output")
+
+
 # DATA HANDLING
 # Import data, from both Category and SingleObject
-LT.SingObj <- read.csv("../Results/SingleObject_lsize1_LT.csv", head=TRUE)
-LT.Cat <- read.csv("../Results/Category_lsize1_LT.csv", head=TRUE)
+LT.SingObj <- read.csv("../Results/SingleObject_lsize5_LT.csv", head=TRUE)
+LT.Cat <- read.csv("../Results/Category_lsize5_LT.csv", head=TRUE)
 # Drop out simple BPN
 LT.SingObj <- LT.SingObj[LT.SingObj$model == "DMN",]
 LT.Cat <- LT.Cat[LT.Cat$model == "DMN",]
@@ -32,139 +37,55 @@ LT.training$experiment <- factor(LT.training$experiment,
 											"Single Object"))
 
 # MODELS
-# Global model for both LaF and CR together
-#LT.all.lmer.15 <- lmer(looking_time ~ trial*labelled*theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 15")
-#print(summary(LT.all.lmer.15))
-#LT.all.lmer.14 <- lmer(looking_time ~ trial*labelled + trial*theory +
-#					labelled*theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 14")
-#print(summary(LT.all.lmer.14))
-#LT.all.lmer.13 <- lmer(looking_time ~ trial*labelled + trial*theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 13")
-#print(summary(LT.all.lmer.13))
-#LT.all.lmer.12 <- lmer(looking_time ~ trial*labelled + labelled*theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 12")
-#print(summary(LT.all.lmer.12))
-#LT.all.lmer.11 <- lmer(looking_time ~ trial*theory + labelled*theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 11")
-#print(summary(LT.all.lmer.11))
-#LT.all.lmer.10 <- lmer(looking_time ~ trial*labelled + theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 10")
-#print(summary(LT.all.lmer.10))
-#LT.all.lmer.9 <- lmer(looking_time ~ trial*theory + labelled +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 9")
-#print(summary(LT.all.lmer.9))
-#LT.all.lmer.8 <- lmer(looking_time ~ labelled*theory + trial +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 8")
-#print(summary(LT.all.lmer.8))
-#LT.all.lmer.7 <- lmer(looking_time ~ trial + labelled + theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 7")
-#print(summary(LT.all.lmer.7))
-#LT.all.lmer.6 <- lmer(looking_time ~ trial + labelled +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 6")
-#print(summary(LT.all.lmer.6))
-#LT.all.lmer.5 <- lmer(looking_time ~ trial + theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 5")
-#print(summary(LT.all.lmer.5))
-#LT.all.lmer.4 <- lmer(looking_time ~ labelled + theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 4")
-#print(summary(LT.all.lmer.4))
-#LT.all.lmer.3 <- lmer(looking_time ~ theory +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 3")
-#print(summary(LT.all.lmer.3))
-#LT.all.lmer.2 <- lmer(looking_time ~ labelled +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 2")
-#print(summary(LT.all.lmer.2))
-#LT.all.lmer.1 <- lmer(looking_time ~ trial +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 1")
-#print(summary(LT.all.lmer.1))
-#LT.all.lmer.0 <- lmer(looking_time ~ 1 +
-#					(1 + trial + labelled | subject) +
-#					(1 + trial + labelled + theory | experiment),
-#					data = LT.training
-#					)
-#print("Model 00")
-#print(summary(LT.all.lmer.0))
-#LT.all.comparison <- anova(LT.all.lmer.0,
-#						   LT.all.lmer.1,
-#						   LT.all.lmer.2,
-#						   LT.all.lmer.3,
-#						   LT.all.lmer.4,
-#						   LT.all.lmer.5,
-#						   LT.all.lmer.6,
-#						   LT.all.lmer.7,
-#						   LT.all.lmer.8,
-#						   LT.all.lmer.9,
-#						   LT.all.lmer.10,
-#						   LT.all.lmer.11,
-#						   LT.all.lmer.12,
-#						   LT.all.lmer.13,
-#						   LT.all.lmer.14,
-#						   LT.all.lmer.15)
-#print("Model comparison")
-#print(LT.all.comparison)
-
+# Test main effects against intercept only
+LT.intercept <- lmer(looking_time ~ 1 +
+					 (1 + trial + labelled | subject),
+					 data = LT.training
+					 )
+LT.main_effect.1 <- update(LT.intercept, . ~ . + trial)
+LT.main_effect.2 <- update(LT.intercept, . ~ . + labelled)
+LT.main_effect.3 <- update(LT.intercept, . ~ . + theory)
+LT.main_effect.4 <- update(LT.intercept, . ~ . + experiment)
+LT.main_effect.comparison <- anova(LT.intercept,
+								   LT.main_effect.1,
+								   LT.main_effect.2,
+								   LT.main_effect.3,
+								   LT.main_effect.4)
+print(LT.main_effect.comparison)
+LT.main_effect <- update(LT.intercept, . ~ . + trial + theory + experiment)
+# Test 2-way interactions against intercept + main effects
+LT.2_way.1 <- update(LT.main_effect, . ~ . + trial:labelled)
+LT.2_way.2 <- update(LT.main_effect, . ~ . + trial:theory)
+LT.2_way.3 <- update(LT.main_effect, . ~ . + trial:experiment)
+LT.2_way.4 <- update(LT.main_effect, . ~ . + labelled:theory)
+LT.2_way.5 <- update(LT.main_effect, . ~ . + labelled:experiment)
+LT.2_way.6 <- update(LT.main_effect, . ~ . + theory:experiment)
+LT.2_way.comparison <- anova(LT.main_effect,
+							 LT.2_way.1,
+							 LT.2_way.2,
+							 LT.2_way.3,
+							 LT.2_way.4,
+							 LT.2_way.5,
+							 LT.2_way.6)
+print(LT.2_way.comparison)
+LT.2_way <- update(LT.main_effect, . ~ . + trial:labelled + labelled:theory)
+# Test 3-way interactions agains intercept + main effects + 2-way interaction
+LT.3_way.1 <- update(LT.2_way, . ~ . + trial:labelled:theory)
+LT.3_way.2 <- update(LT.2_way, . ~ . + trial:labelled:experiment)
+LT.3_way.3 <- update(LT.2_way, . ~ . + trial:theory:experiment)
+LT.3_way.4 <- update(LT.2_way, . ~ . + labelled:theory:experiment)
+LT.3_way.comparison <- anova(LT.2_way,
+							 LT.3_way.1,
+							 LT.3_way.2,
+							 LT.3_way.3,
+							 LT.3_way.4)
+print(LT.3_way.comparison)
+LT.3_way <- LT.3_way.2
+# Test 4-way interaction against intercept + main effects + 2/3-way interactions
+LT.4_way <- update(LT.3_way, . ~ . + trial:labelled:theory:experiment)
+LT.4_way.comparison <- anova(LT.3_way, LT.4_way)
+print(LT.4_way.comparison)
+LT.final <- LT.3_way
 ## Models for LaF only -- There's no point running models without main effect of trial
 ## Including only main effect for trial
 #single_obj.LaF.lmer.trial_only <- lmer(looking_time ~ trial +
