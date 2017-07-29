@@ -45,58 +45,16 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
     return(datac)
 }
 
-# Multiple plot function
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-#
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
-
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-
-  numPlots = length(plots)
-
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
- if (numPlots==1) {
-    print(plots[[1]])
-
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
 
 # DATA HANDLING
 # Import data, from both Category and SingleObject
 SObj <- "SingleObject"
 Cate <- "Category"
-LT.SingObj <- read.csv(paste0("../Results/",SObj,"_LT.csv"), head=TRUE)
-LT.Cat <- read.csv(paste0("../Results/",Cate,"_LT.csv"), head=TRUE)
+LT.SingObj <- read.csv(paste0("../Results/",SObj,"_lsize5_LT.csv"), head=TRUE)
+LT.Cat <- read.csv(paste0("../Results/",Cate,"_lsize5_LT.csv"), head=TRUE)
+# Drop Simple auto-encoder (shit results)
+LT.SingObj <- LT.SingObj[LT.SingObj$model == "DMN",]
+LT.Cat <- LT.Cat[LT.Cat$model == "DMN",]
 # Create experiment variable for each dataset
 LT.SingObj$experiment <- "SingleObject"
 LT.Cat$experiment <- "Category"
@@ -109,8 +67,6 @@ LT.data$subject <- factor(LT.data$subject)
 LT.data$explo_overlap <- factor(LT.data$explo_overlap)
 LT.data$theory <- factor(LT.data$theory, labels = c("Compound Representations",
 													"Labels as Features"))
-LT.data$model <- factor(LT.data$model, labels = c("Simple Autoencoder",
-												  "Dual-Memory Network"))
 LT.data$experiment <- factor(LT.data$experiment, labels = c("Category",
 															"Single Object"))
 # Transform trial number to start at 1
@@ -127,7 +83,7 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
 										y = looking_time,
 										colour = labelled,
 										shape = labelled)) +
-				facet_grid(model~experiment+theory) +
+				facet_grid(theory~experiment) +
 				scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
 				xlab("Trial") + ylab("Looking time") + theme_bw(base_size=18) +
 				theme(panel.grid.minor.x=element_blank()) +
@@ -147,4 +103,4 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
 				geom_point(position=position_dodge(0.3),
 						   size=1.5, fill="white")
 
-ggsave("../Results/Mean+CI.pdf", plot = LT.data.plot, height = 8, width = 16)
+ggsave("../Results/Mean+CI_lsize5.pdf", plot = LT.data.plot, height = 8, width = 9)
