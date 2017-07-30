@@ -18,12 +18,12 @@ LT.Cat <- LT.Cat[LT.Cat$model == "DMN",]
 # Create experiment variable for each dataset
 LT.SingObj$experiment <- "SingleObject"
 LT.Cat$experiment <- "Category"
-# Select training sample
-LT.SingObj.training <- LT.SingObj[LT.SingObj$subject < 160,]
-LT.Cat.training <- LT.Cat[LT.Cat$subject < 160,]
 # Increment subject from Cat to not overlap with SingObj
 n_subjects <- tail(LT.SingObj$subject, n=1) + 1
 LT.Cat.training$subject <- LT.Cat.training$subject + n_subjects
+# Select training sample
+LT.SingObj.training <- LT.SingObj[LT.SingObj$subject < 160,]
+LT.Cat.training <- LT.Cat[LT.Cat$subject < 160 + n_subjects,]
 # Set all factor variables to factors, with labels if meaningful
 LT.SingObj.training$subject <- factor(LT.SingObj.training$subject)
 LT.SingObj.training$explo_overlap <- factor(LT.SingObj.training$explo_overlap)
@@ -94,12 +94,14 @@ LT.fixed <- LT.3_way
 
 # GLOBAL MODEL -- RANDOM EFFECTS
 LT.random.0 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
-LT.random.2 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
-LT.random.3 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-LT.random.4 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
-LT.random.5 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
-LT.random.6 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.random.1 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
+LT.random.2 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
+LT.random.3 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
+LT.random.4 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
+LT.random.5 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.random.6 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
 LT.random.comparison <- anova(LT.random.0,
+							  LT.random.1,
 							  LT.random.2,
 							  LT.random.3,
 							  LT.random.4,
@@ -140,21 +142,27 @@ LT.SingObj.3_way.comparison <- anova(LT.SingObj.2_way,
 print(LT.SingObj.3_way.comparison)
 LT.SingObj.fixed <- LT.SingObj.2_way
 
-# GLOBAL MODEL -- RANDOM EFFECTS
+# SINGLE OBJECT MODEL -- RANDOM EFFECTS
 LT.SingObj.random.0 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
-LT.SingObj.random.2 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
-LT.SingObj.random.3 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-LT.SingObj.random.4 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
-LT.SingObj.random.5 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
-LT.SingObj.random.6 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.SingObj.random.1 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
+LT.SingObj.random.2 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
+LT.SingObj.random.3 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
+LT.SingObj.random.4 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
+LT.SingObj.random.5 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.SingObj.random.6 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
 LT.SingObj.random.comparison <- anova(LT.SingObj.random.0,
-							  LT.SingObj.random.2,
-							  LT.SingObj.random.3,
-							  LT.SingObj.random.4,
-							  LT.SingObj.random.5,
-							  LT.SingObj.random.6)
+									  LT.SingObj.random.1,
+									  LT.SingObj.random.2,
+									  LT.SingObj.random.3,
+									  LT.SingObj.random.4,
+									  LT.SingObj.random.5,
+									  LT.SingObj.random.6)
 print(LT.SingObj.random.comparison)
 LT.SingObj.final <- LT.SingObj.random.6
+
+# SINGLE OBJECT MODEL -- MAKE PREDICTIONS
+LT.SingObj$fit <- predict(LT.SingObj.final)
+write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
 
 # CATEGORY MODEL -- FIXED EFFECTS
 # Test main effects against intercept only
@@ -190,16 +198,22 @@ LT.Cat.fixed <- LT.Cat.2_way
 
 # GLOBAL MODEL -- RANDOM EFFECTS
 LT.Cat.random.0 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
-LT.Cat.random.2 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
-LT.Cat.random.3 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-LT.Cat.random.4 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
-LT.Cat.random.5 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
-LT.Cat.random.6 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.Cat.random.1 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
+LT.Cat.random.2 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
+LT.Cat.random.3 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
+LT.Cat.random.4 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
+LT.Cat.random.5 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
+LT.Cat.random.6 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
 LT.Cat.random.comparison <- anova(LT.Cat.random.0,
-							  LT.Cat.random.2,
-							  LT.Cat.random.3,
-							  LT.Cat.random.4,
-							  LT.Cat.random.5,
-							  LT.Cat.random.6)
+								  LT.Cat.random.1,
+								  LT.Cat.random.2,
+								  LT.Cat.random.3,
+								  LT.Cat.random.4,
+								  LT.Cat.random.5,
+								  LT.Cat.random.6)
 print(LT.Cat.random.comparison)
 LT.Cat.final <- LT.Cat.random.6
+
+# CATEGORY MODEL -- MAKE PREDICTIONS
+LT.Cat$fit <- predict(LT.Cat.final)
+write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
