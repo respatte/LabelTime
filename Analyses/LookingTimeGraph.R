@@ -48,10 +48,8 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 
 # DATA HANDLING
 # Import data, from both Category and SingleObject
-SObj <- "SingleObject"
-Cate <- "Category"
-LT.SingObj <- read.csv(paste0("../Results/",SObj,"_lsize5_LT.csv"), head=TRUE)
-LT.Cat <- read.csv(paste0("../Results/",Cate,"_lsize5_LT.csv"), head=TRUE)
+LT.SingObj <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
+LT.Cat <- read.csv("../Results/Category_LT.csv", head=TRUE)
 # Drop Simple auto-encoder (shit results)
 LT.SingObj <- LT.SingObj[LT.SingObj$model == "DMN",]
 LT.Cat <- LT.Cat[LT.Cat$model == "DMN",]
@@ -59,7 +57,11 @@ LT.Cat <- LT.Cat[LT.Cat$model == "DMN",]
 LT.SingObj$experiment <- "SingleObject"
 LT.Cat$experiment <- "Category"
 # Increment subject from Cat to not overlap with SingObj
-LT.Cat$subject <- LT.Cat$subject + (tail(LT.SingObj$subject, n=1) + 1)
+n_subjects <- tail(LT.SingObj$subject, n=1) + 1
+LT.Cat$subject <- LT.Cat$subject + n_subjects
+# Select subjects (if more than 40 per condition)
+LT.SingObj <- LT.SingObj[LT.SingObj$subject < 160,]
+LT.Cat <- LT.Cat[LT.Cat$subject < 160 + n_subjects,]
 # Merge both datasets
 LT.data <- rbind(LT.SingObj, LT.Cat)
 # Set all factor variables to factors, with labels if meaningful
@@ -73,9 +75,18 @@ LT.data$experiment <- factor(LT.data$experiment, labels = c("Category",
 LT.data$trial <- LT.data$trial + 1
 # Summarising data for mean+CI graph
 LT.data.sum <- summarySE(LT.data, measurevar="looking_time",
-								groupvars=c("labelled","model",
-											"theory","trial","experiment"),
-								conf.interval=.89)
+						 groupvars=c("labelled", "theory", "trial",
+									 "experiment"),
+						 conf.interval=.89)
+#LT.sum <- merge(LT.data.sum, LT.fitted.sum)
+LT.SingObj.sum <- summarySE(LT.data[LT.data$experiment=="Single Object",],
+							measurevar="looking_time",
+							groupvars=c("labelled", "theory", "trial"),
+							conf.interval=.89)
+LT.Cat.sum <- summarySE(LT.data[LT.data$experiment=="Category",],
+						measurevar="looking_time",
+						groupvars=c("labelled", "theory", "trial"),
+						conf.interval=.89)
 
 # GENERATING GRAPHS
 # Graph from data (not models), mean and error bars (CI)
@@ -103,4 +114,62 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
 				geom_point(position=position_dodge(0.3),
 						   size=1.5, fill="white")
 
-ggsave("../Results/Mean+CI_lsize5.pdf", plot = LT.data.plot, height = 8, width = 9)
+ggsave("../Results/Mean+CI.pdf", plot = LT.data.plot, height = 8, width = 9)
+
+# Graph for Single Object only
+LT.data.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
+										   y = looking_time,
+										   colour = labelled,
+										   shape = labelled)) +
+				facet_grid(theory~.) +
+				scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
+				xlab("Trial") + ylab("Looking time") + theme_bw(base_size=18) +
+				theme(panel.grid.minor.x=element_blank(),
+					  legend.position="top") +
+				scale_fill_brewer(palette = "Dark2") +
+				scale_shape_manual(name = "Condition",
+								   breaks = c("label","no_label"),
+								   labels = c("label","no label"),
+								   values = c(21,24)) +
+				scale_colour_discrete(name = "Condition",
+									  breaks = c("label","no_label"),
+									  labels = c("label","no label")) +
+				geom_line(position=position_dodge(0.3)) +
+				geom_errorbar(aes(ymin=looking_time-ci,
+								  ymax=looking_time+ci),
+							  colour="black", width=.2,
+							  position=position_dodge(0.3)) +
+				geom_point(position=position_dodge(0.3),
+						   size=1.5, fill="white")
+
+ggsave("../Results/Mean+CI_SingleObject.pdf", plot = LT.data.plot,
+	   height = 8, width = 5)
+
+# Graph from data (not models), mean and error bars (CI)
+LT.data.plot <- ggplot(LT.Cat.sum, aes(x = trial,
+									   y = looking_time,
+									   colour = labelled,
+									   shape = labelled)) +
+				facet_grid(theory~.) +
+				scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
+				xlab("Trial") + ylab("Looking time") + theme_bw(base_size=18) +
+				theme(panel.grid.minor.x=element_blank(),
+					  legend.position="top") +
+				scale_fill_brewer(palette = "Dark2") +
+				scale_shape_manual(name = "Condition",
+								   breaks = c("label","no_label"),
+								   labels = c("label","no label"),
+								   values = c(21,24)) +
+				scale_colour_discrete(name = "Condition",
+									  breaks = c("label","no_label"),
+									  labels = c("label","no label")) +
+				geom_line(position=position_dodge(0.3)) +
+				geom_errorbar(aes(ymin=looking_time-ci,
+								  ymax=looking_time+ci),
+							  colour="black", width=.2,
+							  position=position_dodge(0.3)) +
+				geom_point(position=position_dodge(0.3),
+						   size=1.5, fill="white")
+
+ggsave("../Results/Mean+CI_Category.pdf", plot = LT.data.plot,
+	   height = 8, width = 5)

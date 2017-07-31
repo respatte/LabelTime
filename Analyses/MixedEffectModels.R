@@ -20,21 +20,18 @@ LT.SingObj$experiment <- "SingleObject"
 LT.Cat$experiment <- "Category"
 # Increment subject from Cat to not overlap with SingObj
 n_subjects <- tail(LT.SingObj$subject, n=1) + 1
-LT.Cat.training$subject <- LT.Cat.training$subject + n_subjects
+LT.Cat$subject <- LT.Cat$subject + n_subjects
+# Set all factor variables to factors, with labels if meaningful
+LT.SingObj$explo_overlap <- factor(LT.SingObj$explo_overlap)
+LT.SingObj$theory <- factor(LT.SingObj$theory,
+							labels = c("Compound Representations",
+									   "Labels as Features"))
+LT.Cat$explo_overlap <- factor(LT.Cat$explo_overlap)
+LT.Cat$theory <- factor(LT.Cat$theory, labels = c("Compound Representations",
+												  "Labels as Features"))
 # Select training sample
 LT.SingObj.training <- LT.SingObj[LT.SingObj$subject < 160,]
 LT.Cat.training <- LT.Cat[LT.Cat$subject < 160 + n_subjects,]
-# Set all factor variables to factors, with labels if meaningful
-LT.SingObj.training$subject <- factor(LT.SingObj.training$subject)
-LT.SingObj.training$explo_overlap <- factor(LT.SingObj.training$explo_overlap)
-LT.SingObj.training$theory <- factor(LT.SingObj.training$theory,
-									 labels = c("Compound Representations",
-												"Labels as Features"))
-LT.Cat.training$subject <- factor(LT.Cat.training$subject)
-LT.Cat.training$explo_overlap <- factor(LT.Cat.training$explo_overlap)
-LT.Cat.training$theory <- factor(LT.Cat.training$theory,
-								 labels = c("Compound Representations",
-											"Labels as Features"))
 # Merge both datasets
 LT.training <- rbind(LT.SingObj.training, LT.Cat.training)
 LT.training$experiment <- factor(LT.training$experiment,
@@ -161,7 +158,7 @@ print(LT.SingObj.random.comparison)
 LT.SingObj.final <- LT.SingObj.random.6
 
 # SINGLE OBJECT MODEL -- MAKE PREDICTIONS
-LT.SingObj$fit <- predict(LT.SingObj.final)
+LT.SingObj$fit <- predict(LT.SingObj.final, newdata=LT.SingObj, re.form=NA)
 write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
 
 # CATEGORY MODEL -- FIXED EFFECTS
@@ -215,5 +212,5 @@ print(LT.Cat.random.comparison)
 LT.Cat.final <- LT.Cat.random.6
 
 # CATEGORY MODEL -- MAKE PREDICTIONS
-LT.Cat$fit <- predict(LT.Cat.final)
+LT.Cat$fit <- predict(LT.Cat.final, newdata=LT.Cat, re.form=NA)
 write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
