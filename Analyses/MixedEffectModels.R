@@ -161,6 +161,39 @@ LT.SingObj.final <- LT.SingObj.random.6
 LT.SingObj$fit <- predict(LT.SingObj.final, newdata=LT.SingObj, re.form=NA)
 write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
 
+# SINGLE OBJECT PER THEORY -- MAIN EFFECTS
+# Create sub-datasets
+LT.SingObj.LaF <- LT.SingObj.training[LT.SingObj.training$theory == "Labels as Features",]
+LT.SingObj.CR <- LT.SingObj.training[LT.SingObj.training$theory == "Compound Representations",]
+# All effects seen in SingObj model, for LaF
+LT.SingObj.LaF.0 <- lmer(looking_time ~ 1 +
+						 (trial*labelled | subject),
+						 data = LT.SingObj.LaF
+						 )
+LT.SingObj.LaF.1 <- update(LT.SingObj.LaF.0, . ~ . + trial)
+LT.SingObj.LaF.2 <- update(LT.SingObj.LaF.0, . ~ . + trial:labelled)
+LT.SingObj.LaF.3 <- update(LT.SingObj.LaF.0, . ~ . + trial*labelled)
+LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.0,
+								   LT.SingObj.LaF.1,
+								   LT.SingObj.LaF.2,
+								   LT.SingObj.LaF.3)
+print(LT.SingObj.LaF.comparison)
+LT.SingObj.LaF.final <- LT.SingObj.LaF.3
+# All effects seen in SingObj model, for CR
+LT.SingObj.CR.0 <- lmer(looking_time ~ 1 +
+						(trial*labelled | subject),
+						data = LT.SingObj.CR
+						)
+LT.SingObj.CR.1 <- update(LT.SingObj.CR.0, . ~ . + trial)
+LT.SingObj.CR.2 <- update(LT.SingObj.CR.0, . ~ . + trial:labelled)
+LT.SingObj.CR.3 <- update(LT.SingObj.CR.0, . ~ . + trial*labelled)
+LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.0,
+								  LT.SingObj.CR.1,
+								  LT.SingObj.CR.2,
+								  LT.SingObj.CR.3)
+print(LT.SingObj.CR.comparison)
+LT.SingObj.CR.final <- LT.SingObj.CR.1
+
 # CATEGORY MODEL -- FIXED EFFECTS
 # Test main effects against intercept only
 LT.Cat.intercept <- lmer(looking_time ~ 1 +
@@ -193,7 +226,7 @@ LT.Cat.3_way.comparison <- anova(LT.Cat.2_way,
 print(LT.Cat.3_way.comparison)
 LT.Cat.fixed <- LT.Cat.2_way
 
-# GLOBAL MODEL -- RANDOM EFFECTS
+# CATEGORY MODEL -- RANDOM EFFECTS
 LT.Cat.random.0 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
 LT.Cat.random.1 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
 LT.Cat.random.2 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
@@ -214,3 +247,36 @@ LT.Cat.final <- LT.Cat.random.6
 # CATEGORY MODEL -- MAKE PREDICTIONS
 LT.Cat$fit <- predict(LT.Cat.final, newdata=LT.Cat, re.form=NA)
 write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
+
+# SINGLE OBJECT PER THEORY -- MAIN EFFECTS
+# Create sub-datasets
+LT.Cat.LaF <- LT.Cat.training[LT.Cat.training$theory == "Labels as Features",]
+LT.Cat.CR <- LT.Cat.training[LT.Cat.training$theory == "Compound Representations",]
+# All effects seen in SingObj model, for LaF
+LT.Cat.LaF.0 <- lmer(looking_time ~ 1 +
+					 (trial*labelled | subject),
+					 data = LT.Cat.LaF
+					 )
+LT.Cat.LaF.1 <- update(LT.Cat.LaF.0, . ~ . + trial)
+LT.Cat.LaF.2 <- update(LT.Cat.LaF.0, . ~ . + trial:labelled)
+LT.Cat.LaF.3 <- update(LT.Cat.LaF.0, . ~ . + trial*labelled)
+LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.0,
+							   LT.Cat.LaF.1,
+							   LT.Cat.LaF.2,
+							   LT.Cat.LaF.3)
+print(LT.Cat.LaF.comparison)
+LT.Cat.LaF.final <- LT.Cat.LaF.1
+ All effects seen in SingObj model, for CR
+LT.Cat.CR.0 <- lmer(looking_time ~ 1 +
+					(trial*labelled | subject),
+					data = LT.Cat.CR
+					)
+LT.Cat.CR.1 <- update(LT.Cat.CR.0, . ~ . + trial)
+LT.Cat.CR.2 <- update(LT.Cat.CR.0, . ~ . + trial:labelled)
+LT.Cat.CR.3 <- update(LT.Cat.CR.0, . ~ . + trial*labelled)
+LT.Cat.CR.comparison <- anova(LT.Cat.CR.0,
+							  LT.Cat.CR.1,
+							  LT.Cat.CR.2,
+							  LT.Cat.CR.3)
+print(LT.Cat.CR.comparison)
+LT.Cat.CR.final <- LT.Cat.CR.1
