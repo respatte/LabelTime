@@ -55,7 +55,7 @@ class Subject(object):
 	"""
 	
 	def __init__(self, proto, exploration, theory, l_size, h_ratio, lrn_rate,
-				 momentum=None, model="BPN"):
+				 momentum=None, model="DMN"):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
 		See class documentation for more details about parameters.
@@ -173,13 +173,13 @@ class Subject(object):
 			# Get shape from selected weight matrix
 			# Since this information takes the bias weights into account,
 			# we don't need to deal with presence/absence of bias here.
-			m, n = self.impaired.weights[c].shape
+			m, n = self.impaired.weights[0][c].shape
 			if method:
 				# Add the evaluated method to the matrix
-				self.impaired.weights[c] += eval(method)
+				self.impaired.weights[0][c] += eval(method)
 			else:
 				# Reinitialise the wmatrix
-				self.impaired.weights[c] = self.net.init_weights_matrix(m, n,
+				self.impaired.weights[0][c] = self.net.init_weights_matrix(m, n,
 																	 bias=False)
 		if inertia:
 			# Reset last inertia to zeros for all layers
@@ -283,7 +283,7 @@ class SingleObjectSubject(Subject):
 	"""
 
 	def __init__(self, stims, exploration, theory, l_size, h_ratio, lrn_rate,
-				 momentum=None, model="BPN"):
+				 momentum=None, model="DMN"):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
 		See class documentation for more details about parameters.
@@ -387,7 +387,7 @@ class CategorySubject(Subject):
 	"""
 	
 	def __init__(self, proto, stims, theory, l_size, h_ratio, lrn_rate,
-				 momentum, model):
+				 momentum, model="DMN"):
 		"""Initialise a simple labeltime subject for K&W_inprogress.
 		
 		See class documentation for more details about parameters.

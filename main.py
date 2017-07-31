@@ -35,29 +35,26 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 	return results
 
 def main():
-	for l_size in range(1,9):
-		total = time.time()
-		warnings.filterwarnings("ignore")
-		# Run SingleObject experiment with various exploration ratios
-		explo_ratios = [.25,.375,.5,.625,.75]
-		t_results = {}
-		f_results = {}
-		for i, explo_ratio in enumerate(explo_ratios):
-			results_SO = run_subjects(128, "SingleObject", i, explo_ratio,
-									  verbose=True, l_size=l_size)
-			t_results.update(results_SO[1])
-			f_results.update(results_SO[0])
-		Experiment.output_data(f_results,
-							   "Results/SingleObject_lsize"+str(l_size))
-		# Run Category experiment
-		results_C = run_subjects(128*5, "Category", verbose=True)
-		Experiment.output_data(results_C[0],
-							   "Results/Category_lsize"+str(l_size))
-		total = time.gmtime(time.time() - total)
-		print("="*27,
-			  "Total run time:",
-			  time.strftime("%H:%M:%S",total),
-			  "="*27)
+	total = time.time()
+	warnings.filterwarnings("ignore")
+	# Run SingleObject experiment with various exploration ratios
+	explo_ratios = [.25,.375,.5,.625,.75]
+	t_results = {}
+	f_results = {}
+	for i, explo_ratio in enumerate(explo_ratios):
+		results_SO = run_subjects(16, "SingleObject", i, explo_ratio,
+								  verbose=True, l_size=5)
+		t_results.update(results_SO[1])
+		f_results.update(results_SO[0])
+	Experiment.output_data(f_results, "Results/SingleObject")
+	# Run Category experiment
+	results_C = run_subjects(16*5, "Category", verbose=True, l_size=5)
+	Experiment.output_data(results_C[0], "Results/Category")
+	total = time.gmtime(time.time() - total)
+	print("="*27,
+		  "Total run time:",
+		  time.strftime("%H:%M:%S",total),
+		  "="*27)
 	return (results_SO, results_C)
 
 if __name__ == "__main__":

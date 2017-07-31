@@ -17,8 +17,8 @@ class Experiment(object):
 			The first value is the overlap ratio for physical values of
 			the stimuli. The second value is the overlap ratio in the
 			exploration of the stimuli (passed on to each subject).
-		n_subjects -- number of subjects to run in total per model (LaF, CR)
-			Is expected to be a multiple of 16, for counterbalancing purposes.
+		n_subjects -- number of subjects to run in total per theory (LaF, CR)
+			Is expected to be a multiple of 8, for counterbalancing purposes.
 		start_subject -- the subject number for the first subject
 			Used if the experiment is ran in multiple bashes.
 	
@@ -55,10 +55,9 @@ class Experiment(object):
 		self.h_ratio = h_ratio
 		# Theory list
 		self.theories = ["LaF", "CR"]
-		# Model list, learning rates and momenta list for each model
-		self.models = ["BPN","DMN"]
-		self.lrn_rates = [.1, (.001, .1)]
-		self.momenta = [.05, (.0005, .05)]
+		# Learning rates and momenta list
+		self.lrn_rates = (.001, .1)
+		self.momenta = (.0005, .05)
 		# Get meaningful short variables from input
 		# l_ -> label_
 		# p_ -> physical
@@ -114,8 +113,7 @@ class Experiment(object):
 		# 	- labbeled item (0=first item labelled, 1=second item labelled)
 		# 	- first familiarisation item (1=labelled, 0=unlabelled)
 		#	- theory (0=LaF, 1=CR)
-		#	- model (0=BPN, 1=DMN)
-		s_type = format(subject_i%16,'04b') # type: str
+		s_type = format(subject_i%8,'03b') # type: str
 		# Get background stimuli
 		bg_stims = self.create_subject_stims(s_type)
 		# Create subjects
@@ -205,14 +203,12 @@ class Experiment(object):
 		# Define column labels
 		c_labels_LT = ','.join(["subject",
 								"theory",
-								"model",
 								"explo_overlap",
 								"trial",
 								"labelled",
 								"looking_time"])
 		c_labels_errors = ','.join(["subject",
 									"theory",
-									"model",
 									"explo_overlap",
 									"trial",
 									"labelled",
@@ -225,14 +221,12 @@ class Experiment(object):
 		n_trials = len(data[k][0])
 		# Prepare meaningful coding for parameters
 		theories = ("LaF", "CR")
-		models = ("BPN", "DMN")
 		labelled = ("no_label", "label")
 		pres_time = 100
 		for subject in data:
 			# Extract information from subject number
-			s_type = format(subject%16,'04b')
+			s_type = format(subject%8,'03b')
 			theory = int(s_type[2])
-			model = int(s_type[3])
 			first_fam = int(s_type[1])
 			for trial in range(n_trials):
 				for stim in range(2):
@@ -241,7 +235,6 @@ class Experiment(object):
 					# Create row for looking time results
 					row = [str(subject),
 						   theories[theory],
-						   models[model],
 						   str(data[subject][2]),
 						   str(trial),
 						   labelled[labelled_stim],
@@ -257,7 +250,6 @@ class Experiment(object):
 						# Create row for error results
 						row = [str(subject),
 							   theories[theory],
-							   models[model],
 							   str(data[subject][2]),
 							   str(trial),
 							   labelled[labelled_stim],
@@ -346,12 +338,10 @@ class SingleObjectExperiment(Experiment):
 	def create_subject(self, bg_stims, s_type):
 		"""Create subject for experiment depending on subject number."""
 		theory = int(s_type[2])
-		model = int(s_type[3])
 		s = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
 								self.theories[theory], self.l_size,
 								self.h_ratio,
-								self.lrn_rates[model], self.momenta[model],
-								self.models[model])
+								self.lrn_rates, self.momenta)
 		return s
 
 class CategoryExperiment(Experiment):
@@ -437,12 +427,11 @@ class CategoryExperiment(Experiment):
 	def create_subject(self, bg_stims, s_type):
 		"""Create subject for experiment depending on subject number."""
 		theory = int(s_type[2])
-		model = int(s_type[3])
 		# Use test_stims instead of p_proto as label is already included
 		# (important for size only, not used in learning)
 		s = CategorySubject(self.test_stims, bg_stims, self.theories[theory],
-							self.l_size, self.h_ratio, self.lrn_rates[model],
-							self.momenta[model], self.models[model])
+							self.l_size, self.h_ratio, self.lrn_rates,
+							self.momenta)
 		return s
 	
 	def generate_category(self, prototype, n_exemplars, cat_method):
