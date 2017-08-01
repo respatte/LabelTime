@@ -56,9 +56,6 @@ LT.Cat$experiment <- "Category"
 # Increment subject from Cat to not overlap with SingObj
 n_subjects <- tail(LT.SingObj$subject, n=1) + 1
 LT.Cat$subject <- LT.Cat$subject + n_subjects
-# Select subjects (if more than 40 per condition)
-LT.SingObj <- LT.SingObj[LT.SingObj$subject < 160,]
-LT.Cat <- LT.Cat[LT.Cat$subject < 160 + n_subjects,]
 # Merge both datasets
 LT.data <- rbind(LT.SingObj, LT.Cat)
 # Set all factor variables to factors, with labels if meaningful
