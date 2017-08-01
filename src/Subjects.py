@@ -393,6 +393,13 @@ class CategorySubject(Subject):
 		differing times.
 		The whole set of stimuli from both categories is presented for
 		n_days times, alternating between stimuli fron each category.
+
+		Return a dictionary of hidden representations at specified
+		time-steps, with structure as follows:
+		- keys = step (last is at the end of training)
+			- dict, keys = "LTM", "STM"
+				- category sublists (0:labelled category, 1:unlabelled category)
+					- list of hidden representations (ndarrays)
 		
 		"""
 		mu_t, sigma_t, rec_epoch = bg_parameters

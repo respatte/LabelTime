@@ -119,7 +119,7 @@ class Experiment(object):
 		# Create subjects
 		s = self.create_subject(bg_stims, s_type)
 		# Perform background training on subject
-		s.bg_training(self.bg_parameters)
+		t_results = s.bg_training(self.bg_parameters)
 		t_result = s
 		# Impair subject recovery memory (hidden to output)
 		s.impair_memory([1], method)
@@ -142,7 +142,7 @@ class Experiment(object):
 								  self.threshold,
 								  self.n_trials)
 		# Adding a tuple with one value for exploration overlap ratio
-		return (f_result, self.e_ratio)
+		return (f_result, self.e_ratio), t_results
 		
 	def run_experiment(self, method=None):
 		"""Run a full experiment.
@@ -167,13 +167,15 @@ class Experiment(object):
 			pool.close()
 			pool.join()
 		f_results = {}
+		t_results = {}
 		for s in range(self.start_subject,
 					   self.start_subject + self.n_subjects):
-			f_results[s] = results_async[s].get()
-		return f_results
+			f_results[s] = results_async[s].get()[0]
+			t_results[s] = results_async[s].get()[1]
+		return f_results, t_results
 	
-	def output_data(data, filename):
-		"""Write data from the experiment into a filename.csv file.
+	def output_fam_data(data, filename):
+		"""Write data from familiarisation into a filename.csv file.
 
 		Class-wide (not instance-specific) method.
 		
@@ -228,6 +230,73 @@ class Experiment(object):
 		# Write str results into two files with meaningful extensions
 		with open(filename+"_LT.csv", 'w') as f:
 			f.write(data_LT + "\n")
+
+	def output_train_data(data, filename):
+		"""Write data from training into a filename.csv file.
+
+		Class-wide (not instance-specific) method.
+		
+		data is a dictionary structured as follows:
+		- keys = subject numbers
+			- hidden representations as returned per CategorySubject.bg_training
+		Number of trials is assumed to be fixed.
+		Subject are ordered so that subject%4 in binary codes for
+			- first value: labbeled item (0=first item, 1=second item)
+			- second value: first familiarisation item (1=labelled,0=unlabelled)
+		
+		"""
+		# Create general column labels
+		c_labels = ','.join(["subject",
+							 "theory",
+							 "step",
+							 "labelled",
+							 "exemplar"])
+		# Get list of recorded steps for subject 0
+		k = list(data.keys())[0]
+		steps = list(data[k].keys())
+		# Get dimension of hidden representations for LTM/STM
+		dims_LTM = data[0][steps[0]]["LTM"][0][0].size
+		dims_STM = data[0][steps[0]]["STM"][0][0].size
+		# Create dimension column names
+		dims_labels_LTM = ["dim" + str(i) for i in range(dims_LTM)]
+		dims_labels_STM = ["dim" + str(i) for i in range(dims_STM)]
+		# Create final column labels
+		rows_LTM = [','.join([c_labels] + dims_labels_LTM)]
+		rows_STM = [','.join([c_labels] + dims_labels_STM)]
+		# Prepare meaningful coding for parameters
+		theories = ("LaF", "CR")
+		labelled = ("label", "no_label")
+		for subject in data:
+			# Extract information from subject number
+			s_type = format(subject%8,'03b')
+			theory = int(s_type[2])
+			for step in data[subject]:
+				for category in range(2):
+					for exemplar in range(4):
+						# Create row for hidden representation results
+						glob = [str(subject),
+								theories[theory],
+								str(step),
+								labelled[category],
+								str(exemplar + 4*category),
+								]
+						print(subject,step)
+						LTM = [str(data[subject][step]["LTM"]\
+									   [category][exemplar][0,j])
+							   for j in range(dims_LTM)]
+						STM = [str(data[subject][step]["STM"]\
+									   [category][exemplar][0,j])
+							   for j in range(dims_STM)]
+						rows_LTM.append(','.join(glob + LTM))
+						rows_STM.append(','.join(glob + STM))
+		# Join all rows with line breaks
+		data_LTM = '\n'.join(rows_LTM)
+		data_STM = '\n'.join(rows_STM)
+		# Write str results into two files with meaningful extensions
+		with open(filename+"_hidden_LTM.csv", 'w') as f:
+			f.write(data_LTM + "\n")
+		with open(filename+"_hidden_STM.csv", 'w') as f:
+			f.write(data_STM + "\n")
 	
 class SingleObjectExperiment(Experiment):
 	"""Class computing a full labeltime experiment with single objects.

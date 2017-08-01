@@ -37,12 +37,13 @@ def main():
 	explo_ratios = [.25,.375,.5,.625,.75]
 	results_SO = {}
 	for i, explo_ratio in enumerate(explo_ratios):
-		results_SO.update(run_subjects(8, "SingleObject", i, explo_ratio,
-									   verbose=True))
-	Experiment.output_data(results_SO, "Results/SingleObject")
+		results_SO.update(run_subjects(64, "SingleObject", i, explo_ratio,
+									   verbose=True)[0])
+	Experiment.output_fam_data(results_SO, "../Results/SingleObject")
 	# Run Category experiment
-	results_C = run_subjects(8, "Category", verbose=True)
-	Experiment.output_data(results_C, "Results/Category")
+	results_C = run_subjects(64*5, "Category", verbose=True)
+	Experiment.output_fam_data(results_C[0], "../Results/Category")
+	Experiment.output_train_data(results_C[1], "../Results/Category")
 	total = time.gmtime(time.time() - total)
 	print("="*27,
 		  "Total run time:",
