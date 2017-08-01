@@ -50,9 +50,6 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 # Import data, from both Category and SingleObject
 LT.SingObj <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
 LT.Cat <- read.csv("../Results/Category_LT.csv", head=TRUE)
-# Drop Simple auto-encoder (shit results)
-LT.SingObj <- LT.SingObj[LT.SingObj$model == "DMN",]
-LT.Cat <- LT.Cat[LT.Cat$model == "DMN",]
 # Create experiment variable for each dataset
 LT.SingObj$experiment <- "SingleObject"
 LT.Cat$experiment <- "Category"
