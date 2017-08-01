@@ -388,7 +388,7 @@ class CategoryExperiment(Experiment):
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios, n_subjects,
 				 start_subject, theta_t=(400, 10) , pres_time=10, pps=4,
-				 threshold=1e-3, n_trials=8, h_ratio=19/24,
+				 rec_epoch=100, threshold=1e-3, n_trials=8, h_ratio=19/24,
 				 n_exemplars=4, cat_method="continuous"):
 		"""Initialise a single-object labeltime experiment.
 		
@@ -399,7 +399,7 @@ class CategoryExperiment(Experiment):
 							n_subjects, start_subject, pres_time*pps, threshold,
 							n_trials, h_ratio)
 		mu_t, sigma_t = theta_t[0]*pps, theta_t[1]*pps
-		self.bg_parameters = mu_t, sigma_t
+		self.bg_parameters = mu_t, sigma_t, rec_epoch
 		self.cat_method = cat_method
 		self.n_exemplars = n_exemplars
 		self.categories = [self.generate_category(self.p_proto[0],

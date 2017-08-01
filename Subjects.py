@@ -401,10 +401,19 @@ class CategorySubject(Subject):
 		n_days times, alternating between stimuli fron each category.
 		
 		"""
-		mu_t, sigma_t = bg_parameters
+		mu_t, sigma_t, rec_epoch = bg_parameters
 		n_steps = round(np.random.normal(mu_t, sigma_t))
+		h_reps = {}
 		for step in range(n_steps):
+			if not (1+step) % rec_epoch:
+				h_reps[1+step] = {"LTM":[[],[]], "STM":[[],[]]}
 			for stim in range(self.n_stims):
 				self.net.run(self.stims[0][stim],self.goals[0][stim])
+				if not (1+step) % rec_epoch:
+					h_reps[1+step]["LTM"][0].append(self.net.LTM.neurons[1])
+					h_reps[1+step]["STM"][0].append(self.net.STM.neurons[1])
 				self.net.run(self.stims[1][stim],self.goals[1][stim])
-	
+				if not (1+step) % rec_epoch:
+					h_reps[1+step]["LTM"][1].append(self.net.LTM.neurons[1])
+					h_reps[1+step]["STM"][1].append(self.net.STM.neurons[1])
+		return h_reps
