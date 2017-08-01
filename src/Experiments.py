@@ -270,13 +270,14 @@ class Experiment(object):
 			# Extract information from subject number
 			s_type = format(subject%8,'03b')
 			theory = int(s_type[2])
+			max_step = max(data[subject])
 			for step in data[subject]:
 				for category in range(2):
 					for exemplar in range(4):
 						# Create row for hidden representation results
 						glob = [str(subject),
 								theories[theory],
-								str(step),
+								str(step * (step<maxstep)),
 								labelled[category],
 								str(exemplar + 4*category),
 								]
