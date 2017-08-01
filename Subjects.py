@@ -209,25 +209,19 @@ class Subject(object):
 		
 		"""
 		looking_times = []
-		errors = []
 		for trial in range(n_trials):
-			errors_trial = []
 			looking_times_trial = []
 			for stim in range(len(test_stims)):
-				errors_stim = []
 				time_left = pres_time
 				error = 1
 				while time_left > 0 and error > threshold:
 					# Goal specification necessarry for CR models
 					self.net.run(test_stims[stim], test_goals[stim])
 					error = np.linalg.norm(self.net.error)
-					errors_stim.append(error)
 					time_left -= 1
-				errors_trial.append(errors_stim)
 				looking_times_trial.append(pres_time - time_left)
-			errors.append(errors_trial)
 			looking_times.append(looking_times_trial)
-		return (looking_times, errors)
+		return looking_times
 
 class SingleObjectSubject(Subject):
 	"""Class computing a participant for the first labeltime study.
@@ -405,15 +399,15 @@ class CategorySubject(Subject):
 		n_steps = round(np.random.normal(mu_t, sigma_t))
 		h_reps = {}
 		for step in range(n_steps):
-			if not (1+step) % rec_epoch:
+			if not (1+step) % rec_epoch or step==n_steps-1:
 				h_reps[1+step] = {"LTM":[[],[]], "STM":[[],[]]}
 			for stim in range(self.n_stims):
 				self.net.run(self.stims[0][stim],self.goals[0][stim])
-				if not (1+step) % rec_epoch:
+				if not (1+step) % rec_epoch or step==n_steps-1:
 					h_reps[1+step]["LTM"][0].append(self.net.LTM.neurons[1])
 					h_reps[1+step]["STM"][0].append(self.net.STM.neurons[1])
 				self.net.run(self.stims[1][stim],self.goals[1][stim])
-				if not (1+step) % rec_epoch:
+				if not (1+step) % rec_epoch or step==n_steps-1:
 					h_reps[1+step]["LTM"][1].append(self.net.LTM.neurons[1])
 					h_reps[1+step]["STM"][1].append(self.net.STM.neurons[1])
 		return h_reps

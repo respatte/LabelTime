@@ -142,8 +142,7 @@ class Experiment(object):
 								  self.threshold,
 								  self.n_trials)
 		# Adding a tuple with one value for exploration overlap ratio
-		f_result += (self.e_ratio,)
-		return (f_result, t_result)
+		return (f_result, self.e_ratio)
 		
 	def run_experiment(self, method=None):
 		"""Run a full experiment.
@@ -168,13 +167,10 @@ class Experiment(object):
 			pool.close()
 			pool.join()
 		f_results = {}
-		t_results = {}
 		for s in range(self.start_subject,
 					   self.start_subject + self.n_subjects):
-			tmp_results = results_async[s].get()
-			f_results[s] = tmp_results[0]
-			t_results[s] = tmp_results[1]
-		return (f_results, t_results)
+			f_results[s] = results_async[s].get()
+		return f_results
 	
 	def output_data(data, filename):
 		"""Write data from the experiment into a filename.csv file.
@@ -187,12 +183,6 @@ class Experiment(object):
 				- trial number
 					- looking time to first stimulus
 					- looking time to second stimulus
-			- errors (error of the model)
-				- trial number
-					- errors for first stimulus
-						(list of length looking time to first stimulus)
-					- errors for second stimulus
-						(list of length looking time to second stimulus)
 			- explo_ratio (exploration overlap ratio for subject)
 		Number of trials is assumed to be fixed.
 		Subject are ordered so that subject%4 in binary codes for
@@ -207,15 +197,7 @@ class Experiment(object):
 								"trial",
 								"labelled",
 								"looking_time"])
-		c_labels_errors = ','.join(["subject",
-									"theory",
-									"explo_overlap",
-									"trial",
-									"labelled",
-									"i_presentation",
-									"error"])
 		rows_LT = [c_labels_LT]
-		rows_errors = [c_labels_errors]
 		# Extract number of trials
 		k = list(data.keys())[0]
 		n_trials = len(data[k][0])
@@ -235,36 +217,17 @@ class Experiment(object):
 					# Create row for looking time results
 					row = [str(subject),
 						   theories[theory],
-						   str(data[subject][2]),
+						   str(data[subject][1]),
 						   str(trial),
 						   labelled[labelled_stim],
 						   str(data[subject][0][trial][stim])
 						   ]
 					rows_LT.append(','.join(row))
-					for pres in range(pres_time):
-						# Get error or NA if subject "looked away"
-						try:
-							res = data[subject][1][trial][stim][pres]
-						except IndexError:
-							res = "NA"
-						# Create row for error results
-						row = [str(subject),
-							   theories[theory],
-							   str(data[subject][2]),
-							   str(trial),
-							   labelled[labelled_stim],
-							   str(pres),
-							   str(res)
-							   ]
-						rows_errors.append(','.join(row))
 		# Join all rows with line breaks
 		data_LT = '\n'.join(rows_LT)
-		data_errors = '\n'.join(rows_errors)
 		# Write str results into two files with meaningful extensions
 		with open(filename+"_LT.csv", 'w') as f:
 			f.write(data_LT + "\n")
-		with open(filename+"_errors.csv", 'w') as f:
-			f.write(data_errors + "\n")
 	
 class SingleObjectExperiment(Experiment):
 	"""Class computing a full labeltime experiment with single objects.
@@ -387,7 +350,7 @@ class CategoryExperiment(Experiment):
 	"""
 	
 	def __init__(self, modality_sizes_stim, overlap_ratios, n_subjects,
-				 start_subject, theta_t=(400, 10) , pres_time=10, pps=4,
+				 start_subject, theta_t=(1050, 50) , pres_time=10, pps=4,
 				 rec_epoch=100, threshold=1e-3, n_trials=8, h_ratio=19/24,
 				 n_exemplars=4, cat_method="continuous"):
 		"""Initialise a single-object labeltime experiment.
