@@ -312,32 +312,11 @@ class SingleObjectSubject(Subject):
 		the mean total looking time to each object.
 		
 		"""
-		mu_t, sigma_t, mu_p, sigma_p = bg_parameters
-		# Computing alternating playing times
-		play_times1 = []
-		sum1 = 0
-		play_times2 = []
-		sum2 = 0
-		while not (abs(sum1-mu_t) <= sigma_t and abs(sum2-mu_t) <= sigma_t):
-			play_time1 = round(np.random.normal(mu_p, sigma_p))
-			play_time2 = round(np.random.normal(mu_p, sigma_p))
-			sum1 += play_time1
-			sum2 += play_time2
-			if sum1 > (mu_t + sigma_t) or sum2 > (mu_t + sigma_t):
-				# One of the total times is too high
-				play_times1 = [play_time1]
-				sum1 = play_time1
-				play_times2 = [play_time2]
-				sum2 = play_time2
-			else:
-				play_times1.append(play_time1)
-				play_times2.append(play_time2)
-		# Computing "play" sessions
-		for session in range(len(play_times1)):
-			for t1 in range(play_times1[session]):
-				self.net.run(self.stims[0],self.goals[0])
-			for t2 in range(play_times2[session]):
-				self.net.run(self.stims[1],self.goals[1])
+		mu_t, sigma_t = bg_parameters
+		n_steps = round(np.random.normal(mu_t, sigma_t))
+		for step in range(n_steps):
+			self.net.run(self.stims[0],self.goals[0])
+			self.net.run(self.stims[1],self.goals[1])
 
 class CategorySubject(Subject):
 	"""Class computing a participant for the second labeltime study.
@@ -422,11 +401,10 @@ class CategorySubject(Subject):
 		n_days times, alternating between stimuli fron each category.
 		
 		"""
-		n_days, mu_p, sigma_p = bg_parameters
-		for day in range(n_days*2): # Story read twice in a row each day
+		mu_t, sigma_t = bg_parameters
+		n_steps = round(np.random.normal(mu_t, sigma_t))
+		for step in range(n_steps):
 			for stim in range(self.n_stims):
-				for i in range(round(np.random.normal(mu_p, sigma_p))):
-					self.net.run(self.stims[0][stim],self.goals[0][stim])
-				for i in range(round(np.random.normal(mu_p, sigma_p))):
-					self.net.run(self.stims[1][stim],self.goals[1][stim])
+				self.net.run(self.stims[0][stim],self.goals[0][stim])
+				self.net.run(self.stims[1][stim],self.goals[1][stim])
 	

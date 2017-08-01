@@ -7,7 +7,7 @@ from multiprocessing import Pool
 from Experiments import *
 
 def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
-				 verbose=False, l_size=8):
+				 verbose=False, h_ratio=19/24):
 	if verbose:
 		t = time.time()
 		print("=" * 40)
@@ -16,15 +16,13 @@ def run_subjects(n_subjects, experiment, bash_i=0, explo_ratio=None,
 		else:
 			print("Starting runs for CategoryExperiment")
 	if experiment == "SingleObject":
-		condition = SingleObjectExperiment((l_size,10,8), (.1,explo_ratio),
+		condition = SingleObjectExperiment((5,10,8), (.1,explo_ratio),
 										   n_subjects, n_subjects*bash_i,
-										   pps=1, pres_time=40,
-										   theta_t=(4200, 40), theta_p=(1,0))
+										   h_ratio=h_ratio)
 	elif experiment == "Category":
-		condition = CategoryExperiment((l_size,10,0), (.1, 0),
+		condition = CategoryExperiment((5,10,0), (.1, 0),
 									   n_subjects, n_subjects*bash_i,
-									   pps=1, theta_p=(1, 0), n_days=700,
-									   pres_time=40)
+									   h_ratio=h_ratio)
 	noise = "np.random.uniform(.1, .3, (m,n)) * "
 	noise += "(2 * np.random.binomial(1, .5, (m,n)) - 1)"
 	reinit = None
@@ -42,13 +40,13 @@ def main():
 	t_results = {}
 	f_results = {}
 	for i, explo_ratio in enumerate(explo_ratios):
-		results_SO = run_subjects(16, "SingleObject", i, explo_ratio,
-								  verbose=True, l_size=5)
+		results_SO = run_subjects(8, "SingleObject", i, explo_ratio,
+								  verbose=True, h_ratio=.75)
 		t_results.update(results_SO[1])
 		f_results.update(results_SO[0])
 	Experiment.output_data(f_results, "Results/SingleObject")
 	# Run Category experiment
-	results_C = run_subjects(16*5, "Category", verbose=True, l_size=5)
+	results_C = run_subjects(8, "Category", verbose=True, h_ratio=.75)
 	Experiment.output_data(results_C[0], "Results/Category")
 	total = time.gmtime(time.time() - total)
 	print("="*27,

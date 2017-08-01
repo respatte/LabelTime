@@ -306,11 +306,9 @@ class SingleObjectExperiment(Experiment):
 	
 	"""
 	
-	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0,
-				 theta_t=(1050, 10), theta_p=(150, 5),
-				 pres_time=10, pps=10, threshold=1e-3, n_trials=8,
-				 h_ratio=19/24):
+	def __init__(self, modality_sizes_stim, overlap_ratios, n_subjects,
+				 start_subject, theta_t=(1050, 50), pres_time=10, pps=4,
+				 threshold=1e-3, n_trials=8, h_ratio=19/24):
 		"""Initialise a single-object labeltime experiment.
 		
 		See class documentation for more details about parameters.
@@ -320,8 +318,7 @@ class SingleObjectExperiment(Experiment):
 							n_subjects, start_subject, pres_time*pps, threshold,
 							n_trials, h_ratio)
 		mu_t, sigma_t = theta_t[0]*pps, theta_t[1]*pps
-		mu_p, sigma_p = theta_p[0]*pps, theta_p[1]*pps
-		self.bg_parameters = mu_t, sigma_t, mu_p, sigma_p
+		self.bg_parameters = mu_t, sigma_t
 		self.p_stims = self.p_proto
 		del self.p_proto
 	
@@ -366,7 +363,7 @@ class CategoryExperiment(Experiment):
 			prototypes to create a category, or 'discrete' to add discrete
 			noise (i.e. a bits are changed from 0 to 1 and vice versa).
 	
-	SingleObjectExperiment properties:
+	CategoryExperiment properties:
 		mu_p, sigma_p -- background play session time distribution
 		n_days -- number of days of background training
 		pres_time -- max number of presentations at familiarisation
@@ -381,7 +378,7 @@ class CategoryExperiment(Experiment):
 		l_stims -- label values for stimuli
 		test_stims -- full stimuli (label+physical+exploration) for test trials
 	
-	SingleObjectExperiment methods:
+	CategoryExperiment methods:
 		run_experiment -- run a ful experiment, using only class properties
 		generate_stims -- generate physical stimuli with overlap
 		create_subject_stims -- create stimuli for background training
@@ -389,11 +386,10 @@ class CategoryExperiment(Experiment):
 	
 	"""
 	
-	def __init__(self, modality_sizes_stim, overlap_ratios,
-				 n_subjects=4096, start_subject=0, theta_p=(150, 5), pps=10,
-				 n_exemplars=4,
-				 n_days=7, pres_time=10, threshold=1e-3, n_trials=8,
-				 h_ratio=19/24, cat_method="continuous"):
+	def __init__(self, modality_sizes_stim, overlap_ratios, n_subjects,
+				 start_subject, theta_t=(400, 10) , pres_time=10, pps=4,
+				 threshold=1e-3, n_trials=8, h_ratio=19/24,
+				 n_exemplars=4, cat_method="continuous"):
 		"""Initialise a single-object labeltime experiment.
 		
 		See class documentation for more details about parameters.
@@ -402,26 +398,29 @@ class CategoryExperiment(Experiment):
 		Experiment.__init__(self, modality_sizes_stim, overlap_ratios,
 							n_subjects, start_subject, pres_time*pps, threshold,
 							n_trials, h_ratio)
-		mu_p, sigma_p = theta_p[0]*pps, theta_p[1]*pps
-		self.bg_parameters = n_days, mu_p, sigma_p
+		mu_t, sigma_t = theta_t[0]*pps, theta_t[1]*pps
+		self.bg_parameters = mu_t, sigma_t
 		self.cat_method = cat_method
 		self.n_exemplars = n_exemplars
-	
+		self.categories = [self.generate_category(self.p_proto[0],
+												  self.n_exemplars,
+												  self.cat_method),
+						   self.generate_category(self.p_proto[1],
+												  self.n_exemplars,
+												  self.cat_method)]
+
 	def create_subject_stims(self, s_type):
 		"""Create stimuli for the subject depending on subject number."""
 		# Add label to one stimulus, keep labelled first in couple
 		labelled_i = int(s_type[0])
-		# Create sets of stimuli without label first
-		l_stims = self.generate_category(self.p_proto[labelled_i],
-										 self.n_exemplars, self.cat_method)
-		no_l_stims = self.generate_category(self.p_proto[1-labelled_i],
-											self.n_exemplars, self.cat_method)
 		# Add label
+		l_stims = []
+		no_l_stims = []
 		for stim in range(self.n_exemplars):
-			l_stims[stim] = np.hstack((self.l_stims[1],
-									   l_stims[stim]))
-			no_l_stims[stim] = np.hstack((self.l_stims[0],
-										  no_l_stims[stim]))
+			l_stims.append(np.hstack((self.l_stims[1],
+									  self.categories[labelled_i][stim])))
+			no_l_stims.append(np.hstack((self.l_stims[0],
+										 self.categories[1-labelled_i][stim])))
 		return (l_stims, no_l_stims)
 	
 	def create_subject(self, bg_stims, s_type):
