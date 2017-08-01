@@ -280,7 +280,6 @@ class Experiment(object):
 								labelled[category],
 								str(exemplar + 4*category),
 								]
-						print(subject,step)
 						LTM = [str(data[subject][step]["LTM"]\
 									   [category][exemplar][0,j])
 							   for j in range(dims_LTM)]
