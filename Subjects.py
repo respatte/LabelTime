@@ -173,13 +173,13 @@ class Subject(object):
 			# Get shape from selected weight matrix
 			# Since this information takes the bias weights into account,
 			# we don't need to deal with presence/absence of bias here.
-			m, n = self.impaired.weights[0][c].shape
+			m, n = self.impaired.weights[c].shape
 			if method:
 				# Add the evaluated method to the matrix
-				self.impaired.weights[0][c] += eval(method)
+				self.impaired.weights[c] += eval(method)
 			else:
 				# Reinitialise the wmatrix
-				self.impaired.weights[0][c] = self.net.init_weights_matrix(m, n,
+				self.impaired.weights[c] = self.net.init_weights_matrix(m, n,
 																	 bias=False)
 		if inertia:
 			# Reset last inertia to zeros for all layers
