@@ -277,7 +277,7 @@ class Experiment(object):
 						# Create row for hidden representation results
 						glob = [str(subject),
 								theories[theory],
-								str(step * (step<maxstep)),
+								str(step * (step<max_step)),
 								labelled[category],
 								str(exemplar + 4*category),
 								]
