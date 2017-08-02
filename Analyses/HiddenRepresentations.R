@@ -8,13 +8,14 @@ h_rep.STM <- read.csv("../Results/Category_hidden_STM.csv", head=TRUE)
 # Add empty pca columns on the left
 h_rep.LTM <- cbind(pca1=0, pca2=0, h_rep.LTM)
 h_rep.STM <- cbind(pca1=0, pca2=0, h_rep.STM)
-d <- data.frame(subject=numeric(480), theory=0, step=0,
-				dist_type=0, m_LTM=0, sd_LTM=0, m_STM=0, sd_STM=0)
+# Initialise d to maximum possible number of cases (subject(80)*step(24)*dist_type(labelled;unlabelled;between) = 5760)
+d <- data.frame(subject=numeric(5760), theory=factor(c("CR", "LaF")), step=0,
+				dist_type=NA, m_LTM=0, sd_LTM=0, m_STM=0, sd_STM=0)
 
 # Loop over subject and step
-for (subject in 0:160){
-	for (step in
-		 levels(factor(h_rep.LTM$step[h_rep.LTM$subject==subject]))){
+i <- 1
+for (subject in 0:79){
+	for (step in levels(factor(h_rep.LTM$step[h_rep.LTM$subject==subject]))){
 		print(c(subject, step))
 		# PRINCIPAL COMPONENT ANALYSIS
 		# Extract first two dimensions after PCA
@@ -34,16 +35,16 @@ for (subject in 0:160){
 		dnl.LTM <- c() # Unlabelled category (coded 1 in df)
 		dnl.STM <- c() # Unlabelled category (coded 1 in df)
 		# Create index for category
-		index.l <- index & h_rep.LTM$category==0
-		index.nl <- index & h_rep.LTM$category==1
+		index.l <- index & h_rep.LTM$labelled=="label"
+		index.nl <- index & h_rep.LTM$labelled=="no_label"
 		for (e1 in 0:2){
 			# Create index for first exemplar
 			index1.l <- index.l & h_rep.LTM$exemplar==e1
-			index1.nl <- index.nl & h_rep.LTM$exemplar==e1
-			for (e2 in e1+1:3){
+			index1.nl <- index.nl & h_rep.LTM$exemplar==e1+4
+			for (e2 in (e1+1):3){
 				# Create index for second exemplar
 				index2.l <- index.l & h_rep.LTM$exemplar==e2
-				index2.nl <- index.nl & h_rep.LTM$exemplar==e2
+				index2.nl <- index.nl & h_rep.LTM$exemplar==e2+4
 				# Append distances
 				dl.LTM <- c(dl.LTM,
 							dist(rbind(c(h_rep.LTM$pca1[index1.l],
@@ -68,11 +69,11 @@ for (subject in 0:160){
 			}
 		}
 		# Save mean and sd of distance for labelled category with all info
-		d[3*subject,] <- c(h_rep.LTM[index1.l, 3:5], "labelled",
+		d[i,] <- c(h_rep.LTM[index1.l, 3:5], "labelled",
 						   mean(dl.LTM), sd(dl.LTM),
 						   mean(dl.STM), sd(dl.STM))
 		# Save mean and sd of distance for unlabelled category with all info
-		d[3*subject + 1,] <- c(h_rep.LTM[index1.nl, 3:5], "unlabelled",
+		d[i + 1,] <- c(h_rep.LTM[index1.nl, 3:5], "unlabelled",
 							   mean(dnl.LTM), sd(dnl.LTM),
 							   mean(dnl.STM), sd(dnl.STM))
 		# Compute centre ("prototype") of each category
@@ -85,10 +86,13 @@ for (subject in 0:160){
 		proto_nl.STM <- c(mean(h_rep.STM$pca1[index.nl]),
 						  mean(h_rep.STM$pca2[index.nl]))
 		# Save distances between categories (sd=0 here)
-		d[3*subject + 2,] <- c(h_rep.LTM[index1.nl, 3:5], "between",
+		d[i + 2,] <- c(h_rep.LTM[index1.nl, 3:5], "between",
 							   dist(rbind(proto_l.LTM, proto_nl.LTM))[1], 0,
 							   dist(rbind(proto_l.STM, proto_nl.STM))[1], 0)
+		i <- i + 3
 	}
 }
 
-write.csv(d, filename="../Results/Category_hidden_distances.csv", row.names=F)
+d$dist_type <- factor(d$dist_type)
+d <- na.omit(d)
+write.csv(d, file="../Results/Category_hidden_distances.csv", row.names=F)
