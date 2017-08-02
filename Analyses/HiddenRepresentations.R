@@ -49,103 +49,89 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 # Import data, from both Category and SingleObject
 h_rep.LTM <- read.csv("../Results/Category_hidden_LTM.csv", head=TRUE)
 h_rep.STM <- read.csv("../Results/Category_hidden_STM.csv", head=TRUE)
-# Add empty pca columns on the left
-h_rep.LTM <- cbind(pca1=0, pca2=0, h_rep.LTM)
-h_rep.STM <- cbind(pca1=0, pca2=0, h_rep.STM)
+# Add empty pca and memory_type column on the left
+h_rep.LTM <- cbind(memory_type="LTM", h_rep.LTM)
+h_rep.STM <- cbind(memory_type="STM", h_rep.STM)
+# Binding dataframes together
+h_rep <- rbind.fill(h_rep.LTM,h_rep.STM)
+# Get number of columns, and difference in number of dimensions between STM and LTM
+diff_dim <- length(h_rep.LTM) - length(h_rep.STM)
+n_columns <- ncol(h_rep)
+# Set number of dimensions from PCA to use for distances
+n_dims <- 6
 # Initialise d to maximum possible number of cases
 # (subject(80)*step(24)*memory_type(LTM;STM)*dist_type(labelled;unlabelled;between) = 11520)
-d <- data.frame(subject=numeric(11520), theory=factor(c("CR", "LaF")), step=0, memory_type=factor(c("LTM", "STM")),
-				dist_type=NA, mu=0, sigma=0)
+d <- data.frame(memory_type=factor(c("LTM", "STM")), subject=numeric(11520), theory=factor(c("CR", "LaF")), step=0,
+                dist_type=NA, mu=0, sigma=0)
 
 # Loop over subject and step
 i <- 1
 for (subject in 0:79){
-	for (step in levels(factor(h_rep.LTM$step[h_rep.LTM$subject==subject]))){
-		print(c(subject, step))
-		# PRINCIPAL COMPONENT ANALYSIS
-		# Extract first two dimensions after PCA
-		# First LTM
-		index <- h_rep.LTM$subject==subject & h_rep.LTM$step==step
-		pca.LTM <- prcomp(h_rep.LTM[index, -(1:7)], retx=T)$x[, 1:2]
-		h_rep.LTM$pca1[index] <- pca.LTM[, 1]
-		h_rep.LTM$pca2[index] <- pca.LTM[, 2]
-		# Then STM
-		index <- h_rep.STM$subject==subject & h_rep.STM$step==step
-		pca.STM <- prcomp(h_rep.STM[index, -(1:7)], retx=T)$x[, 1:2]
-		h_rep.STM$pca1[index] <- pca.STM[, 1]
-		h_rep.STM$pca2[index] <- pca.STM[, 2]
-		# WITHIN CATEGORY MEAN DISTANCE
-		dl.LTM <- c()  # Labelled category (coded 0 in df)
-		dl.STM <- c()  # Labelled category (coded 0 in df)
-		dnl.LTM <- c() # Unlabelled category (coded 1 in df)
-		dnl.STM <- c() # Unlabelled category (coded 1 in df)
-		# Create index for category
-		index.l <- index & h_rep.LTM$labelled=="label"
-		index.nl <- index & h_rep.LTM$labelled=="no_label"
-		for (e1 in 0:2){
-			# Create index for first exemplar
-			index1.l <- index.l & h_rep.LTM$exemplar==e1
-			index1.nl <- index.nl & h_rep.LTM$exemplar==e1+4
-			for (e2 in (e1+1):3){
-				# Create index for second exemplar
-				index2.l <- index.l & h_rep.LTM$exemplar==e2
-				index2.nl <- index.nl & h_rep.LTM$exemplar==e2+4
-				# Append distances
-				dl.LTM <- c(dl.LTM,
-							dist(rbind(c(h_rep.LTM$pca1[index1.l],
-										 h_rep.LTM$pca1[index2.l]),
-									   c(h_rep.LTM$pca2[index1.l],
-										 h_rep.LTM$pca2[index2.l])))[1])
-				dl.STM <- c(dl.STM,
-							dist(rbind(c(h_rep.STM$pca1[index1.l],
-										 h_rep.STM$pca1[index2.l]),
-									   c(h_rep.STM$pca2[index1.l],
-										 h_rep.STM$pca2[index2.l])))[1])
-				dnl.LTM <- c(dl.LTM,
-							 dist(rbind(c(h_rep.LTM$pca1[index1.nl],
-										  h_rep.LTM$pca1[index2.nl]),
-										c(h_rep.LTM$pca2[index1.nl],
-										  h_rep.LTM$pca2[index2.nl])))[1])
-				dnl.STM <- c(dl.STM,
-							 dist(rbind(c(h_rep.STM$pca1[index1.nl],
-										  h_rep.STM$pca1[index2.nl]),
-										c(h_rep.STM$pca2[index1.nl],
-										  h_rep.STM$pca2[index2.nl])))[1])
-			}
-		}
-		# Save mean and sd of distance for labelled category with all info
-		d[i,] <- c(h_rep.LTM[index1.l, 3:5], "LTM", "labelled",
-						   mean(dl.LTM), sd(dl.LTM))
-		d[i + 1,] <- c(h_rep.LTM[index1.l, 3:5], "STM", "labelled",
-						       mean(dl.STM), sd(dl.STM))
-		# Save mean and sd of distance for unlabelled category with all info
-		d[i + 2,] <- c(h_rep.LTM[index1.nl, 3:5], "LTM", "unlabelled",
-							     mean(dnl.LTM), sd(dnl.LTM))
-		d[i + 3,] <- c(h_rep.LTM[index1.nl, 3:5], "STM", "unlabelled",
-							   mean(dnl.STM), sd(dnl.STM))
-		# Compute centre ("prototype") of each category
-		proto_l.LTM <- c(mean(h_rep.LTM$pca1[index.l]),
-						 mean(h_rep.LTM$pca2[index.l]))
-		proto_l.STM <- c(mean(h_rep.STM$pca1[index.l]),
-						 mean(h_rep.STM$pca2[index.l]))
-		proto_nl.LTM <- c(mean(h_rep.LTM$pca1[index.nl]),
-						  mean(h_rep.LTM$pca2[index.nl]))
-		proto_nl.STM <- c(mean(h_rep.STM$pca1[index.nl]),
-						  mean(h_rep.STM$pca2[index.nl]))
-		# Save distances between categories (sd=0 here)
-		d[i + 4,] <- c(h_rep.LTM[index1.nl, 3:5], "LTM", "between",
-							   dist(rbind(proto_l.LTM, proto_nl.LTM))[1], 0)
-		d[i + 5,] <- c(h_rep.LTM[index1.nl, 3:5], "STM", "between",
-							   dist(rbind(proto_l.STM, proto_nl.STM))[1], 0)
-		i <- i + 6
+  for (memory_type in levels(h_rep$memory_type)){
+    for (step in levels(factor(h_rep$step[h_rep$subject==subject & h_rep$memory_type==memory_type]))){
+      print(c(subject, memory_type, step))
+      # PRINCIPAL COMPONENT ANALYSIS
+      # Replace previous values with PCA values
+      index <- h_rep$subject==subject & h_rep$step==step & h_rep$memory_type==memory_type
+      last_column <- (n_columns - diff_dim*(memory_type=="STM")) # Last column to input to PCA
+      pca <- prcomp(h_rep[index, 7:last_column], retx=T)$x # Compute PCA
+      pca_c <- ncol(pca) # Get size of PCA output to put back in h_rep
+      h_rep[index, 7:(6+pca_c)] <- pca
+      h_rep[index, (7+pca_c):last_column] <- NA
+      #print("Computed PCA")
+      # WITHIN CATEGORY MEAN DISTANCE
+      dist.l <- c()  # Labelled category (coded 0 in df)
+      dist.nl <- c() # Unlabelled category (coded 1 in df)
+      # Create index for category
+      index.l <- index & h_rep$labelled=="label"
+      index.nl <- index & h_rep$labelled=="no_label"
+      for (e1 in 0:2){
+        # Create index for first exemplar
+        index1.l <- index.l & h_rep$exemplar==e1
+        index1.nl <- index.nl & h_rep$exemplar==e1+4
+        for (e2 in (e1+1):3){
+          # Create index for second exemplar
+          index2.l <- index.l & h_rep$exemplar==e2
+          index2.nl <- index.nl & h_rep$exemplar==e2+4
+          # Append distances
+          dist.l <- c(dist.l,
+                      dist(rbind(h_rep[index1.l, 7:(6+n_dims)],
+                                 h_rep[index2.l, 7:(6+n_dims)]))[1])
+          #print(c("Added distance between",e1,"and",e2))
+          dist.nl <- c(dist.nl,
+                       dist(rbind(h_rep[index1.nl, 7:(6+n_dims)],
+                                  h_rep[index2.nl, 7:(6+n_dims)]))[1])
+          #print(c("Added distance between",e1+4,"and",e2+4))
+        }
+      }
+      # Save mean and sd of distance for labelled category with all info
+      d[i,] <- c(h_rep[index1.l, 1:4], "labelled",
+                 mean(dist.l), sd(dist.l))
+      #print("Added a row for dist.l")
+      # Save mean and sd of distance for unlabelled category with all info
+      d[i + 1,] <- c(h_rep[index1.nl, 1:4], "unlabelled",
+                     mean(dist.nl), sd(dist.nl))
+      #print("Added a row for dist.nl")
+      # Compute centre ("prototype") of each category
+      proto.l <- mean(h_rep[index.l, 7:(6+n_dims)])
+      #print("Computed labelled prototype")
+      proto.nl <- mean(h_rep[index.nl, 7:(6+n_dims)])
+      #print("Computed unlabelled prototype")
+      # Save distances between categories (sd=0 here)
+      d[i + 2,] <- c(h_rep[index1.nl, 1:4], "between",
+                     dist(rbind(proto.l, proto.nl))[1], 0)
+      #print("Added a row for LTM between- distance")
+      i <- i + 3
+    }
 	}
 }
 # Code dist_type as a factor, get rid of NAs
 d$dist_type <- factor(d$dist_type)
 d <- na.omit(d)
-# Write file if generating PCA, read file otherwise
-#write.csv(d, file="../Results/Category_hidden_distances.csv", row.names=F)
-d <- read.csv(file="../Results/Category_hidden_distances.csv", header=T)
+# Write files if generating PCA, read files otherwise
+write.csv(h_rep, file="../Results/Category_hidden_PCA.csv", row.names=F)
+write.csv(d, file="../Results/Category_hidden_distances.csv", row.names=F)
+# <- read.csv(file="../Results/Category_hidden_distances.csv", header=T)
 
 # GRAPH
 # Get summary of the data
