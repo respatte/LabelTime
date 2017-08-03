@@ -167,31 +167,35 @@ write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
 # Create sub-datasets
 LT.Cat.LaF <- LT.Cat[LT.Cat$theory == "Labels as Features",]
 LT.Cat.CR <- LT.Cat[LT.Cat$theory == "Compound Representations",]
-# All effects seen in SingObj model, for LaF
-LT.Cat.LaF.0 <- lmer(looking_time ~ 1 +
-					 (trial*labelled | subject),
-					 data = LT.Cat.LaF
-					 )
-LT.Cat.LaF.1 <- update(LT.Cat.LaF.0, . ~ . + trial)
-LT.Cat.LaF.2 <- update(LT.Cat.LaF.0, . ~ . + trial:labelled)
-LT.Cat.LaF.3 <- update(LT.Cat.LaF.0, . ~ . + trial*labelled)
-LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.0,
-							   LT.Cat.LaF.1,
-							   LT.Cat.LaF.2,
-							   LT.Cat.LaF.3)
+# LABELS AS FEATURES
+# All models taken as previous one minus last effect
+LT.Cat.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+                            (1 + trial + labelled | subject),
+                          data = LT.Cat.LaF)
+LT.Cat.LaF.lmer.1 <- update(LT.Cat.LaF.lmer.0, . ~ . - trial:labelled)
+LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - labelled) # Adding labelled only marginally improved the model
+LT.Cat.LaF.lmer.3 <- update(LT.Cat.LaF.lmer.2, . ~ . - trial)
+# Model comparison against each other hierarchically
+LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.3,
+                                   LT.Cat.LaF.lmer.2,
+                                   LT.Cat.LaF.lmer.1,
+                                   LT.Cat.LaF.lmer.0)
 print(LT.Cat.LaF.comparison)
-LT.Cat.LaF.final <- LT.Cat.LaF.1
- All effects seen in SingObj model, for CR
-LT.Cat.CR.0 <- lmer(looking_time ~ 1 +
-					(trial*labelled | subject),
-					data = LT.Cat.CR
-					)
-LT.Cat.CR.1 <- update(LT.Cat.CR.0, . ~ . + trial)
-LT.Cat.CR.2 <- update(LT.Cat.CR.0, . ~ . + trial:labelled)
-LT.Cat.CR.3 <- update(LT.Cat.CR.0, . ~ . + trial*labelled)
-LT.Cat.CR.comparison <- anova(LT.Cat.CR.0,
-							  LT.Cat.CR.1,
-							  LT.Cat.CR.2,
-							  LT.Cat.CR.3)
+# Select final fixed effects model
+LT.Cat.LaF.final <- LT.Cat.LaF.lmer.0
+# COMPOUND REPRESENTATIONS
+# All models taken as previous one minus last effect
+LT.Cat.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+                               (1 + trial + labelled | subject),
+                             data = LT.Cat.CR)
+LT.Cat.CR.lmer.1 <- update(LT.Cat.CR.lmer.0, . ~ . - trial:labelled) # No effect other than trial
+LT.Cat.CR.lmer.2 <- update(LT.Cat.CR.lmer.1, . ~ . - labelled)
+LT.Cat.CR.lmer.3 <- update(LT.Cat.CR.lmer.2, . ~ . - trial)
+# Model comparison against each other hierarchically
+LT.Cat.CR.comparison <- anova(LT.Cat.CR.lmer.3,
+                                  LT.Cat.CR.lmer.2,
+                                  LT.Cat.CR.lmer.1,
+                                  LT.Cat.CR.lmer.0)
 print(LT.Cat.CR.comparison)
-LT.Cat.CR.final <- LT.Cat.CR.1
+# Select final fixed effects model
+LT.Cat.CR.final <- LT.Cat.CR.lmer.2
