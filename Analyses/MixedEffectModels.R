@@ -32,120 +32,43 @@ LT$experiment <- factor(LT$experiment,
 								 labels = c("Category",
 											"Single Object"))
 
-# GLOBAL MODEL -- FIXED EFFECTS
-# Test main effects against intercept only
-LT.intercept <- lmer(looking_time ~ 1 +
-					 (1 + trial + labelled | subject),
-					 data = LT
-					 )
-LT.main_effect.1 <- update(LT.intercept, . ~ . + trial)
-LT.main_effect.2 <- update(LT.intercept, . ~ . + labelled)
-LT.main_effect.3 <- update(LT.intercept, . ~ . + theory)
-LT.main_effect.4 <- update(LT.intercept, . ~ . + experiment)
-LT.main_effect.comparison <- anova(LT.intercept,
-								   LT.main_effect.1,
-								   LT.main_effect.2,
-								   LT.main_effect.3,
-								   LT.main_effect.4)
-print(LT.main_effect.comparison)
-LT.main_effect <- update(LT.intercept, . ~ . + trial + experiment)
-# Test 2-way interactions against intercept + main effects
-LT.2_way.1 <- update(LT.main_effect, . ~ . + trial:labelled)
-LT.2_way.2 <- update(LT.main_effect, . ~ . + trial:theory)
-LT.2_way.3 <- update(LT.main_effect, . ~ . + trial:experiment)
-LT.2_way.4 <- update(LT.main_effect, . ~ . + labelled:theory)
-LT.2_way.5 <- update(LT.main_effect, . ~ . + labelled:experiment)
-LT.2_way.6 <- update(LT.main_effect, . ~ . + theory:experiment)
-LT.2_way.comparison <- anova(LT.main_effect,
-							 LT.2_way.1,
-							 LT.2_way.2,
-							 LT.2_way.3,
-							 LT.2_way.4,
-							 LT.2_way.5,
-							 LT.2_way.6)
-print(LT.2_way.comparison)
-LT.2_way <- update(LT.main_effect, . ~ . + trial:labelled + labelled:theory + labelled:experiment)
-# Test 3-way interactions agains intercept + main effects + 2-way interaction
-LT.3_way.1 <- update(LT.2_way, . ~ . + trial:labelled:theory)
-LT.3_way.2 <- update(LT.2_way, . ~ . + trial:labelled:experiment)
-LT.3_way.3 <- update(LT.2_way, . ~ . + trial:theory:experiment)
-LT.3_way.4 <- update(LT.2_way, . ~ . + labelled:theory:experiment)
-LT.3_way.comparison <- anova(LT.2_way,
-							 LT.3_way.1,
-							 LT.3_way.2,
-							 LT.3_way.3,
-							 LT.3_way.4)
-print(LT.3_way.comparison)
-LT.3_way <- update(LT.2_way, . ~ . + trial:labelled:theory + trial:theory:experiment)
-# Test 4-way interaction against intercept + main effects + 2/3-way interactions
-LT.4_way <- update(LT.3_way, . ~ . + trial:labelled:theory:experiment)
-LT.4_way.comparison <- anova(LT.3_way, LT.4_way)
-print(LT.4_way.comparison)
-LT.fixed <- LT.3_way
+# GLOBAL MODEL
 
-# GLOBAL MODEL -- RANDOM EFFECTS
-LT.random.0 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
-LT.random.1 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
-LT.random.2 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-LT.random.3 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
-LT.random.4 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
-LT.random.5 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
-LT.random.6 <- update(LT.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
-LT.random.comparison <- anova(LT.random.0,
-							  LT.random.1,
-							  LT.random.2,
-							  LT.random.3,
-							  LT.random.4,
-							  LT.random.5,
-							  LT.random.6)
-print(LT.random.comparison)
-LT.final <- LT.random.6
 
 # SINGLE OBJECT MODEL -- FIXED EFFECTS
-# Test main effects against intercept only
-LT.SingObj.intercept <- lmer(looking_time ~ 1 +
-							 (1 + trial + labelled | subject),
-							 data = LT.SingObj
-							 )
-LT.SingObj.main_effect.1 <- update(LT.SingObj.intercept, . ~ . + trial)
-LT.SingObj.main_effect.2 <- update(LT.SingObj.intercept, . ~ . + labelled)
-LT.SingObj.main_effect.3 <- update(LT.SingObj.intercept, . ~ . + theory)
-LT.SingObj.main_effect.comparison <- anova(LT.SingObj.intercept,
-								   LT.SingObj.main_effect.1,
-								   LT.SingObj.main_effect.2,
-								   LT.SingObj.main_effect.3)
-print(LT.SingObj.main_effect.comparison)
-LT.SingObj.main_effect <- update(LT.SingObj.intercept, . ~ . + trial + theory)
-# RETESTS - START AGAIN AFTER THAT (DIFFICULT DECISION)
-# Test 2-way interactions against intercept + main effects
-LT.SingObj.2_way.1 <- update(LT.SingObj.main_effect, . ~ . + trial:labelled)
-LT.SingObj.2_way.2 <- update(LT.SingObj.main_effect, . ~ . + trial:theory)
-LT.SingObj.2_way.3 <- update(LT.SingObj.main_effect, . ~ . + labelled:theory)
-LT.SingObj.2_way.comparison <- anova(LT.SingObj.main_effect,
-							 LT.SingObj.2_way.1,
-							 LT.SingObj.2_way.2,
-							 LT.SingObj.2_way.3)
-print(LT.SingObj.2_way.comparison)
-LT.SingObj.2_way <- update(LT.SingObj.main_effect, . ~ . + trial:labelled + labelled:theory)
-# Test 3-way interaction agains intercept + main effects + 2-way interaction
-LT.SingObj.3_way.1 <- update(LT.SingObj.2_way, . ~ . + trial:labelled:theory)
-LT.SingObj.3_way.comparison <- anova(LT.SingObj.2_way,
-							 LT.SingObj.3_way.1)
-print(LT.SingObj.3_way.comparison)
-LT.SingObj.fixed <- LT.SingObj.2_way
+# All models taken as previous one minus last effect
+LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
+                            labelled:theory + trial:theory +
+                            (1 + trial + labelled | subject),
+                          data = LT.SingObj) # 4. Adding trial:labelled:theory didn't improve the model
+#LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
+LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - trial:theory) # 3. Adding labelled:theory only marginally improved the model (>.1)
+LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory) # 2. Adding trial:labelled didn't improve the model
+#LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model, removing from global model
+#LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)
+LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.5, . ~ . - labelled)
+LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
+# Model comparison against each other hierarchically
+LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
+                               LT.SingObj.lmer.6,
+                               LT.SingObj.lmer.2,
+                               LT.SingObj.lmer.0)
+print(LT.SingObj.comparison)
+# Select final fixed effects model
+LT.SingObj.fixed <- LT.SingObj.lmer.0
 
 # SINGLE OBJECT MODEL -- RANDOM EFFECTS
 LT.SingObj.random.0 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
 LT.SingObj.random.1 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
 LT.SingObj.random.2 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-LT.SingObj.random.3 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
+#LT.SingObj.random.3 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
+# Didn't converge
 LT.SingObj.random.4 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
 LT.SingObj.random.5 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
 LT.SingObj.random.6 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
 LT.SingObj.random.comparison <- anova(LT.SingObj.random.0,
 									  LT.SingObj.random.1,
 									  LT.SingObj.random.2,
-									  LT.SingObj.random.3,
 									  LT.SingObj.random.4,
 									  LT.SingObj.random.5,
 									  LT.SingObj.random.6)
@@ -153,73 +76,70 @@ print(LT.SingObj.random.comparison)
 LT.SingObj.final <- LT.SingObj.random.6
 
 # SINGLE OBJECT MODEL -- MAKE PREDICTIONS
-LT.SingObj$fit <- predict(LT.SingObj.final, newdata=LT.SingObj, re.form=NA)
-write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
+#LT.SingObj$fit <- predict(LT.SingObj.final, newdata=LT.SingObj, re.form=NA)
+#write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
 
 # SINGLE OBJECT PER THEORY -- MAIN EFFECTS
 # Create sub-datasets
 LT.SingObj.LaF <- LT.SingObj[LT.SingObj$theory == "Labels as Features",]
 LT.SingObj.CR <- LT.SingObj[LT.SingObj$theory == "Compound Representations",]
-# All effects seen in SingObj model, for LaF
-LT.SingObj.LaF.0 <- lmer(looking_time ~ 1 +
-						 (trial*labelled | subject),
-						 data = LT.SingObj.LaF
-						 )
-LT.SingObj.LaF.1 <- update(LT.SingObj.LaF.0, . ~ . + trial)
-LT.SingObj.LaF.2 <- update(LT.SingObj.LaF.0, . ~ . + trial:labelled)
-LT.SingObj.LaF.3 <- update(LT.SingObj.LaF.0, . ~ . + trial*labelled)
-LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.0,
-								   LT.SingObj.LaF.1,
-								   LT.SingObj.LaF.2,
-								   LT.SingObj.LaF.3)
+# LABELS AS FEATURES
+# All models taken as previous one minus last effect
+LT.SingObj.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+                                (1 + trial + labelled | subject),
+                              data = LT.SingObj.LaF) # Adding the interaction only marginally improved the model
+LT.SingObj.LaF.lmer.1 <- update(LT.SingObj.LaF.lmer.0, . ~ . - trial:labelled)
+LT.SingObj.LaF.lmer.2 <- update(LT.SingObj.LaF.lmer.1, . ~ . - labelled)
+LT.SingObj.LaF.lmer.3 <- update(LT.SingObj.LaF.lmer.2, . ~ . - trial)
+# Model comparison against each other hierarchically
+LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.3,
+                                   LT.SingObj.LaF.lmer.2,
+                                   LT.SingObj.LaF.lmer.1,
+                                   LT.SingObj.LaF.lmer.0)
 print(LT.SingObj.LaF.comparison)
-LT.SingObj.LaF.final <- LT.SingObj.LaF.3
-# All effects seen in SingObj model, for CR
-LT.SingObj.CR.0 <- lmer(looking_time ~ 1 +
-						(trial*labelled | subject),
-						data = LT.SingObj.CR
-						)
-LT.SingObj.CR.1 <- update(LT.SingObj.CR.0, . ~ . + trial)
-LT.SingObj.CR.2 <- update(LT.SingObj.CR.0, . ~ . + trial:labelled)
-LT.SingObj.CR.3 <- update(LT.SingObj.CR.0, . ~ . + trial*labelled)
-LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.0,
-								  LT.SingObj.CR.1,
-								  LT.SingObj.CR.2,
-								  LT.SingObj.CR.3)
+# Select final fixed effects model
+LT.SingObj.LaF.final <- LT.SingObj.LaF.lmer.0
+# COMPOUND REPRESENTATIONS
+# All models taken as previous one minus last effect
+LT.SingObj.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+                                (1 + trial + labelled | subject),
+                              data = LT.SingObj.CR)
+LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - trial:labelled) # No effect other than trial
+LT.SingObj.CR.lmer.2 <- update(LT.SingObj.CR.lmer.1, . ~ . - labelled)
+LT.SingObj.CR.lmer.3 <- update(LT.SingObj.CR.lmer.2, . ~ . - trial)
+# Model comparison against each other hierarchically
+LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.3,
+                                   LT.SingObj.CR.lmer.2,
+                                   LT.SingObj.CR.lmer.1,
+                                   LT.SingObj.CR.lmer.0)
 print(LT.SingObj.CR.comparison)
-LT.SingObj.CR.final <- LT.SingObj.CR.1
+# Select final fixed effects model
+LT.SingObj.CR.final <- LT.SingObj.CR.lmer.2
 
 # CATEGORY MODEL -- FIXED EFFECTS
-# Test main effects against intercept only
-LT.Cat.intercept <- lmer(looking_time ~ 1 +
-					 (1 + trial + labelled | subject),
-					 data = LT.Cat
-					 )
-LT.Cat.main_effect.1 <- update(LT.Cat.intercept, . ~ . + trial)
-LT.Cat.main_effect.2 <- update(LT.Cat.intercept, . ~ . + labelled)
-LT.Cat.main_effect.3 <- update(LT.Cat.intercept, . ~ . + theory)
-LT.Cat.main_effect.comparison <- anova(LT.Cat.intercept,
-								   LT.Cat.main_effect.1,
-								   LT.Cat.main_effect.2,
-								   LT.Cat.main_effect.3)
-print(LT.Cat.main_effect.comparison)
-LT.Cat.main_effect <- update(LT.Cat.intercept, . ~ . + trial)
-# Test 2-way interactions against intercept + main effects
-LT.Cat.2_way.1 <- update(LT.Cat.main_effect, . ~ . + trial:labelled)
-LT.Cat.2_way.2 <- update(LT.Cat.main_effect, . ~ . + trial:theory)
-LT.Cat.2_way.3 <- update(LT.Cat.main_effect, . ~ . + labelled:theory)
-LT.Cat.2_way.comparison <- anova(LT.Cat.main_effect,
-							 LT.Cat.2_way.1,
-							 LT.Cat.2_way.2,
-							 LT.Cat.2_way.3)
-print(LT.Cat.2_way.comparison)
-LT.Cat.2_way <- update(LT.Cat.main_effect, . ~ . + trial:labelled + labelled:theory)
-# Test 3-way interaction agains intercept + main effects + 2-way interaction
-LT.Cat.3_way.1 <- update(LT.Cat.2_way, . ~ . + trial:labelled:theory)
-LT.Cat.3_way.comparison <- anova(LT.Cat.2_way,
-							 LT.Cat.3_way.1)
-print(LT.Cat.3_way.comparison)
-LT.Cat.fixed <- LT.Cat.2_way
+# All models taken as previous one minus last effect
+LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
+                            trial:labelled + trial:theory +
+                            trial:labelled:theory +
+                            (1 + trial + labelled | subject),
+                          data = LT.Cat)
+LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory)
+LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory) # 2. Adding labelled:theory didn't improve the model
+#LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - labelled:theory)
+LT.Cat.lmer.4 <- update(LT.Cat.lmer.3, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model
+#LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory)
+LT.Cat.lmer.6 <- update(LT.Cat.lmer.5, . ~ . - labelled)
+LT.Cat.lmer.7 <- update(LT.Cat.lmer.6, . ~ . - trial)
+# Model comparison against each other hierarchically
+LT.Cat.comparison <- anova(LT.Cat.lmer.7,
+                           LT.Cat.lmer.6,
+                           LT.Cat.lmer.4,
+                           LT.Cat.lmer.2,
+                           LT.Cat.lmer.1,
+                           LT.Cat.lmer.0)
+print(LT.Cat.comparison)
+# Select final fixed effects model
+LT.Cat.fixed <- LT.Cat.lmer.0
 
 # CATEGORY MODEL -- RANDOM EFFECTS
 LT.Cat.random.0 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
@@ -243,7 +163,7 @@ LT.Cat.final <- LT.Cat.random.6
 LT.Cat$fit <- predict(LT.Cat.final, newdata=LT.Cat, re.form=NA)
 write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
 
-# SINGLE OBJECT PER THEORY -- MAIN EFFECTS
+# CATEGORY PER THEORY -- MAIN EFFECTS
 # Create sub-datasets
 LT.Cat.LaF <- LT.Cat[LT.Cat$theory == "Labels as Features",]
 LT.Cat.CR <- LT.Cat[LT.Cat$theory == "Compound Representations",]
