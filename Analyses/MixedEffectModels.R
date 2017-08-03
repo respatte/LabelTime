@@ -26,12 +26,9 @@ LT.SingObj$theory <- factor(LT.SingObj$theory,
 LT.Cat$explo_overlap <- factor(LT.Cat$explo_overlap)
 LT.Cat$theory <- factor(LT.Cat$theory, labels = c("Compound Representations",
 												  "Labels as Features"))
-# Select training sample
-LT.SingObj.training <- LT.SingObj[LT.SingObj$subject < 160,]
-LT.Cat.training <- LT.Cat[LT.Cat$subject < 160 + n_subjects,]
 # Merge both datasets
-LT.training <- rbind(LT.SingObj.training, LT.Cat.training)
-LT.training$experiment <- factor(LT.training$experiment,
+LT <- rbind(LT.SingObj, LT.Cat)
+LT$experiment <- factor(LT$experiment,
 								 labels = c("Category",
 											"Single Object"))
 
@@ -39,7 +36,7 @@ LT.training$experiment <- factor(LT.training$experiment,
 # Test main effects against intercept only
 LT.intercept <- lmer(looking_time ~ 1 +
 					 (1 + trial + labelled | subject),
-					 data = LT.training
+					 data = LT
 					 )
 LT.main_effect.1 <- update(LT.intercept, . ~ . + trial)
 LT.main_effect.2 <- update(LT.intercept, . ~ . + labelled)
@@ -51,7 +48,7 @@ LT.main_effect.comparison <- anova(LT.intercept,
 								   LT.main_effect.3,
 								   LT.main_effect.4)
 print(LT.main_effect.comparison)
-LT.main_effect <- update(LT.intercept, . ~ . + trial + theory + experiment)
+LT.main_effect <- update(LT.intercept, . ~ . + trial + experiment)
 # Test 2-way interactions against intercept + main effects
 LT.2_way.1 <- update(LT.main_effect, . ~ . + trial:labelled)
 LT.2_way.2 <- update(LT.main_effect, . ~ . + trial:theory)
@@ -67,7 +64,7 @@ LT.2_way.comparison <- anova(LT.main_effect,
 							 LT.2_way.5,
 							 LT.2_way.6)
 print(LT.2_way.comparison)
-LT.2_way <- update(LT.main_effect, . ~ . + trial:labelled + labelled:theory)
+LT.2_way <- update(LT.main_effect, . ~ . + trial:labelled + labelled:theory + labelled:experiment)
 # Test 3-way interactions agains intercept + main effects + 2-way interaction
 LT.3_way.1 <- update(LT.2_way, . ~ . + trial:labelled:theory)
 LT.3_way.2 <- update(LT.2_way, . ~ . + trial:labelled:experiment)
@@ -79,7 +76,7 @@ LT.3_way.comparison <- anova(LT.2_way,
 							 LT.3_way.3,
 							 LT.3_way.4)
 print(LT.3_way.comparison)
-LT.3_way <- LT.3_way.2
+LT.3_way <- update(LT.2_way, . ~ . + trial:labelled:theory + trial:theory:experiment)
 # Test 4-way interaction against intercept + main effects + 2/3-way interactions
 LT.4_way <- update(LT.3_way, . ~ . + trial:labelled:theory:experiment)
 LT.4_way.comparison <- anova(LT.3_way, LT.4_way)
@@ -108,7 +105,7 @@ LT.final <- LT.random.6
 # Test main effects against intercept only
 LT.SingObj.intercept <- lmer(looking_time ~ 1 +
 							 (1 + trial + labelled | subject),
-							 data = LT.SingObj.training
+							 data = LT.SingObj
 							 )
 LT.SingObj.main_effect.1 <- update(LT.SingObj.intercept, . ~ . + trial)
 LT.SingObj.main_effect.2 <- update(LT.SingObj.intercept, . ~ . + labelled)
@@ -119,6 +116,7 @@ LT.SingObj.main_effect.comparison <- anova(LT.SingObj.intercept,
 								   LT.SingObj.main_effect.3)
 print(LT.SingObj.main_effect.comparison)
 LT.SingObj.main_effect <- update(LT.SingObj.intercept, . ~ . + trial + theory)
+# RETESTS - START AGAIN AFTER THAT (DIFFICULT DECISION)
 # Test 2-way interactions against intercept + main effects
 LT.SingObj.2_way.1 <- update(LT.SingObj.main_effect, . ~ . + trial:labelled)
 LT.SingObj.2_way.2 <- update(LT.SingObj.main_effect, . ~ . + trial:theory)
@@ -160,8 +158,8 @@ write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
 
 # SINGLE OBJECT PER THEORY -- MAIN EFFECTS
 # Create sub-datasets
-LT.SingObj.LaF <- LT.SingObj.training[LT.SingObj.training$theory == "Labels as Features",]
-LT.SingObj.CR <- LT.SingObj.training[LT.SingObj.training$theory == "Compound Representations",]
+LT.SingObj.LaF <- LT.SingObj[LT.SingObj$theory == "Labels as Features",]
+LT.SingObj.CR <- LT.SingObj[LT.SingObj$theory == "Compound Representations",]
 # All effects seen in SingObj model, for LaF
 LT.SingObj.LaF.0 <- lmer(looking_time ~ 1 +
 						 (trial*labelled | subject),
@@ -195,7 +193,7 @@ LT.SingObj.CR.final <- LT.SingObj.CR.1
 # Test main effects against intercept only
 LT.Cat.intercept <- lmer(looking_time ~ 1 +
 					 (1 + trial + labelled | subject),
-					 data = LT.Cat.training
+					 data = LT.Cat
 					 )
 LT.Cat.main_effect.1 <- update(LT.Cat.intercept, . ~ . + trial)
 LT.Cat.main_effect.2 <- update(LT.Cat.intercept, . ~ . + labelled)
@@ -247,8 +245,8 @@ write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
 
 # SINGLE OBJECT PER THEORY -- MAIN EFFECTS
 # Create sub-datasets
-LT.Cat.LaF <- LT.Cat.training[LT.Cat.training$theory == "Labels as Features",]
-LT.Cat.CR <- LT.Cat.training[LT.Cat.training$theory == "Compound Representations",]
+LT.Cat.LaF <- LT.Cat[LT.Cat$theory == "Labels as Features",]
+LT.Cat.CR <- LT.Cat[LT.Cat$theory == "Compound Representations",]
 # All effects seen in SingObj model, for LaF
 LT.Cat.LaF.0 <- lmer(looking_time ~ 1 +
 					 (trial*labelled | subject),
