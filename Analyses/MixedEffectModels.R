@@ -3,11 +3,6 @@ library(ggplot2)
 library(dplyr)
 library(lme4)
 
-# DIVERSION
-# Create a diversion of standard output to a file (to save results)
-# sink(file="lmer_results", append=TRUE, type="output")
-
-
 # DATA HANDLING
 # Import data, from both Category and SingleObject
 LT.SingObj <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
@@ -32,9 +27,6 @@ LT$experiment <- factor(LT$experiment,
 								 labels = c("Category",
 											"Single Object"))
 
-# GLOBAL MODEL
-
-
 # SINGLE OBJECT MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
 LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
@@ -42,11 +34,11 @@ LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
                             (1 + trial + labelled | subject),
                           data = LT.SingObj) # 4. Adding trial:labelled:theory didn't improve the model
 #LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
-LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - trial:theory) # 3. Adding labelled:theory only marginally improved the model (>.1)
+LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.0, . ~ . - trial:theory) # 3. Adding labelled:theory only marginally improved the model (>.1)
 LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory) # 2. Adding trial:labelled didn't improve the model
 #LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model, removing from global model
 #LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)
-LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.5, . ~ . - labelled)
+LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.3, . ~ . - labelled)
 LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
@@ -65,15 +57,15 @@ LT.SingObj.random.2 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | 
 # Didn't converge
 LT.SingObj.random.4 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
 LT.SingObj.random.5 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
-LT.SingObj.random.6 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
 LT.SingObj.random.comparison <- anova(LT.SingObj.random.0,
 									  LT.SingObj.random.1,
 									  LT.SingObj.random.2,
 									  LT.SingObj.random.4,
-									  LT.SingObj.random.5,
-									  LT.SingObj.random.6)
+									  LT.SingObj.random.5)
 print(LT.SingObj.random.comparison)
-LT.SingObj.final <- LT.SingObj.random.6
+# Selecting final model, computing confidence intervals for parameter estimates
+LT.SingObj.final <- LT.SingObj.random.5
+LT.SingObj.CI <- as.data.frame(confint(LT.SingObj.final, parm="beta_", level=0.89))
 
 # SINGLE OBJECT MODEL -- MAKE PREDICTIONS
 #LT.SingObj$fit <- predict(LT.SingObj.final, newdata=LT.SingObj, re.form=NA)
@@ -99,6 +91,7 @@ LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.3,
 print(LT.SingObj.LaF.comparison)
 # Select final fixed effects model
 LT.SingObj.LaF.final <- LT.SingObj.LaF.lmer.0
+LT.SingObj.LaF.CI <- as.data.frame(confint(LT.SingObj.LaF.final, parm="beta_", level=0.89))
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
 LT.SingObj.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
@@ -115,6 +108,7 @@ LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.3,
 print(LT.SingObj.CR.comparison)
 # Select final fixed effects model
 LT.SingObj.CR.final <- LT.SingObj.CR.lmer.2
+LT.SingObj.CR.CI <- as.data.frame(confint(LT.SingObj.CR.final, parm="beta_", level=0.89))
 
 # CATEGORY MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
@@ -126,9 +120,9 @@ LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
 LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory)
 LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory) # 2. Adding labelled:theory didn't improve the model
 #LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - labelled:theory)
-LT.Cat.lmer.4 <- update(LT.Cat.lmer.3, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model
+LT.Cat.lmer.4 <- update(LT.Cat.lmer.2, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model
 #LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory)
-LT.Cat.lmer.6 <- update(LT.Cat.lmer.5, . ~ . - labelled)
+LT.Cat.lmer.6 <- update(LT.Cat.lmer.4, . ~ . - labelled)
 LT.Cat.lmer.7 <- update(LT.Cat.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.Cat.comparison <- anova(LT.Cat.lmer.7,
@@ -148,20 +142,20 @@ LT.Cat.random.2 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject)
 LT.Cat.random.3 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
 LT.Cat.random.4 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
 LT.Cat.random.5 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
-LT.Cat.random.6 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (trial*labelled | subject))
 LT.Cat.random.comparison <- anova(LT.Cat.random.0,
 								  LT.Cat.random.1,
 								  LT.Cat.random.2,
 								  LT.Cat.random.3,
 								  LT.Cat.random.4,
-								  LT.Cat.random.5,
-								  LT.Cat.random.6)
+								  LT.Cat.random.5)
 print(LT.Cat.random.comparison)
-LT.Cat.final <- LT.Cat.random.6
+# Select final model and compute CI
+LT.Cat.final <- LT.Cat.random.5
+LT.Cat.CI <- as.data.frame(confint(LT.Cat.final, parm="beta_", level=0.89))
 
 # CATEGORY MODEL -- MAKE PREDICTIONS
-LT.Cat$fit <- predict(LT.Cat.final, newdata=LT.Cat, re.form=NA)
-write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
+#LT.Cat$fit <- predict(LT.Cat.final, newdata=LT.Cat, re.form=NA)
+#write.csv(LT.Cat, file="../Results/Category_LT_fitted.csv", row.names=F)
 
 # CATEGORY PER THEORY -- MAIN EFFECTS
 # Create sub-datasets
@@ -183,6 +177,7 @@ LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.3,
 print(LT.Cat.LaF.comparison)
 # Select final fixed effects model
 LT.Cat.LaF.final <- LT.Cat.LaF.lmer.0
+LT.Cat.LaF.CI <- as.data.frame(confint(LT.Cat.LaF.final, parm="beta_", level=0.89))
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
 LT.Cat.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
@@ -199,3 +194,6 @@ LT.Cat.CR.comparison <- anova(LT.Cat.CR.lmer.3,
 print(LT.Cat.CR.comparison)
 # Select final fixed effects model
 LT.Cat.CR.final <- LT.Cat.CR.lmer.2
+LT.Cat.CR.CI <- as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.89))
+
+# MIXED EFFECT MODELS GRAPHS
