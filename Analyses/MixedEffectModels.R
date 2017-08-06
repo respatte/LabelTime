@@ -32,7 +32,7 @@ LT$experiment <- factor(LT$experiment,
 LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
                             labelled:theory + trial:theory +
                             (1 + trial + labelled | subject),
-                          data = LT.SingObj) # 4. Adding trial:labelled:theory didn't improve the model
+                          data = LT.SingObj) # 3. Adding trial:labelled:theory didn't improve the model
 #LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
 LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.0, . ~ . - trial:theory) # 3. Adding labelled:theory only marginally improved the model (>.1)
 LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory) # 2. Adding trial:labelled didn't improve the model
@@ -43,6 +43,7 @@ LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
                                LT.SingObj.lmer.6,
+                               LT.SingObj.lmer.3,
                                LT.SingObj.lmer.2,
                                LT.SingObj.lmer.0)
 #print(LT.SingObj.comparison)
@@ -127,26 +128,24 @@ LT.SingObj.CR.CI$theory <- "Compound Representations"
 
 # CATEGORY MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
-LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
-                        trial:labelled + trial:theory +
+LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial +
+                        trial:labelled +
                         trial:labelled:theory +
                         (1 + trial + labelled | subject),
                       data = LT.Cat)
-LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory)
-LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory) # 2. Adding labelled:theory didn't improve the model
+LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory) # 4. Adding trial:theory didn't improve the model
+#LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory) # 3. Adding labelled:theory didn't improve the model
 #LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - labelled:theory)
-LT.Cat.lmer.4 <- update(LT.Cat.lmer.2, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model
-#LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory)
-LT.Cat.lmer.6 <- update(LT.Cat.lmer.4, . ~ . - labelled)
-LT.Cat.lmer.7 <- update(LT.Cat.lmer.6, . ~ . - trial)
+LT.Cat.lmer.4 <- update(LT.Cat.lmer.1, . ~ . - trial:labelled) # 2. Adding theory didn't improve the model
+#LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory) # 1. Adding labelled didn't improve the model
+#LT.Cat.lmer.6 <- update(LT.Cat.lmer.5, . ~ . - labelled)
+LT.Cat.lmer.7 <- update(LT.Cat.lmer.4, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.Cat.comparison <- anova(LT.Cat.lmer.7,
-                           LT.Cat.lmer.6,
                            LT.Cat.lmer.4,
-                           LT.Cat.lmer.2,
                            LT.Cat.lmer.1,
                            LT.Cat.lmer.0)
-#print(LT.Cat.comparison)
+print(LT.Cat.comparison)
 # Select final fixed effects model
 LT.Cat.fixed <- LT.Cat.lmer.0
 
@@ -252,4 +251,30 @@ LT.SingObj.plot.CI <- ggplot(data=LT.SingObj.all.CI,
   geom_point(position=position_dodge(0.5),
              size=1, fill="white")
 ggsave("../Results/FixedEffects_SingleObject.pdf", plot = LT.SingObj.plot.CI,
+       height = 2, width = 10)
+
+# CATEGORY -- FIXED EFFECT
+# Merge confindence intervals dataframes for global, LaF, and CR
+LT.Cat.all.CI <- rbind(LT.Cat.CI, LT.Cat.LaF.CI, LT.Cat.CR.CI)
+LT.Cat.plot.CI <- ggplot(data=LT.Cat.all.CI,
+                             aes(x=parameter, y=estimate,
+                                 shape=theory, colour=theory)) +
+  ylab("Estimate") + xlab("") + theme_bw() +
+  scale_shape_manual(name = "Theory",
+                     breaks = c("Labels as Features","Compound Representations","Both theories"),
+                     values = c(21,23,24)) +
+  scale_colour_brewer(name = "Theory",
+                      breaks = c("Labels as Features","Compound Representations","Both theories"),
+                      palette="Dark2") +
+  coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
+  scale_y_continuous(breaks = seq(-3,43,0.5)) +
+  geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
+                width=0,
+                position=position_dodge(0.5)) +
+  geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
+                width=0,
+                position=position_dodge(0.5)) +
+  geom_point(position=position_dodge(0.5),
+             size=1, fill="white")
+ggsave("../Results/FixedEffects_Category.pdf", plot = LT.Cat.plot.CI,
        height = 2, width = 10)
