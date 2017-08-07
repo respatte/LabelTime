@@ -351,17 +351,29 @@ ggsave("../Results/FixedEffects_Category.pdf", plot = LT.Cat.plot.CI,
 # SINGLE OBJECT -- RANDOM EFFECTS
 LT.SingObj.ranef <- rbind(LT.SingObj.LaF.ranef, LT.SingObj.CR.ranef)
 LT.SingObj.plot.ranef <- ggplot(LT.SingObj.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
-  xlab("Estimate") + ylab("") + theme_bw() +
-  geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) + geom_point() +
-  facet_grid(theory~variable, scale="free")
+  theme_bw() + xlab("Estimate") +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size=6)) +
+  scale_x_continuous(breaks = seq(-20,10,2)) +
+  geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) +
+  geom_point(size=1, fill="white", shape=21) +
+  facet_grid(theory~variable, scale="free", space="free_x")
 ggsave("../Results/RandomEffects_SingleObject.pdf", plot = LT.SingObj.plot.ranef,
        height = 4, width = 6)
 
 # CATEGORY -- RANDOM EFFECTS
 LT.Cat.ranef <- rbind(LT.Cat.LaF.ranef, LT.Cat.CR.ranef)
 LT.Cat.plot.ranef <- ggplot(LT.Cat.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
-  xlab("Estimate") + ylab("") + theme_bw() +
-  geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) + geom_point() +
-  facet_grid(theory~variable, scale="free")
+  theme_bw() + xlab("Estimate") +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size=6)) +
+  scale_x_continuous(breaks = seq(-20,10,2)) +
+  geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) +
+  geom_point(size=1, fill="white", shape=21) +
+  facet_grid(theory~variable, scale="free", space="free_x")
 ggsave("../Results/RandomEffects_Category.pdf", plot = LT.Cat.plot.ranef,
-       height = 4, width = 6)
+       height = 4, width = 7)
