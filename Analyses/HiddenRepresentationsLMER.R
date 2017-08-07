@@ -20,7 +20,7 @@ distances.evol.lmer.0 <- lmer(mu ~ 1 + step + dist_type + memory_type + theory +
                                 step:dist_type + step:memory_type +
                                 dist_type:memory_type + dist_type:theory + memory_type:theory +
                                 step:dist_type:theory + dist_type:memory_type:theory +
-                                (1 + step | subject),
+                                (1 | subject),
                               data=distances.evol) # 4. Adding step:dist_type:memory_type:theory didn't improve the model
 #distances.evol.lmer.1 <- update(distances.evol.lmer.0, . ~ . - step:dist_type:memory_type:theory)
 distances.evol.lmer.2 <- update(distances.evol.lmer.0, . ~ . - dist_type:memory_type:theory) # 3. Adding step:memory_type:theory didn't improve the model
