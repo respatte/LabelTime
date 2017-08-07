@@ -19,4 +19,4 @@ cat.plot <- ggplot(data=cat, aes(x=dim0, y=dim1, colour=factor(category), shape=
   scale_shape_manual(values=c(16,18), guide=F) +
   geom_point(size=6)
 ggsave("../Results/CategoryStructure.pdf", plot=cat.plot,
-       width=3, height=3)
+       width=3.5, height=3)
