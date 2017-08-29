@@ -63,9 +63,9 @@ if (!compute_distances) {
   d <- read.csv(file="../Results/Category_hidden_distances.csv", header=T)
 } else {
   # Initialise d to maximum possible number of cases
-  # (subject(80)*step(24)*memory_type(LTM;STM)*dist_type(labelled;unlabelled;between) = 11520)
-  d <- data.frame(memory_type=factor(c("LTM", "STM")), subject=numeric(11520), theory=factor(c("CR", "LaF")), step=0,
-                  dist_type=NA, mu=0, sigma=0)
+  # (subject(80)*step(24)*memory_type(LTM;STM)*dist_type(labelled;unlabelled;between;r_labelled;r_unlabelled) = 19200)
+  d <- data.frame(memory_type=factor(c("LTM", "STM")), subject=numeric(19200), theory=factor(c("CR", "LaF")), step=0,
+                  dist_type=NA, mu=0)
   # Loop over subject, memory_type, and step
   i <- 1
   for (subject in 0:79) {
@@ -99,12 +99,10 @@ if (!compute_distances) {
           }
         }
         # Save mean and sd of distance for labelled category with all info
-        d[i,] <- c(h_rep[index1.l, 1:4], "labelled",
-                   mean(dist.l), sd(dist.l))
+        d[i,] <- c(h_rep[index1.l, 1:4], "labelled",  mean(dist.l))
         #print("Added a row for dist.l")
         # Save mean and sd of distance for unlabelled category with all info
-        d[i + 1,] <- c(h_rep[index1.nl, 1:4], "unlabelled",
-                       mean(dist.nl), sd(dist.nl))
+        d[i + 1,] <- c(h_rep[index1.nl, 1:4], "unlabelled", mean(dist.nl))
         #print("Added a row for dist.nl")
         # PROTOTYPE: NOT WORKING FOR NOW (mean(...) returns warning because of non-numerical values leading to NA)
         # Compute centre ("prototype") of each category
@@ -114,9 +112,12 @@ if (!compute_distances) {
         #print("Computed unlabelled prototype")
         # Save distances between categories (sd=0 here)
         d[i + 2,] <- c(h_rep[index1.nl, 1:4], "between",
-                       dist(rbind(proto.l, proto.nl))[1], 0)
+                       dist(rbind(proto.l, proto.nl))[1])
         #print("Added a row for LTM between- distance")
-        i <- i + 3
+        # Relative distances
+        d[i + 3,] <- c(h_rep[index1.l, 1:4], "r_labelled",  d[i,6]/d[i+2,6])
+        d[i + 4,] <- c(h_rep[index1.nl, 1:4], "r_unlabelled",  d[i+1,6]/d[i+2,6])
+        i <- i + 5
       }
     }
   }
@@ -129,18 +130,19 @@ if (!compute_distances) {
 
 
 # GRAPH
+# Absolute distance
 # Get summary of the data
 d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "memory_type", "dist_type"), conf.interval=.89)
 # Select observations for plot, dropping unusued factors
-d.sum.plot <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type!="between",])
+d.sum.abs <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("labelled","unlabelled"),])
 # Create plot
-d.plot <- ggplot(d.sum.plot,
-                 aes(x = step,
-                     y = mu,
-                     colour = dist_type,
-                     shape = dist_type)) +
+d.abs.plot <- ggplot(d.sum.abs,
+                     aes(x = step,
+                         y = mu,
+                         colour = dist_type,
+                         shape = dist_type)) +
   facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=18) +
+  xlab("Step") + ylab("Mean distance (absolute)") + theme_bw(base_size=18) +
   theme(panel.grid.minor.x=element_blank()) +
   scale_fill_brewer(name = "Category", palette="Dark2",
                     breaks = c("labelled", "unlabelled"),
@@ -151,4 +153,26 @@ d.plot <- ggplot(d.sum.plot,
   geom_line() +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/Distance.pdf", plot = d.plot, height = 8, width = 10)
+ggsave("../Results/DistancesAbsolute.png", plot = d.abs.plot, height = 8, width = 10)
+# Relative distance
+# Select observations for plot, dropping unusued factors
+d.sum.rel <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("r_labelled","r_unlabelled"),])
+# Create plot
+d.rel.plot <- ggplot(d.sum.rel,
+                 aes(x = step,
+                     y = mu,
+                     colour = dist_type,
+                     shape = dist_type)) +
+  facet_grid(memory_type~theory, scales="free_y") +
+  xlab("Step") + ylab("Mean distance (relative)") + theme_bw(base_size=18) +
+  theme(panel.grid.minor.x=element_blank()) +
+  scale_fill_brewer(name = "Category", palette="Dark2",
+                    breaks = c("r_labelled", "r_unlabelled"),
+                    labels = c("Labelled", "Unlabelled")) +
+  scale_colour_brewer(name = "Category", palette="Dark2",
+                      breaks = c("r_labelled", "r_unlabelled"),
+                      labels = c("Labelled", "Unlabelled")) +
+  geom_line() +
+  geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
+# Save plot
+ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 8, width = 10)
