@@ -2,6 +2,9 @@
 library(ggplot2)
 library(Hmisc)
 library(plyr)
+#library(foreach)
+#library(doMC)
+#registerDoMC(12) # Change to number of CPU cores
 
 ## Summarizes data.
 ## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
@@ -47,32 +50,53 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 }
 
 # TASK SELECTION
-compute_distances <- T #Whether or not to compute the distances
+compute_PCA <- F # Whether or not to compute the PCA from raw hidden layer activations
+compute_distances <- F #Whether or not to compute the distances from PCA values
 
 # DATA HANDLING
-# Import data, from both Category and SingleObject
-h_rep.LTM <- read.csv("../Results/Category_hidden_LTM.csv", head=TRUE)
-h_rep.STM <- read.csv("../Results/Category_hidden_STM.csv", head=TRUE)
-# Add memory_type column on the left
-h_rep.LTM <- cbind(memory_type="LTM", h_rep.LTM)
-h_rep.STM <- cbind(memory_type="STM", h_rep.STM)
-# Binding dataframes together
-h_rep <- rbind.fill(h_rep.LTM,h_rep.STM)
-
+if (compute_PCA) {
+  # Import data, from both Category and SingleObject
+  h_rep.LTM <- read.csv("../Results/Category_hidden_LTM.csv", head=TRUE)
+  h_rep.STM <- read.csv("../Results/Category_hidden_STM.csv", head=TRUE)
+  # Add empty pca and memory_type column on the left
+  h_rep.LTM <- cbind(memory_type="LTM", h_rep.LTM)
+  h_rep.STM <- cbind(memory_type="STM", h_rep.STM)
+  # Binding dataframes together
+  h_rep <- rbind.fill(h_rep.LTM,h_rep.STM)
+  # Get number of columns, and difference in number of dimensions between STM and LTM
+  diff_dim <- length(h_rep.LTM) - length(h_rep.STM)
+  n_columns <- ncol(h_rep)
+} else {
+  h_rep <- read.csv("../Results/Category_hidden_PCA.csv")
+}
 if (!compute_distances) {
   d <- read.csv(file="../Results/Category_hidden_distances.csv", header=T)
 } else {
+  # Set number of dimensions from PCA to use for distances
+  n_dims <- 3
   # Initialise d to maximum possible number of cases
   # (subject(80)*step(24)*memory_type(LTM;STM)*dist_type(labelled;unlabelled;between) = 11520)
   d <- data.frame(memory_type=factor(c("LTM", "STM")), subject=numeric(11520), theory=factor(c("CR", "LaF")), step=0,
                   dist_type=NA, mu=0, sigma=0)
-  # Loop over subject, memory_type, and step
+  
+  # Loop over subject and step
   i <- 1
   for (subject in 0:79) {
     print(subject)
     for (memory_type in levels(h_rep$memory_type)){
       for (step in levels(factor(h_rep$step[h_rep$subject==subject & h_rep$memory_type==memory_type]))){
         index <- h_rep$subject==subject & h_rep$step==step & h_rep$memory_type==memory_type
+        if (compute_PCA == T){
+          # PRINCIPAL COMPONENT ANALYSIS
+          # Replace previous values with PCA values
+          last_column <- (n_columns - diff_dim*(memory_type=="STM")) # Last column to input to PCA
+          pca <- prcomp(h_rep[index, 7:last_column], retx=T)$x # Compute PCA
+          pca_c <- ncol(pca) # Get size of PCA output to put back in h_rep
+          h_rep[index, 7:(6+pca_c)] <- pca
+          h_rep[index, (7+pca_c):last_column] <- NA
+          #print("Computed PCA")
+          write.csv(h_rep, file="../Results/Category_hidden_PCA.csv", row.names=F)
+        }
         # WITHIN CATEGORY MEAN DISTANCE
         dist.l <- c()  # Labelled category (coded 0 in df)
         dist.nl <- c() # Unlabelled category (coded 1 in df)
@@ -89,12 +113,12 @@ if (!compute_distances) {
             index2.nl <- index.nl & h_rep$exemplar==e2+4
             # Append distances
             dist.l <- c(dist.l,
-                        dist(rbind(h_rep[index1.l, -(1:6)],
-                                   h_rep[index2.l, -(1:6)]))[1])
+                        dist(rbind(h_rep[index1.l, 7:(6+n_dims)],
+                                   h_rep[index2.l, 7:(6+n_dims)]))[1])
             #print(c("Added distance between",e1,"and",e2))
             dist.nl <- c(dist.nl,
-                         dist(rbind(h_rep[index1.nl, -(1:6)],
-                                    h_rep[index2.nl, -(1:6)]))[1])
+                         dist(rbind(h_rep[index1.nl, 7:(6+n_dims)],
+                                    h_rep[index2.nl, 7:(6+n_dims)]))[1])
             #print(c("Added distance between",e1+4,"and",e2+4))
           }
         }
@@ -108,22 +132,22 @@ if (!compute_distances) {
         #print("Added a row for dist.nl")
         # PROTOTYPE: NOT WORKING FOR NOW (mean(...) returns warning because of non-numerical values leading to NA)
         # Compute centre ("prototype") of each category
-        proto.l <- colMeans(h_rep[index.l, -(1:6)])
+        #proto.l <- mean(h_rep[index.l, 7:(6+n_dims)])
         #print("Computed labelled prototype")
-        proto.nl <- colMeans(h_rep[index.nl, -(1:6)])
+        #proto.nl <- mean(h_rep[index.nl, 7:(6+n_dims)])
         #print("Computed unlabelled prototype")
         # Save distances between categories (sd=0 here)
-        d[i + 2,] <- c(h_rep[index1.nl, 1:4], "between",
-                       dist(rbind(proto.l, proto.nl))[1], 0)
+        #d[i + 2,] <- c(h_rep[index1.nl, 1:4], "between",
+        #               dist(rbind(proto.l, proto.nl))[1], 0)
         #print("Added a row for LTM between- distance")
-        i <- i + 3
+        i <- i + 2
       }
     }
   }
   # Code dist_type as a factor, get rid of NAs
   d$dist_type <- factor(d$dist_type)
   d <- na.omit(d)
-  # Write file if generating distances
+  # Write files if generating PCA, read files otherwise
   write.csv(d, file="../Results/Category_hidden_distances.csv", row.names=F)
 }
 
@@ -143,11 +167,11 @@ d.plot <- ggplot(d.sum.plot,
   xlab("Step") + ylab("Mean distance") + theme_bw(base_size=18) +
   theme(panel.grid.minor.x=element_blank()) +
   scale_fill_brewer(name = "Category", palette="Dark2",
-                    breaks = c("labelled", "unlabelled"),
-                    labels = c("Labelled", "Unlabelled")) +
-  scale_colour_brewer(name = "Category", palette="Dark2",
                       breaks = c("labelled", "unlabelled"),
                       labels = c("Labelled", "Unlabelled")) +
+  scale_colour_brewer(name = "Category", palette="Dark2",
+                        breaks = c("labelled", "unlabelled"),
+                        labels = c("Labelled", "Unlabelled")) +
   geom_line() +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
