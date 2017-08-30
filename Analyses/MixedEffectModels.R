@@ -294,86 +294,86 @@ LT.Cat.CR.ranef$theory <- "Compound Representations"
 levels(LT.Cat.CR.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 
 
-# MIXED EFFECT MODELS GRAPHS
-
-# SINGLE OBJECT -- FIXED EFFECT
-# Merge confindence intervals dataframes for global, LaF, and CR
-LT.SingObj.all.CI <- rbind(LT.SingObj.CI, LT.SingObj.LaF.CI, LT.SingObj.CR.CI)
-LT.SingObj.plot.CI <- ggplot(data=LT.SingObj.all.CI,
-                             aes(x=parameter, y=estimate,
-                                 shape=theory, colour=theory)) +
-  ylab("Estimate") + xlab("") + theme_bw() +
-  scale_shape_manual(name = "Theory",
-                     breaks = c("Labels as Features","Compound Representations","Both theories"),
-                     values = c(21,23,24)) +
-  scale_colour_brewer(name = "Theory",
-                      breaks = c("Labels as Features","Compound Representations","Both theories"),
-                      palette="Dark2") +
-  coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
-  scale_y_continuous(breaks = seq(-3,43,0.5)) +
-  geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
-                width=0,
-                position=position_dodge(0.5)) +
-  geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
-                width=0,
-                position=position_dodge(0.5)) +
-  geom_point(position=position_dodge(0.5),
-             size=1, fill="white")
-ggsave("../Results/FixedEffects_SingleObject.pdf", plot = LT.SingObj.plot.CI,
-       height = 2, width = 10)
-
-# CATEGORY -- FIXED EFFECT
-# Merge confindence intervals dataframes for global, LaF, and CR
-LT.Cat.all.CI <- rbind(LT.Cat.CI, LT.Cat.LaF.CI, LT.Cat.CR.CI)
-LT.Cat.plot.CI <- ggplot(data=LT.Cat.all.CI,
-                             aes(x=parameter, y=estimate,
-                                 shape=theory, colour=theory)) +
-  ylab("Estimate") + xlab("") + theme_bw() +
-  scale_shape_manual(name = "Theory",
-                     breaks = c("Labels as Features","Compound Representations","Both theories"),
-                     values = c(21,23,24)) +
-  scale_colour_brewer(name = "Theory",
-                      breaks = c("Labels as Features","Compound Representations","Both theories"),
-                      palette="Dark2") +
-  coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
-  scale_y_continuous(breaks = seq(-3,43,0.5)) +
-  geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
-                width=0,
-                position=position_dodge(0.5)) +
-  geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
-                width=0,
-                position=position_dodge(0.5)) +
-  geom_point(position=position_dodge(0.5),
-             size=1, fill="white")
-ggsave("../Results/FixedEffects_Category.pdf", plot = LT.Cat.plot.CI,
-       height = 2, width = 10)
-
-# SINGLE OBJECT -- RANDOM EFFECTS
-LT.SingObj.ranef <- rbind(LT.SingObj.LaF.ranef, LT.SingObj.CR.ranef)
-LT.SingObj.plot.ranef <- ggplot(LT.SingObj.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
-  theme_bw() + xlab("Estimate") +
-  theme(axis.text.y = element_blank(),
-        axis.title.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.text.x = element_text(size=6)) +
-  scale_x_continuous(breaks = seq(-20,10,2)) +
-  geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) +
-  geom_point(size=1, fill="white", shape=21) +
-  facet_grid(theory~variable, scale="free", space="free_x")
-ggsave("../Results/RandomEffects_SingleObject.pdf", plot = LT.SingObj.plot.ranef,
-       height = 4, width = 6)
-
-# CATEGORY -- RANDOM EFFECTS
-LT.Cat.ranef <- rbind(LT.Cat.LaF.ranef, LT.Cat.CR.ranef)
-LT.Cat.plot.ranef <- ggplot(LT.Cat.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
-  theme_bw() + xlab("Estimate") +
-  theme(axis.text.y = element_blank(),
-        axis.title.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.text.x = element_text(size=6)) +
-  scale_x_continuous(breaks = seq(-20,10,2)) +
-  geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) +
-  geom_point(size=1, fill="white", shape=21) +
-  facet_grid(theory~variable, scale="free", space="free_x")
-ggsave("../Results/RandomEffects_Category.pdf", plot = LT.Cat.plot.ranef,
-       height = 4, width = 7)
+# # MIXED EFFECT MODELS GRAPHS
+# 
+# # SINGLE OBJECT -- FIXED EFFECT
+# # Merge confindence intervals dataframes for global, LaF, and CR
+# LT.SingObj.all.CI <- rbind(LT.SingObj.CI, LT.SingObj.LaF.CI, LT.SingObj.CR.CI)
+# LT.SingObj.plot.CI <- ggplot(data=LT.SingObj.all.CI,
+#                              aes(x=parameter, y=estimate,
+#                                  shape=theory, colour=theory)) +
+#   ylab("Estimate") + xlab("") + theme_bw() +
+#   scale_shape_manual(name = "Theory",
+#                      breaks = c("Labels as Features","Compound Representations","Both theories"),
+#                      values = c(21,23,24)) +
+#   scale_colour_brewer(name = "Theory",
+#                       breaks = c("Labels as Features","Compound Representations","Both theories"),
+#                       palette="Dark2") +
+#   coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
+#   scale_y_continuous(breaks = seq(-3,43,0.5)) +
+#   geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
+#                 width=0,
+#                 position=position_dodge(0.5)) +
+#   geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
+#                 width=0,
+#                 position=position_dodge(0.5)) +
+#   geom_point(position=position_dodge(0.5),
+#              size=1, fill="white")
+# ggsave("../Results/FixedEffects_SingleObject.pdf", plot = LT.SingObj.plot.CI,
+#        height = 2, width = 10)
+# 
+# # CATEGORY -- FIXED EFFECT
+# # Merge confindence intervals dataframes for global, LaF, and CR
+# LT.Cat.all.CI <- rbind(LT.Cat.CI, LT.Cat.LaF.CI, LT.Cat.CR.CI)
+# LT.Cat.plot.CI <- ggplot(data=LT.Cat.all.CI,
+#                              aes(x=parameter, y=estimate,
+#                                  shape=theory, colour=theory)) +
+#   ylab("Estimate") + xlab("") + theme_bw() +
+#   scale_shape_manual(name = "Theory",
+#                      breaks = c("Labels as Features","Compound Representations","Both theories"),
+#                      values = c(21,23,24)) +
+#   scale_colour_brewer(name = "Theory",
+#                       breaks = c("Labels as Features","Compound Representations","Both theories"),
+#                       palette="Dark2") +
+#   coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
+#   scale_y_continuous(breaks = seq(-3,43,0.5)) +
+#   geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
+#                 width=0,
+#                 position=position_dodge(0.5)) +
+#   geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
+#                 width=0,
+#                 position=position_dodge(0.5)) +
+#   geom_point(position=position_dodge(0.5),
+#              size=1, fill="white")
+# ggsave("../Results/FixedEffects_Category.pdf", plot = LT.Cat.plot.CI,
+#        height = 2, width = 10)
+# 
+# # SINGLE OBJECT -- RANDOM EFFECTS
+# LT.SingObj.ranef <- rbind(LT.SingObj.LaF.ranef, LT.SingObj.CR.ranef)
+# LT.SingObj.plot.ranef <- ggplot(LT.SingObj.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
+#   theme_bw() + xlab("Estimate") +
+#   theme(axis.text.y = element_blank(),
+#         axis.title.y = element_blank(),
+#         axis.ticks.y = element_blank(),
+#         axis.text.x = element_text(size=6)) +
+#   scale_x_continuous(breaks = seq(-20,10,2)) +
+#   geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) +
+#   geom_point(size=1, fill="white", shape=21) +
+#   facet_grid(theory~variable, scale="free", space="free_x")
+# ggsave("../Results/RandomEffects_SingleObject.pdf", plot = LT.SingObj.plot.ranef,
+#        height = 4, width = 6)
+# 
+# # CATEGORY -- RANDOM EFFECTS
+# LT.Cat.ranef <- rbind(LT.Cat.LaF.ranef, LT.Cat.CR.ranef)
+# LT.Cat.plot.ranef <- ggplot(LT.Cat.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
+#   theme_bw() + xlab("Estimate") +
+#   theme(axis.text.y = element_blank(),
+#         axis.title.y = element_blank(),
+#         axis.ticks.y = element_blank(),
+#         axis.text.x = element_text(size=6)) +
+#   scale_x_continuous(breaks = seq(-20,10,2)) +
+#   geom_errorbarh(height=0) + geom_vline(xintercept=0, lty=2) +
+#   geom_point(size=1, fill="white", shape=21) +
+#   facet_grid(theory~variable, scale="free", space="free_x")
+# ggsave("../Results/RandomEffects_Category.pdf", plot = LT.Cat.plot.ranef,
+#        height = 4, width = 7)
