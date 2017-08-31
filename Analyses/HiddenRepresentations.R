@@ -47,7 +47,7 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 }
 
 # TASK SELECTION
-compute_distances <- T #Whether or not to compute the distances
+compute_distances <- F #Whether or not to compute the distances
 
 # DATA HANDLING
 # Import data, from both Category and SingleObject
@@ -142,8 +142,9 @@ d.abs.plot <- ggplot(d.sum.abs,
                          colour = dist_type,
                          shape = dist_type)) +
   facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance (absolute)") + theme_bw(base_size=18) +
-  theme(panel.grid.minor.x=element_blank()) +
+  xlab("Step") + ylab("Mean distance (absolute)") + theme_bw(base_size=30) +
+  theme(panel.grid.minor.x=element_blank(),
+        legend.position = "top") +
   scale_fill_brewer(name = "Category", palette="Dark2",
                     breaks = c("labelled", "unlabelled"),
                     labels = c("Labelled", "Unlabelled")) +
@@ -153,7 +154,7 @@ d.abs.plot <- ggplot(d.sum.abs,
   geom_line() +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/DistancesAbsolute.png", plot = d.abs.plot, height = 8, width = 10)
+ggsave("../Results/DistancesAbsolute.png", plot = d.abs.plot, height = 20, width = 20)
 # Relative distance
 # Select observations for plot, dropping unusued factors
 d.sum.rel <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("r_labelled","r_unlabelled"),])
@@ -164,8 +165,9 @@ d.rel.plot <- ggplot(d.sum.rel,
                      colour = dist_type,
                      shape = dist_type)) +
   facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance (relative)") + theme_bw(base_size=18) +
-  theme(panel.grid.minor.x=element_blank()) +
+  xlab("Step") + ylab("Mean distance (relative)") + theme_bw(base_size=30) +
+  theme(panel.grid.minor.x=element_blank(),
+        legend.position = "top") +
   scale_fill_brewer(name = "Category", palette="Dark2",
                     breaks = c("r_labelled", "r_unlabelled"),
                     labels = c("Labelled", "Unlabelled")) +
@@ -175,4 +177,4 @@ d.rel.plot <- ggplot(d.sum.rel,
   geom_line() +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 8, width = 10)
+ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 20, width = 20)
