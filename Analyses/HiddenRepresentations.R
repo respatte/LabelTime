@@ -189,6 +189,7 @@ d.btw.plot <- ggplot(d.sum.btw,
   xlab("Step") + ylab("Mean distance") + theme_bw(base_size=30) +
   theme(panel.grid.minor.x=element_blank(),
         legend.position = "top") +
+  guides(fill="none") +
   geom_line(colour="#7570b3") +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill="#7570b3"), alpha=0.1, size=0)
 # Save plot
