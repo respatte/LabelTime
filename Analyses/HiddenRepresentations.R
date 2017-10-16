@@ -178,3 +178,18 @@ d.rel.plot <- ggplot(d.sum.rel,
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
 ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 20, width = 20)
+# Relative distance
+# Select observations for plot, dropping unusued factors
+d.sum.btw <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("between"),])
+# Create plot
+d.btw.plot <- ggplot(d.sum.btw,
+                     aes(x = step,
+                         y = mu)) +
+  facet_grid(memory_type~theory, scales="free_y") +
+  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=30) +
+  theme(panel.grid.minor.x=element_blank(),
+        legend.position = "top") +
+  geom_line(colour="#7570b3") +
+  geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill="#7570b3"), alpha=0.1, size=0)
+# Save plot
+ggsave("../Results/DistancesBetween.png", plot = d.btw.plot, height = 20, width = 20)
