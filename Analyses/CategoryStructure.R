@@ -15,6 +15,7 @@ cat[,2:11] <- cat.pca$x
 cat.plot <- ggplot(data=cat, aes(x=dim0, y=dim1, colour=factor(category), shape=factor(category))) +
   xlab("PCA1 - 83.59% of variance explained") +
   ylab("PCA2 - 5.955% of variance explained") +
+  theme_bw(base_size = 10) +
   scale_colour_brewer(palette="Dark2", guide=F) +
   scale_shape_manual(values=c(16,18), guide=F) +
   geom_point(size=6)

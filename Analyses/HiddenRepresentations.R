@@ -132,7 +132,7 @@ if (!compute_distances) {
 # GRAPH
 # Absolute distance
 # Get summary of the data
-d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "memory_type", "dist_type"), conf.interval=.89)
+d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "memory_type", "dist_type"), conf.interval=.95)
 # Select observations for plot, dropping unusued factors
 d.sum.abs <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("labelled","unlabelled"),])
 # Create plot
