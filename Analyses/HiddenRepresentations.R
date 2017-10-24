@@ -142,7 +142,7 @@ d.abs.plot <- ggplot(d.sum.abs,
                          colour = dist_type,
                          shape = dist_type)) +
   facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance (absolute)") + theme_bw(base_size=30) +
+  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=30) +
   theme(panel.grid.minor.x=element_blank(),
         legend.position = "top") +
   scale_fill_brewer(name = "Category", palette="Dark2",
@@ -154,7 +154,7 @@ d.abs.plot <- ggplot(d.sum.abs,
   geom_line() +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/DistancesAbsolute.png", plot = d.abs.plot, height = 20, width = 20)
+ggsave("../Results/DistancesAbsolute.png", plot = d.abs.plot, height = 10, width = 10)
 # Relative distance
 # Select observations for plot, dropping unusued factors
 d.sum.rel <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("r_labelled","r_unlabelled"),])
@@ -165,7 +165,7 @@ d.rel.plot <- ggplot(d.sum.rel,
                      colour = dist_type,
                      shape = dist_type)) +
   facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance (relative)") + theme_bw(base_size=30) +
+  xlab("Step") + theme_bw(base_size=30) + theme(axis.title.y = element_blank()) +
   theme(panel.grid.minor.x=element_blank(),
         legend.position = "top") +
   scale_fill_brewer(name = "Category", palette="Dark2",
@@ -177,7 +177,7 @@ d.rel.plot <- ggplot(d.sum.rel,
   geom_line() +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 20, width = 20)
+ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 10, width = 9.4)
 # Relative distance
 # Select observations for plot, dropping unusued factors
 d.sum.btw <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("between"),])
@@ -186,11 +186,11 @@ d.btw.plot <- ggplot(d.sum.btw,
                      aes(x = step,
                          y = mu)) +
   facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=30) +
+  xlab("Step") + theme_bw(base_size=30) + theme(axis.title.y = element_blank()) +
   theme(panel.grid.minor.x=element_blank(),
         legend.position = "top") +
   guides(fill="none") +
   geom_line(colour="#7570b3") +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill="#7570b3"), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/DistancesBetween.png", plot = d.btw.plot, height = 20, width = 20)
+ggsave("../Results/DistancesBetween.png", plot = d.btw.plot, height = 9.4, width = 9.4)
