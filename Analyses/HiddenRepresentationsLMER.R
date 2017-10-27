@@ -10,6 +10,9 @@ distances <- read.csv(file="../Results/Category_hidden_distances.csv", header=T)
 distances$step <- distances$step/100 # Rescale step to allow models to converge
 # Select only absolute distances
 distances <- distances[distances$dist_type %in% c("labelled","unlabelled"),]
+# Select only LTM
+distances <- distances[distances$memory_type=="LTM",]
+# Set names for theories
 levels(distances$theory) <- c("Compound Representations","Labels as Features")
 # distances.evolution -- Remove step == 0 (i.e. representations at the end of background training)
 distances.evol <- distances[distances$step!=0,]
@@ -18,39 +21,20 @@ distances.trained <- distances[distances$step==0,]
 
 # GLOBAL MODEL -- FIXED EFFECTS
 # Building models from top to bottom
-distances.evol.lmer.0 <- lmer(mu ~ 1 + step + dist_type + memory_type + theory +
-                                step:dist_type + step:memory_type + step:theory +
-                                dist_type:memory_type + dist_type:theory + memory_type:theory +
-                                step:dist_type:memory_type + step:dist_type:theory +
-                                step:memory_type:theory + dist_type:memory_type:theory +
-                                step:dist_type:memory_type:theory +
+distances.evol.lmer.0 <- lmer(mu ~ 1 + step + dist_type + theory +
+                                step:dist_type + step:theory + dist_type:theory +
+                                step:dist_type:theory +
                                 (1 | subject),
                               data=distances.evol)
-distances.evol.lmer.1 <- update(distances.evol.lmer.0, . ~ . - step:dist_type:memory_type:theory)
-distances.evol.lmer.2 <- update(distances.evol.lmer.1, . ~ . - dist_type:memory_type:theory)
-distances.evol.lmer.3 <- update(distances.evol.lmer.2, . ~ . - step:memory_type:theory)
-distances.evol.lmer.4 <- update(distances.evol.lmer.3, . ~ . - step:dist_type:theory)       # Keep
-distances.evol.lmer.5 <- update(distances.evol.lmer.4, . ~ . - step:dist_type:memory_type)
-distances.evol.lmer.6 <- update(distances.evol.lmer.5, . ~ . - memory_type:theory)          # Keep
-distances.evol.lmer.7 <- update(distances.evol.lmer.6, . ~ . - dist_type:theory)            # Keep
-distances.evol.lmer.8 <- update(distances.evol.lmer.7, . ~ . - dist_type:memory_type)
-distances.evol.lmer.9 <- update(distances.evol.lmer.8, . ~ . - step:theory)
-distances.evol.lmer.10 <- update(distances.evol.lmer.9, . ~ . - step:memory_type)           # Keep
-distances.evol.lmer.11 <- update(distances.evol.lmer.10, . ~ . - step:dist_type)            # Keep
-distances.evol.lmer.12 <- update(distances.evol.lmer.11, . ~ . - theory)                    # Keep
-distances.evol.lmer.13 <- update(distances.evol.lmer.12, . ~ . - memory_type)               # Keep
-distances.evol.lmer.14 <- update(distances.evol.lmer.13, . ~ . - dist_type)
-distances.evol.lmer.15 <- update(distances.evol.lmer.14, . ~ . - step)                      # Keep
+distances.evol.lmer.1 <- update(distances.evol.lmer.0, . ~ . - step:dist_type:theory)
+distances.evol.lmer.2 <- update(distances.evol.lmer.1, . ~ . - dist_type:theory)      # Delete step:theory
+distances.evol.lmer.3 <- update(distances.evol.lmer.2, . ~ . - step:theory)
+distances.evol.lmer.4 <- update(distances.evol.lmer.3, . ~ . - step:dist_type)
+distances.evol.lmer.5 <- update(distances.evol.lmer.4, . ~ . - theory)
+distances.evol.lmer.6 <- update(distances.evol.lmer.5, . ~ . - dist_type)
+distances.evol.lmer.7 <- update(distances.evol.lmer.6, . ~ . - step)
 # Comparing models from bottom to top
-distances.evol.comparison <- anova(distances.evol.lmer.15,
-                                   distances.evol.lmer.14,
-                                   distances.evol.lmer.13,
-                                   distances.evol.lmer.12,
-                                   distances.evol.lmer.11,
-                                   distances.evol.lmer.10,
-                                   distances.evol.lmer.9,
-                                   distances.evol.lmer.8,
-                                   distances.evol.lmer.7,
+distances.evol.comparison <- anova(distances.evol.lmer.7,
                                    distances.evol.lmer.6,
                                    distances.evol.lmer.5,
                                    distances.evol.lmer.4,
@@ -60,22 +44,19 @@ distances.evol.comparison <- anova(distances.evol.lmer.15,
                                    distances.evol.lmer.0)
 #print(distances.evol.comparison)
 # Select final fixed effects model
-distances.evol.fixed <- update(distances.evol.lmer.0, . ~ . - step:dist_type:memory_type:theory -
-                                 dist_type:memory_type:theory - step:memory_type:theory - step:dist_type:memory_type -
-                                 dist_type:memory_type - step:theory - dist_type)
+distances.evol.fixed <- update(distances.evol.lmer.0, . ~ . - step:theory)
 
 # GLOBAL MODEL -- RANDOM EFFECTS
 distances.evol.random.1 <- update(distances.evol.fixed, . ~ . + (1 + step | subject))
-distances.evol.random.2 <- update(distances.evol.fixed, . ~ . + (1 + step + dist_type | subject))
-distances.evol.random.3 <- update(distances.evol.fixed, . ~ . + (1 + step + dist_type + memory_type | subject))
+#distances.evol.random.2 <- update(distances.evol.fixed, . ~ . + (1 + step + dist_type | subject))
+#distances.evol.random.3 <- update(distances.evol.fixed, . ~ . + (1 + step + dist_type + memory_type | subject))
+# Didn't converge
 # Comparing random effects models
 distances.evol.random.comparison <- anova(distances.evol.fixed,
-                                          distances.evol.random.1,
-                                          distances.evol.random.2,
-                                          distances.evol.random.3)
+                                          distances.evol.random.1)
 #print(distances.evol.random.comparison)
 # Select final model
-distances.evol.final <- distances.evol.fixed
+distances.evol.final <- distances.evol.random.1
 # Computing confidence intervals for parameter estimates, storing as a dataframe
 pp <- profile(distances.evol.final, which="beta_")
 distances.evol.CI <- cbind(as.data.frame(confint(pp, level=0.89))[c(1:4,6:8),],
@@ -92,30 +73,21 @@ distances.evol.LaF <- distances.evol[distances.evol$theory == "Labels as Feature
 distances.evol.CR <- distances.evol[distances.evol$theory == "Compound Representations",]
 # LABELS AS FEATURES
 # Building models from top to bottom
-distances.evol.LaF.lmer.0 <- lmer(mu ~ 1 + step + dist_type + memory_type +
-                                    step:dist_type + step:memory_type + dist_type:memory_type +
-                                    step:dist_type:memory_type +
-                                    (1 | subject),
-                                  data=distances.evol.LaF) # Don't keep three-way interaction
-distances.evol.LaF.lmer.1 <- update(distances.evol.LaF.lmer.0, . ~ . - step:dist_type:memory_type) # Don't keep dist_type:memory_type
-distances.evol.LaF.lmer.2 <- update(distances.evol.LaF.lmer.1, . ~ . - dist_type:memory_type)
-distances.evol.LaF.lmer.3 <- update(distances.evol.LaF.lmer.2, . ~ . - step:memory_type) # Don't keep step:dist_type
-distances.evol.LaF.lmer.4 <- update(distances.evol.LaF.lmer.3, . ~ . - step:dist_type)
-distances.evol.LaF.lmer.5 <- update(distances.evol.LaF.lmer.4, . ~ . - memory_type)
-distances.evol.LaF.lmer.6 <- update(distances.evol.LaF.lmer.5, . ~ . - dist_type)
-distances.evol.LaF.lmer.7 <- update(distances.evol.LaF.lmer.6, . ~ . - step)
+distances.evol.LaF.lmer.0 <- lmer(mu ~ 1 + step + dist_type +
+                                    step:dist_type +
+                                    (1 + step | subject),
+                                  data=distances.evol.LaF) # Don't keep step:dist_type
+distances.evol.LaF.lmer.1 <- update(distances.evol.LaF.lmer.0, . ~ . - step:dist_type)
+distances.evol.LaF.lmer.2 <- update(distances.evol.LaF.lmer.1, . ~ . - dist_type)
+distances.evol.LaF.lmer.3 <- update(distances.evol.LaF.lmer.2, . ~ . - step)
 # Comparing models from bottom to top
-distances.evol.LaF.comparison <- anova(distances.evol.LaF.lmer.0,
-                                       distances.evol.LaF.lmer.1,
+distances.evol.LaF.comparison <- anova(distances.evol.LaF.lmer.3,
                                        distances.evol.LaF.lmer.2,
-                                       distances.evol.LaF.lmer.3,
-                                       distances.evol.LaF.lmer.4,
-                                       distances.evol.LaF.lmer.5,
-                                       distances.evol.LaF.lmer.6,
-                                       distances.evol.LaF.lmer.7)
+                                       distances.evol.LaF.lmer.1,
+                                       distances.evol.LaF.lmer.0)
 #print(distances.evol.LaF.comparison)
 # Select final model
-distances.evol.LaF.final <- update(distances.evol.LaF.lmer.0, . ~ . - step:dist_type:memory_type - dist_type:memory_type - step:dist_type)
+distances.evol.LaF.final <- update(distances.evol.LaF.lmer.0, . ~ . - step:dist_type)
 # Computing confidence intervals for parameter estimates, storing as a dataframe
 pp <- profile(distances.evol.LaF.final, which="beta_")
 distances.evol.LaF.CI <- cbind(as.data.frame(confint(pp, level=0.89)),
@@ -127,30 +99,21 @@ distances.evol.LaF.CI$intercept <- c("Intercept",rep("Coefficients", times=2),"M
 distances.evol.LaF.CI$theory <- "Labels as Features"
 # COMPOUND REPRESENTATIONS
 # Building models from top to bottom
-distances.evol.CR.lmer.0 <- lmer(mu ~ 1 + step + dist_type + memory_type +
-                                   step:dist_type + step:memory_type + dist_type:memory_type +
-                                   step:dist_type:memory_type +
-                                   (1 | subject),
-                                 data=distances.evol.CR) # Don't keep three-way interaction
-distances.evol.CR.lmer.1 <- update(distances.evol.CR.lmer.0, . ~ . - step:dist_type:memory_type) # Don't keep dist_type:memory
-distances.evol.CR.lmer.2 <- update(distances.evol.CR.lmer.1, . ~ . - dist_type:memory_type)
-distances.evol.CR.lmer.3 <- update(distances.evol.CR.lmer.2, . ~ . - step:memory_type)
-distances.evol.CR.lmer.4 <- update(distances.evol.CR.lmer.3, . ~ . - step:dist_type)
-distances.evol.CR.lmer.5 <- update(distances.evol.CR.lmer.4, . ~ . - memory_type) # Don't keep dist_type
-distances.evol.CR.lmer.6 <- update(distances.evol.CR.lmer.5, . ~ . - dist_type)
-distances.evol.CR.lmer.7 <- update(distances.evol.CR.lmer.6, . ~ . - step)
+distances.evol.CR.lmer.0 <- lmer(mu ~ 1 + step + dist_type +
+                                   step:dist_type +
+                                   (1 + step | subject),
+                                 data=distances.evol.CR)
+distances.evol.CR.lmer.1 <- update(distances.evol.CR.lmer.0, . ~ . - step:dist_type)
+distances.evol.CR.lmer.2 <- update(distances.evol.CR.lmer.1, . ~ . - dist_type)
+distances.evol.CR.lmer.3 <- update(distances.evol.CR.lmer.2, . ~ . - step)
 # Comparing models from bottom to top
-distances.evol.CR.comparison <- anova(distances.evol.CR.lmer.0,
-                                      distances.evol.CR.lmer.1,
+distances.evol.CR.comparison <- anova(distances.evol.CR.lmer.3,
                                       distances.evol.CR.lmer.2,
-                                      distances.evol.CR.lmer.3,
-                                      distances.evol.CR.lmer.4,
-                                      distances.evol.CR.lmer.5,
-                                      distances.evol.CR.lmer.6,
-                                      distances.evol.CR.lmer.7)
-print(distances.evol.CR.comparison)
+                                      distances.evol.CR.lmer.1,
+                                      distances.evol.CR.lmer.0)
+#print(distances.evol.CR.comparison)
 # Select final model
-distances.evol.CR.final <- update(distances.evol.CR.lmer.0, . ~ . - step:dist_type:memory_type - dist_type:memory_type - dist_type)
+distances.evol.CR.final <- distances.evol.CR.lmer.0
 # Computing confidence intervals for parameter estimates, storing as a dataframe
 pp <- profile(distances.evol.CR.final, which="beta_")
 distances.evol.CR.CI <- cbind(as.data.frame(confint(pp, level=0.89)),
