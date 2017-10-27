@@ -89,7 +89,7 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
                                         shape = labelled)) +
   facet_grid(theory~experiment) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
-  xlab("Trial") + ylab("Looking time") + theme_bw(base_size=18) +
+  xlab("Trial") + ylab("Looking time") + theme_bw(base_size=8) +
   theme(panel.grid.minor.x=element_blank()) +
   scale_shape_manual(name = "Condition",
                      breaks = c("label","no_label"),
@@ -107,7 +107,7 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=1.5, fill="white")
 
-ggsave("../Results/LT_all.pdf", plot = LT.data.plot, height = 8, width = 9)
+ggsave("../Results/LT_all.pdf", plot = LT.data.plot, height = 2.76, width = 3.1)
 
 # Graph for Single Object only
 LT.data.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
@@ -116,7 +116,7 @@ LT.data.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
                                            shape = labelled)) +
   facet_grid(theory~.) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
-  xlab("Trial") + ylab("Looking time") + theme_bw(base_size=18) +
+  xlab("Trial") + ylab("Looking time") + theme_bw(base_size=8) +
   theme(panel.grid.minor.x=element_blank(),
         legend.position="top") +
   scale_shape_manual(name = "Condition",
@@ -127,16 +127,16 @@ LT.data.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
                       name = "Condition",
                       breaks = c("label","no_label"),
                       labels = c("label","no label")) +
-  geom_line(position=position_dodge(0.3)) +
+  geom_line(position=position_dodge(0.3), size=.4) +
   geom_errorbar(aes(ymin=looking_time-ci,
                     ymax=looking_time+ci),
-                colour="black", width=.2,
+                colour="black", width=.2, size=.35,
                 position=position_dodge(0.3)) +
   geom_point(position=position_dodge(0.3),
-             size=1.5, fill="white")
+             size=.8, fill="white")
 
 ggsave("../Results/LT_SingleObject.pdf", plot = LT.data.plot,
-       height = 8, width = 5)
+       height = 6, width = 3.1)
 
 # Graph from data (not models), mean and error bars (CI)
 LT.data.plot <- ggplot(LT.Cat.sum, aes(x = trial,
@@ -145,7 +145,7 @@ LT.data.plot <- ggplot(LT.Cat.sum, aes(x = trial,
                                        shape = labelled)) +
   facet_grid(theory~.) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
-  xlab("Trial") + ylab("Looking time") + theme_bw(base_size=18) +
+  xlab("Trial") + ylab("Looking time") + theme_bw(base_size=8) +
   theme(panel.grid.minor.x=element_blank(),
         legend.position="top") +
   scale_shape_manual(name = "Condition",
@@ -156,13 +156,13 @@ LT.data.plot <- ggplot(LT.Cat.sum, aes(x = trial,
                       name = "Condition",
                       breaks = c("label","no_label"),
                       labels = c("label","no label")) +
-  geom_line(position=position_dodge(0.3)) +
+  geom_line(position=position_dodge(0.3), size=.4) +
   geom_errorbar(aes(ymin=looking_time-ci,
                     ymax=looking_time+ci),
-                colour="black", width=.2,
+                colour="black", width=.2, size=.35,
                 position=position_dodge(0.3)) +
   geom_point(position=position_dodge(0.3),
-             size=1.5, fill="white")
+             size=.8, fill="white")
 
 ggsave("../Results/LT_Category.pdf", plot = LT.data.plot,
-       height = 8, width = 5)
+       height = 6, width = 3.1)

@@ -2,6 +2,7 @@
 library(ggplot2)
 library(Hmisc)
 library(plyr)
+library(car)
 
 ## Summarizes data.
 ## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
@@ -49,19 +50,18 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 # TASK SELECTION
 compute_distances <- F #Whether or not to compute the distances
 
-# DATA HANDLING
-# Import data, from both Category and SingleObject
-h_rep.LTM <- read.csv("../Results/Category_hidden_LTM.csv", head=TRUE)
-h_rep.STM <- read.csv("../Results/Category_hidden_STM.csv", head=TRUE)
-# Add memory_type column on the left
-h_rep.LTM <- cbind(memory_type="LTM", h_rep.LTM)
-h_rep.STM <- cbind(memory_type="STM", h_rep.STM)
-# Binding dataframes together
-h_rep <- rbind.fill(h_rep.LTM,h_rep.STM)
-
 if (!compute_distances) {
   d <- read.csv(file="../Results/Category_hidden_distances.csv", header=T)
 } else {
+  # DATA HANDLING
+  # Import data, from both Category and SingleObject
+  h_rep.LTM <- read.csv("../Results/Category_hidden_LTM.csv", head=TRUE)
+  h_rep.STM <- read.csv("../Results/Category_hidden_STM.csv", head=TRUE)
+  # Add memory_type column on the left
+  h_rep.LTM <- cbind(memory_type="LTM", h_rep.LTM)
+  h_rep.STM <- cbind(memory_type="STM", h_rep.STM)
+  # Binding dataframes together
+  h_rep <- rbind.fill(h_rep.LTM,h_rep.STM)
   # Initialise d to maximum possible number of cases
   # (subject(80)*step(24)*memory_type(LTM;STM)*dist_type(labelled;unlabelled;between;r_labelled;r_unlabelled) = 19200)
   d <- data.frame(memory_type=factor(c("LTM", "STM")), subject=numeric(19200), theory=factor(c("CR", "LaF")), step=0,
@@ -128,69 +128,33 @@ if (!compute_distances) {
   write.csv(d, file="../Results/Category_hidden_distances.csv", row.names=F)
 }
 
+# DATA HANDLING
+# Get rid of STM
+d <- d[d$memory_type=="LTM",2:6]
+# Create two distance type columns (labeled/unlabeled/between, and absolute/relative/between)
+d$abs_rel <- recode(d$dist_type, "'r_labelled'='Relative - Within'; 'r_unlabelled'='Relative - Within'; 'labelled'='Absolute - Within'; 'unlabelled'='Absolute - Within'; 'between'='Between'")
+d$dist_type <- recode(d$dist_type, "'r_labelled'='Labelled'; 'r_unlabelled'='Unlabelled'; 'labelled'='Labelled'; 'unlabelled'='Unlabelled'; 'between'='Between'")
 
 # GRAPH
 # Absolute distance
 # Get summary of the data
-d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "memory_type", "dist_type"), conf.interval=.95)
+d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "dist_type", "abs_rel"), conf.interval=.95)
 # Select observations for plot, dropping unusued factors
-d.sum.abs <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("labelled","unlabelled"),])
+d.sum <- droplevels(d.sum[d.sum$step>0,])
 # Create plot
-d.abs.plot <- ggplot(d.sum.abs,
-                     aes(x = step,
-                         y = mu,
-                         colour = dist_type,
-                         shape = dist_type)) +
-  facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=30) +
-  theme(panel.grid.minor.x=element_blank(),
-        legend.position = "top") +
-  scale_fill_brewer(name = "Category", palette="Dark2",
-                    breaks = c("labelled", "unlabelled"),
-                    labels = c("Labelled", "Unlabelled")) +
-  scale_colour_brewer(name = "Category", palette="Dark2",
-                      breaks = c("labelled", "unlabelled"),
-                      labels = c("Labelled", "Unlabelled")) +
-  geom_line() +
-  geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
-# Save plot
-ggsave("../Results/DistancesAbsolute.png", plot = d.abs.plot, height = 10, width = 10)
-# Relative distance
-# Select observations for plot, dropping unusued factors
-d.sum.rel <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("r_labelled","r_unlabelled"),])
-# Create plot
-d.rel.plot <- ggplot(d.sum.rel,
+d.plot <- ggplot(d.sum,
                  aes(x = step,
                      y = mu,
-                     colour = dist_type,
-                     shape = dist_type)) +
-  facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + theme_bw(base_size=30) + theme(axis.title.y = element_blank()) +
+                     colour = dist_type)) +
+  facet_grid(abs_rel~theory, scales="free_y") +
+  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=8) +
   theme(panel.grid.minor.x=element_blank(),
-        legend.position = "top") +
-  scale_fill_brewer(name = "Category", palette="Dark2",
-                    breaks = c("r_labelled", "r_unlabelled"),
-                    labels = c("Labelled", "Unlabelled")) +
-  scale_colour_brewer(name = "Category", palette="Dark2",
-                      breaks = c("r_labelled", "r_unlabelled"),
-                      labels = c("Labelled", "Unlabelled")) +
-  geom_line() +
+        legend.position = "top") + 
+  scale_fill_brewer(name = "Distance type", palette="Dark2",
+                    breaks=c("Labelled","Unlabelled","Between")) +
+  scale_colour_brewer(name = "Distance type", palette="Dark2",
+                      breaks=c("Labelled","Unlabelled","Between")) +
+  geom_line(size=.1) +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../Results/DistancesRelative.png", plot = d.rel.plot, height = 10, width = 9.4)
-# Relative distance
-# Select observations for plot, dropping unusued factors
-d.sum.btw <- droplevels(d.sum[d.sum$step>0 & d.sum$dist_type %in% c("between"),])
-# Create plot
-d.btw.plot <- ggplot(d.sum.btw,
-                     aes(x = step,
-                         y = mu)) +
-  facet_grid(memory_type~theory, scales="free_y") +
-  xlab("Step") + theme_bw(base_size=30) + theme(axis.title.y = element_blank()) +
-  theme(panel.grid.minor.x=element_blank(),
-        legend.position = "top") +
-  guides(fill="none") +
-  geom_line(colour="#7570b3") +
-  geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill="#7570b3"), alpha=0.1, size=0)
-# Save plot
-ggsave("../Results/DistancesBetween.png", plot = d.btw.plot, height = 9.4, width = 9.4)
+ggsave("../Results/Distances.png", plot = d.plot, height = 5, width = 3.1)
