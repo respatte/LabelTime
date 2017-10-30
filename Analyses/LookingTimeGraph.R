@@ -83,7 +83,7 @@ LT.Cat.sum <- summarySE(LT.data[LT.data$experiment=="Category",],
 
 # GENERATING GRAPHS
 # Graph from data (not models), mean and error bars (CI)
-LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
+LT.all.plot <- ggplot(LT.data.sum, aes(x = trial,
                                         y = looking_time,
                                         colour = labelled,
                                         shape = labelled)) +
@@ -99,18 +99,18 @@ LT.data.plot <- ggplot(LT.data.sum, aes(x = trial,
                       name = "Condition",
                       breaks = c("label","no_label"),
                       labels = c("label","no label")) +
-  geom_line(position=position_dodge(0.3)) +
+  geom_line(position=position_dodge(0.3), size=.4) +
   geom_errorbar(aes(ymin=looking_time-ci,
                     ymax=looking_time+ci),
-                colour="black", width=.2,
+                colour="black", width=.2, size=.35,
                 position=position_dodge(0.3)) +
   geom_point(position=position_dodge(0.3),
-             size=1.5, fill="white")
+             size=.8, fill="white")
 
-ggsave("../Results/LT_all.pdf", plot = LT.data.plot, height = 2.76, width = 3.1)
+ggsave("../Results/LT_all.pdf", plot = LT.all.plot, height = 2.76, width = 3.1)
 
 # Graph for Single Object only
-LT.data.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
+LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
                                            y = looking_time,
                                            colour = labelled,
                                            shape = labelled)) +
@@ -135,11 +135,11 @@ LT.data.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_SingleObject.pdf", plot = LT.data.plot,
+ggsave("../Results/LT_SingleObject.pdf", plot = LT.SOb.plot,
        height = 6, width = 3.1)
 
 # Graph from data (not models), mean and error bars (CI)
-LT.data.plot <- ggplot(LT.Cat.sum, aes(x = trial,
+LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
                                        y = looking_time,
                                        colour = labelled,
                                        shape = labelled)) +
@@ -164,5 +164,5 @@ LT.data.plot <- ggplot(LT.Cat.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_Category.pdf", plot = LT.data.plot,
+ggsave("../Results/LT_Category.pdf", plot = LT.Cat.plot,
        height = 6, width = 3.1)
