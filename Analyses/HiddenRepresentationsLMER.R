@@ -24,7 +24,7 @@ distances.trained <- distances[distances$step==0,]
 distances.evol.lmer.0 <- lmer(mu ~ 1 + step + dist_type + theory +
                                 step:dist_type + step:theory + dist_type:theory +
                                 step:dist_type:theory +
-                                (1 | subject),
+                                (1 + step + dist_type | subject),
                               data=distances.evol)
 distances.evol.lmer.1 <- update(distances.evol.lmer.0, . ~ . - step:dist_type:theory)
 distances.evol.lmer.2 <- update(distances.evol.lmer.1, . ~ . - dist_type:theory)      # Delete step:theory
@@ -44,28 +44,17 @@ distances.evol.comparison <- anova(distances.evol.lmer.7,
                                    distances.evol.lmer.0)
 #print(distances.evol.comparison)
 # Select final fixed effects model
-distances.evol.fixed <- update(distances.evol.lmer.0, . ~ . - step:theory)
+distances.evol.lmer.final <- update(distances.evol.lmer.0, . ~ . - step:theory)
 
-# GLOBAL MODEL -- RANDOM EFFECTS
-distances.evol.random.1 <- update(distances.evol.fixed, . ~ . + (1 + step | subject))
-#distances.evol.random.2 <- update(distances.evol.fixed, . ~ . + (1 + step + dist_type | subject))
-#distances.evol.random.3 <- update(distances.evol.fixed, . ~ . + (1 + step + dist_type + memory_type | subject))
-# Didn't converge
-# Comparing random effects models
-distances.evol.random.comparison <- anova(distances.evol.fixed,
-                                          distances.evol.random.1)
-#print(distances.evol.random.comparison)
-# Select final model
-distances.evol.final <- distances.evol.random.1
-# Computing confidence intervals for parameter estimates, storing as a dataframe
-pp <- profile(distances.evol.final, which="beta_")
-distances.evol.CI <- cbind(as.data.frame(confint(pp, level=0.89))[c(1:4,6:8),],
-                           as.data.frame(confint(pp, level=0.97))[c(1:4,6:8),]) # Only keep effects without theory
-distances.evol.CI$estimate <- fixef(distances.evol.final)[c(1:4,6:8)]
-distances.evol.CI$parameter <- c("Intercept","Step","Condition (no label)","Memory (STM)","Step * Condition (no label)",
-                                 "Step * Memory (STM)","Condition (no label) * Memory (STM)") # Add meaningful names
-distances.evol.CI$intercept <- c("Intercept",rep("Coefficients", times=2),"Memory (STM)",rep("Coefficients", times=3))
-distances.evol.CI$theory <- "Both theories"
+# # Computing confidence intervals for parameter estimates, storing as a dataframe
+# pp <- profile(distances.evol.final, which="beta_")
+# distances.evol.CI <- cbind(as.data.frame(confint(pp, level=0.89))[c(1:4,6:8),],
+#                            as.data.frame(confint(pp, level=0.97))[c(1:4,6:8),]) # Only keep effects without theory
+# distances.evol.CI$estimate <- fixef(distances.evol.final)[c(1:4,6:8)]
+# distances.evol.CI$parameter <- c("Intercept","Step","Condition (no label)","Memory (STM)","Step * Condition (no label)",
+#                                  "Step * Memory (STM)","Condition (no label) * Memory (STM)") # Add meaningful names
+# distances.evol.CI$intercept <- c("Intercept",rep("Coefficients", times=2),"Memory (STM)",rep("Coefficients", times=3))
+# distances.evol.CI$theory <- "Both theories"
 
 # MODELS PER THEORY
 # Create sub-datasets
@@ -75,8 +64,8 @@ distances.evol.CR <- distances.evol[distances.evol$theory == "Compound Represent
 # Building models from top to bottom
 distances.evol.LaF.lmer.0 <- lmer(mu ~ 1 + step + dist_type +
                                     step:dist_type +
-                                    (1 + step | subject),
-                                  data=distances.evol.LaF) # Don't keep step:dist_type
+                                    (1 + step + dist_type | subject),
+                                  data=distances.evol.LaF)
 distances.evol.LaF.lmer.1 <- update(distances.evol.LaF.lmer.0, . ~ . - step:dist_type)
 distances.evol.LaF.lmer.2 <- update(distances.evol.LaF.lmer.1, . ~ . - dist_type)
 distances.evol.LaF.lmer.3 <- update(distances.evol.LaF.lmer.2, . ~ . - step)
@@ -85,25 +74,25 @@ distances.evol.LaF.comparison <- anova(distances.evol.LaF.lmer.3,
                                        distances.evol.LaF.lmer.2,
                                        distances.evol.LaF.lmer.1,
                                        distances.evol.LaF.lmer.0)
-#print(distances.evol.LaF.comparison)
+print(distances.evol.LaF.comparison)
 # Select final model
-distances.evol.LaF.final <- update(distances.evol.LaF.lmer.0, . ~ . - step:dist_type)
-# Computing confidence intervals for parameter estimates, storing as a dataframe
-pp <- profile(distances.evol.LaF.final, which="beta_")
-distances.evol.LaF.CI <- cbind(as.data.frame(confint(pp, level=0.89)),
-                               as.data.frame(confint(pp, level=0.97)))
-distances.evol.LaF.CI$estimate <- fixef(distances.evol.LaF.final)
-distances.evol.LaF.CI$parameter <- c("Intercept","Step","Condition (no label)","Memory (STM)",
-                                     "Step * Memory (STM)","Condition (no label) * Memory (STM)") # Add meaningful names
-distances.evol.LaF.CI$intercept <- c("Intercept",rep("Coefficients", times=2),"Memory (STM)",rep("Coefficients", times=2))
-distances.evol.LaF.CI$theory <- "Labels as Features"
+distances.evol.LaF.lmer.final <- distances.evol.LaF.lmer.0
+# # Computing confidence intervals for parameter estimates, storing as a dataframe
+# pp <- profile(distances.evol.LaF.final, which="beta_")
+# distances.evol.LaF.CI <- cbind(as.data.frame(confint(pp, level=0.89)),
+#                                as.data.frame(confint(pp, level=0.97)))
+# distances.evol.LaF.CI$estimate <- fixef(distances.evol.LaF.final)
+# distances.evol.LaF.CI$parameter <- c("Intercept","Step","Condition (no label)","Memory (STM)",
+#                                      "Step * Memory (STM)","Condition (no label) * Memory (STM)") # Add meaningful names
+# distances.evol.LaF.CI$intercept <- c("Intercept",rep("Coefficients", times=2),"Memory (STM)",rep("Coefficients", times=2))
+# distances.evol.LaF.CI$theory <- "Labels as Features"
 # COMPOUND REPRESENTATIONS
 # Building models from top to bottom
 distances.evol.CR.lmer.0 <- lmer(mu ~ 1 + step + dist_type +
                                    step:dist_type +
-                                   (1 + step | subject),
+                                   (1 + step + dist_type | subject),
                                  data=distances.evol.CR)
-distances.evol.CR.lmer.1 <- update(distances.evol.CR.lmer.0, . ~ . - step:dist_type)
+distances.evol.CR.lmer.1 <- update(distances.evol.CR.lmer.0, . ~ . - step:dist_type) # Don't keep dist_type
 distances.evol.CR.lmer.2 <- update(distances.evol.CR.lmer.1, . ~ . - dist_type)
 distances.evol.CR.lmer.3 <- update(distances.evol.CR.lmer.2, . ~ . - step)
 # Comparing models from bottom to top
@@ -111,42 +100,42 @@ distances.evol.CR.comparison <- anova(distances.evol.CR.lmer.3,
                                       distances.evol.CR.lmer.2,
                                       distances.evol.CR.lmer.1,
                                       distances.evol.CR.lmer.0)
-#print(distances.evol.CR.comparison)
+print(distances.evol.CR.comparison)
 # Select final model
-distances.evol.CR.final <- distances.evol.CR.lmer.0
-# Computing confidence intervals for parameter estimates, storing as a dataframe
-pp <- profile(distances.evol.CR.final, which="beta_")
-distances.evol.CR.CI <- cbind(as.data.frame(confint(pp, level=0.89)),
-                              as.data.frame(confint(pp, level=0.97)))
-distances.evol.CR.CI$estimate <- fixef(distances.evol.CR.final)
-distances.evol.CR.CI$parameter <- c("Intercept","Step","Memory (STM)","Step * Memory (STM)",
-                                    "Step * Condition (no label)") # Add meaningful names
-distances.evol.CR.CI$intercept <- c("Intercept","Coefficients","Memory (STM)",rep("Coefficients", times=2))
-distances.evol.CR.CI$theory <- "Compound Representations"
+distances.evol.CR.lmer.final <- update(distances.evol.CR.lmer.0, . ~ . - dist_type)
+# # Computing confidence intervals for parameter estimates, storing as a dataframe
+# pp <- profile(distances.evol.CR.final, which="beta_")
+# distances.evol.CR.CI <- cbind(as.data.frame(confint(pp, level=0.89)),
+#                               as.data.frame(confint(pp, level=0.97)))
+# distances.evol.CR.CI$estimate <- fixef(distances.evol.CR.final)
+# distances.evol.CR.CI$parameter <- c("Intercept","Step","Memory (STM)","Step * Memory (STM)",
+#                                     "Step * Condition (no label)") # Add meaningful names
+# distances.evol.CR.CI$intercept <- c("Intercept","Coefficients","Memory (STM)",rep("Coefficients", times=2))
+# distances.evol.CR.CI$theory <- "Compound Representations"
 
-# MIXED EFFECT MODEL GRAPHS
-# FIXED EFFECTS
-# Merge confindence intervals dataframes for global, LaF, and CR
-distances.evol.all.CI <- rbind(distances.evol.CI, distances.evol.LaF.CI, distances.evol.CR.CI)
-distances.evol.plot.CI <- ggplot(data=distances.evol.all.CI,
-                                 aes(x=parameter, y=estimate,
-                                     shape=theory, colour=theory)) +
-  ylab("Estimate") + xlab("") + theme_bw() +
-  scale_shape_manual(name = "Theory",
-                     breaks = c("Labels as Features","Compound Representations","Both theories"),
-                     values = c(21,23,24)) +
-  scale_colour_brewer(name = "Theory",
-                      breaks = c("Labels as Features","Compound Representations","Both theories"),
-                      palette="Dark2") +
-  coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
-  scale_y_continuous(breaks = seq(-0.01,0.42,0.02)) +
-  geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
-                width=0,
-                position=position_dodge(0.75)) +
-  geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
-                width=0,
-                position=position_dodge(0.75)) +
-  geom_point(position=position_dodge(0.75),
-             size=1, fill="white")
-ggsave("../Results/FixedEffects_Distances.pdf", plot = distances.evol.plot.CI,
-       height = 2, width = 10)
+# # MIXED EFFECT MODEL GRAPHS
+# # FIXED EFFECTS
+# # Merge confindence intervals dataframes for global, LaF, and CR
+# distances.evol.all.CI <- rbind(distances.evol.CI, distances.evol.LaF.CI, distances.evol.CR.CI)
+# distances.evol.plot.CI <- ggplot(data=distances.evol.all.CI,
+#                                  aes(x=parameter, y=estimate,
+#                                      shape=theory, colour=theory)) +
+#   ylab("Estimate") + xlab("") + theme_bw() +
+#   scale_shape_manual(name = "Theory",
+#                      breaks = c("Labels as Features","Compound Representations","Both theories"),
+#                      values = c(21,23,24)) +
+#   scale_colour_brewer(name = "Theory",
+#                       breaks = c("Labels as Features","Compound Representations","Both theories"),
+#                       palette="Dark2") +
+#   coord_flip() + facet_grid(~intercept, scales="free_x", space="free_x") +
+#   scale_y_continuous(breaks = seq(-0.01,0.42,0.02)) +
+#   geom_errorbar(aes(ymin=`5.5 %`, ymax=`94.5 %`),
+#                 width=0,
+#                 position=position_dodge(0.75)) +
+#   geom_errorbar(aes(ymin=`1.5 %`, ymax=`98.5 %`), alpha=0.6,
+#                 width=0,
+#                 position=position_dodge(0.75)) +
+#   geom_point(position=position_dodge(0.75),
+#              size=1, fill="white")
+# ggsave("../Results/FixedEffects_Distances.pdf", plot = distances.evol.plot.CI,
+#        height = 2, width = 10)
