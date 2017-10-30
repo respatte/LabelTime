@@ -144,11 +144,8 @@ class BackPropNetwork(object):
 		Assume the activation gate function is the linear function.
 		
 		"""
-		# If no label units in model (i.e. STM model), remove label from goal
-		l_size = goal.size - self.neurons[-1].size	
-		if l_size:
-			goal = np.delete(goal, range(l_size), axis=1)
-		delta_c = self.neurons[-1] - goal
+		# Missing values in goal should be np.nan, and are treated as no error
+		delta_c = np.nan_to_num(self.neurons[-1] - goal)
 		self.error = delta_c
 		sigma_prime = 1
 		sigma_prime += .1 # Adding an offset term to avoid local minima
@@ -192,8 +189,8 @@ class BackPropNetwork(object):
 	def propagate(self, stimulus):
 		"""Compute the forward propagation."""
 		# Input stimulus to the network
-		# TODO - Assert stimulus shape is consistent
-		self.neurons[0] = stimulus
+		# Missing values in stimulus are treated as nan, converted to zero here
+		self.neurons[0] = np.nan_to_num(stimulus)
 		# Forward propagation
 		# Linear gate function for connections to output layer
 		for layer in range(1, self.n_layers-1):

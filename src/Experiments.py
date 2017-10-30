@@ -73,13 +73,13 @@ class Experiment(object):
 		no_label = np.zeros((1, self.l_size))
 		self.l_stims = (no_label, label) # index on l_stims is presence of label
 		# Generate test stimuli with zeros for label and exploration
-		self.test_stims = (np.hstack((np.zeros((1, self.l_size)),
+		self.test_stims = (np.hstack((np.nan * np.ones((1, self.l_size)),
 									  self.p_proto[0],
-									  np.zeros((1, self.e_size))
+									  np.nan * np.ones((1, self.e_size))
 									  )),
-						   np.hstack((np.zeros((1, self.l_size)),
+						   np.hstack((np.nan * np.ones((1, self.l_size)),
 									  self.p_proto[1],
-									  np.zeros((1, self.e_size))
+									  np.nan * np.ones((1, self.e_size))
 									  ))
 						   )
 	

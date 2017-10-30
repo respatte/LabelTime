@@ -91,20 +91,10 @@ class Subject(object):
 				self.net = bpn.BackPropNetwork([n_input, n_hidden, n_output],
 											   lrn_rate)
 		elif model == "DMN":
-			# Compute layer sizes for STM (without label output)
-			# Label deleted within DualMemoryNetwork model to fit goal to size
-			n_input_STM = n_input
-			n_output_STM = n_output - l_size
-			n_hidden_STM = int(n_output_STM * h_ratio)
-			# Create the network
 			if momentum:
 				self.net = bpn.DualMemoryNetwork([[n_input,
 												   n_hidden,
-												   n_output],
-												  [n_input_STM,
-												   n_hidden_STM,
-												   n_output_STM]
-												 ],
+												   n_output]] * 2,
 												 lrn_rate, momentum=momentum)
 			else:
 				self.net = bpn.DualMemoryNetwork([[n_input,
@@ -293,17 +283,8 @@ class SingleObjectSubject(Subject):
 	def bg_training(self, bg_parameters):
 		"""Background training of the network on both simuli.
 		
-		bg_parameters is a tuple with values mu_t, sigma_t, mu_p, sigma_p.
-		To mimic the experimental conditions, total play time and play
-		time per object are not strictly equal but follow a Gaussian
-		distribution.
-		To further mimic the experimental conditions, the model is
-		presented alternatively with one object then the other, for
-		differing times.
-		The number of play sessions for each object is the same to avoid
-		an overtraining of the last presented object. The total play
-		time for each object is kept within a standard deviation from
-		the mean total looking time to each object.
+		bg_parameters is a tuple with values mu_t, sigma_t, describing a
+		Gaussian for total play time with each object.
 		
 		"""
 		mu_t, sigma_t = bg_parameters
