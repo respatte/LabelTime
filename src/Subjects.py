@@ -66,22 +66,26 @@ class Subject(object):
 		if exploration[0]:
 			explo_proto = self.encode_explo(exploration[0], exploration[1])
 		else:
-			# Create array of with no columns
+			# Create array with no columns
 			explo_proto = (np.zeros((1, 0)), np.zeros((1, 0)))
 		full_proto = (np.hstack((proto[0], explo_proto[0])),
 					  np.hstack((proto[1], explo_proto[1])))
 		# Create proto_goals as copies of stimuli
 		self.proto_goals = cp.deepcopy(full_proto)
 		# Delete input label if CR model
-		# theory gives number of label units if CR, 0 if LaF
 		if theory == "CR":
 			full_proto = (np.delete(full_proto[0], range(l_size), axis=1),
 						  np.delete(full_proto[1], range(l_size), axis=1))
 		self.proto_stims = full_proto
 		# Create backpropagation network
 		n_input = self.proto_stims[0].size
-		n_output = self.proto_goals[0].size
-		n_hidden = int(n_output * h_ratio)
+		n_output_LTM = self.proto_goals[0].size
+		if theory == "CR":
+			n_output_STM = n_output_LTM - l_size
+		else:
+			n_output_STM = n_output_LTM
+		n_hidden_LTM = int(n_output_LTM * h_ratio)
+		n_hidden_STM = int(n_output_STM * h_ratio)
 		self.model = model
 		if model == "BPN":
 			if momentum:
@@ -93,13 +97,19 @@ class Subject(object):
 		elif model == "DMN":
 			if momentum:
 				self.net = bpn.DualMemoryNetwork([[n_input,
-												   n_hidden,
-												   n_output]] * 2,
+												   n_hidden_LTM,
+												   n_output_LTM],
+												  [n_input,
+												   n_hidden_STM,
+												   n_output_STM]],
 												 lrn_rate, momentum=momentum)
 			else:
 				self.net = bpn.DualMemoryNetwork([[n_input,
-												   n_hidden,
-												   n_output]] * 2,
+												   n_hidden_LTM,
+												   n_output_LTM],
+												  [n_input,
+												   n_hidden_STM,
+												   n_output_STM]],
 												 lrn_rate)
 	
 	@property # Create self.impaired as an access-only property

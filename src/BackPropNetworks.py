@@ -144,6 +144,10 @@ class BackPropNetwork(object):
 		Assume the activation gate function is the linear function.
 		
 		"""
+		# If no label output units in network, delete from goal
+		l_size = goal.size - self.neurons[-1].size
+		if l_size:
+			goal = np.delete(goal, range(l_size), axis=1)
 		# Missing values in goal should be np.nan, and are treated as no error
 		delta_c = np.nan_to_num(self.neurons[-1] - goal)
 		self.error = delta_c
