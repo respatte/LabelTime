@@ -107,7 +107,7 @@ LT.all.plot <- ggplot(LT.data.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_all.pdf", plot = LT.all.plot, height = 2.76, width = 3.1)
+ggsave("../Results/LT_all.pdf", plot = LT.all.plot, height = 6, width = 7)
 
 # Graph for Single Object only
 LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
