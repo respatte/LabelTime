@@ -62,7 +62,8 @@ LT.data <- rbind(LT.SingObj, LT.Cat)
 LT.data$subject <- factor(LT.data$subject)
 LT.data$explo_overlap <- factor(LT.data$explo_overlap)
 LT.data$theory <- factor(LT.data$theory, labels = c("Compound Representations",
-                                                    "Labels as Features"))
+                                                    "Labels as Features -- Ignore Missing Values",
+                                                    "Labels as Features -- Treat Missing Values"))
 LT.data$experiment <- factor(LT.data$experiment, labels = c("Category",
                                                             "Single Object"))
 # Transform trial number to start at 1
@@ -107,7 +108,7 @@ LT.all.plot <- ggplot(LT.data.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_all.pdf", plot = LT.all.plot, height = 6, width = 7)
+ggsave("../Results/LT_all.pdf", plot = LT.all.plot, height = 8.5, width = 6.5)
 
 # Graph for Single Object only
 LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
@@ -136,7 +137,7 @@ LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
              size=.8, fill="white")
 
 ggsave("../Results/LT_SingleObject.pdf", plot = LT.SOb.plot,
-       height = 6, width = 3.1)
+       height = 8.5, width = 3.1)
 
 # Graph from data (not models), mean and error bars (CI)
 LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
@@ -165,4 +166,4 @@ LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
              size=.8, fill="white")
 
 ggsave("../Results/LT_Category.pdf", plot = LT.Cat.plot,
-       height = 6, width = 3.1)
+       height = 8.5, width = 3.1)
