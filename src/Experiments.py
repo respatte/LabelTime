@@ -112,9 +112,10 @@ class Experiment(object):
 		# Code s_type (subject type) on 3 'bits':
 		# 	- labbeled item (0=first item labelled, 1=second item labelled)
 		# 	- first familiarisation item (1=labelled, 0=unlabelled)
-		#	- theory (0=LaF, 1=CR)
-		s_type = format(subject_i%8,'03b') # type: str
-		if subject_i % 6 == 0:
+		#	- theory (0=LaF_ignore_missing, 1=LaF_treat_missing, 2=CR)
+		s_type = [(subject_i//6)%2,
+				  (subject_i//3)%2,
+				  subject_i%3]
 		# Get background stimuli
 		bg_stims = self.create_subject_stims(s_type)
 		# Create subjects
@@ -125,16 +126,16 @@ class Experiment(object):
 		# Impair subject recovery memory (hidden to output)
 		s.impair_memory([1], method)
 		# Prepare stimuli order for familiarisation trials
-		labelled_i = int(s_type[0])
-		first_fam = int(s_type[1])
+		labelled_i = s_type[0]
+		first_fam = s_type[1]
 		first_stim = first_fam * labelled_i + \
 					 (1 - first_fam) * (1 - labelled_i)
 		test_stims = (self.test_stims[first_stim],
 					  self.test_stims[1 - first_stim])
 		test_goals = test_stims
 		# Stimuli for CR: delete label units
-		theory = int(s_type[2])
-		if theory:
+		theory = s_type[2]
+		if theory==2:
 			test_stims = (np.delete(test_stims[0], range(self.l_size), axis=1),
 						  np.delete(test_stims[1], range(self.l_size), axis=1))
 		# Run and record familiarisation training
@@ -205,14 +206,16 @@ class Experiment(object):
 		k = list(data.keys())[0]
 		n_trials = len(data[k][0])
 		# Prepare meaningful coding for parameters
-		theories = ("LaF", "CR")
+		theories = ("LaF_ignore_missing", "LaF_treat_missing", "CR")
 		labelled = ("no_label", "label")
 		pres_time = 100
 		for subject in data:
 			# Extract information from subject number
-			s_type = format(subject%8,'03b')
-			theory = int(s_type[2])
-			first_fam = int(s_type[1])
+			s_type = [(subject//6)%2,
+					  (subject//3)%2,
+					  subject%3]
+			theory = s_type[2]
+			first_fam = s_type[1]
 			for trial in range(n_trials):
 				for stim in range(2):
 					# Encode state for current stimulus
@@ -265,12 +268,14 @@ class Experiment(object):
 		rows_LTM = [','.join([c_labels] + dims_labels_LTM)]
 		rows_STM = [','.join([c_labels] + dims_labels_STM)]
 		# Prepare meaningful coding for parameters
-		theories = ("LaF", "CR")
+		theories = ("LaF_ignore_missing", "LaF_treat_missing", "CR")
 		labelled = ("label", "no_label")
 		for subject in data:
 			# Extract information from subject number
-			s_type = format(subject%8,'03b')
-			theory = int(s_type[2])
+			s_type = [(subject//6)%2,
+					  (subject//3)%2,
+					  subject%3]
+			theory = s_type[2]
 			max_step = max(data[subject])
 			for step in data[subject]:
 				for category in range(2):
@@ -367,11 +372,17 @@ class SingleObjectExperiment(Experiment):
 	
 	def create_subject(self, bg_stims, s_type):
 		"""Create subject for experiment depending on subject number."""
-		theory = int(s_type[2])
+		theory = 0
+		ignore_missing = True
+		if s_type[2] == 2:
+			theory = 1
+		elif s_type[2] == 1:
+			ignore_missing = False
 		s = SingleObjectSubject(bg_stims, (self.e_size, self.e_ratio),
 								self.theories[theory], self.l_size,
 								self.h_ratio,
-								self.lrn_rates, self.momenta)
+								self.lrn_rates, self.momenta,
+								ignore_missing=ignore_missing)
 		return s
 
 class CategoryExperiment(Experiment):
@@ -458,12 +469,17 @@ class CategoryExperiment(Experiment):
 	
 	def create_subject(self, bg_stims, s_type):
 		"""Create subject for experiment depending on subject number."""
-		theory = int(s_type[2])
+		theory = 0
+		ignore_missing = True
+		if s_type[2] == 2:
+			theory = 1
+		elif s_type[2] == 1:
+			ignore_missing = False
 		# Use test_stims instead of p_proto as label is already included
 		# (important for size only, not used in learning)
 		s = CategorySubject(self.test_stims, bg_stims, self.theories[theory],
 							self.l_size, self.h_ratio, self.lrn_rates,
-							self.momenta)
+							self.momenta, ignore_missing=ignore_missing)
 		return s
 	
 	def generate_category(self, prototype, n_exemplars, cat_method):
