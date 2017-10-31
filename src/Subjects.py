@@ -55,7 +55,7 @@ class Subject(object):
 	"""
 	
 	def __init__(self, proto, exploration, theory, l_size, h_ratio, lrn_rate,
-				 momentum=None, model="DMN"):
+				 momentum=None, model="DMN", ignore_missing=True):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
 		See class documentation for more details about parameters.
@@ -77,7 +77,10 @@ class Subject(object):
 			full_proto = (np.delete(full_proto[0], range(l_size), axis=1),
 						  np.delete(full_proto[1], range(l_size), axis=1))
 		self.proto_stims = full_proto
+		
 		# Create backpropagation network
+		# Remember if missing values at test are ignored
+		self.ignore_missing = ignore_missing
 		n_input = self.proto_stims[0].size
 		n_output_LTM = self.proto_goals[0].size
 		if theory == "CR":
@@ -215,7 +218,8 @@ class Subject(object):
 				error = 1
 				while time_left > 0 and error > threshold:
 					# Goal specification necessarry for CR models
-					self.net.run(test_stims[stim], test_goals[stim])
+					self.net.run(test_stims[stim], test_goals[stim],
+								 self.ignore_missing)
 					error = np.linalg.norm(self.net.error)
 					time_left -= 1
 				looking_times_trial.append(pres_time - time_left)
@@ -276,14 +280,14 @@ class SingleObjectSubject(Subject):
 	"""
 
 	def __init__(self, stims, exploration, theory, l_size, h_ratio, lrn_rate,
-				 momentum=None, model="DMN"):
+				 momentum=None, model="DMN", ignore_missing=True):
 		"""Initialise a simple labeltime subject for K&W2017.
 		
 		See class documentation for more details about parameters.
 		
 		"""
 		Subject.__init__(self, stims, exploration, theory, l_size, h_ratio,
-						 lrn_rate, momentum, model)
+						 lrn_rate, momentum, model, ignore_missing)
 		self.stims = self.proto_stims
 		del self.proto_stims
 		self.goals = self.proto_goals
@@ -350,14 +354,14 @@ class CategorySubject(Subject):
 	"""
 	
 	def __init__(self, proto, stims, theory, l_size, h_ratio, lrn_rate,
-				 momentum, model="DMN"):
+				 momentum, model="DMN", ignore_missing=True):
 		"""Initialise a simple labeltime subject for K&W_inprogress.
 		
 		See class documentation for more details about parameters.
 		
 		"""
 		Subject.__init__(self, proto, (0,0), theory, l_size, h_ratio,
-						 lrn_rate, momentum, model)
+						 lrn_rate, momentum, model, ignore_missing)
 		self.n_stims = len(stims[0])
 		self.goals = stims
 		if theory == "CR":

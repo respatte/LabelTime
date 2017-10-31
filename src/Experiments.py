@@ -109,11 +109,12 @@ class Experiment(object):
 	
 	def run_subject(self, subject_i, method):
 		"""Run familiarisation for a single subject."""
-		# Code s_type (subject type) on 4 bits:
+		# Code s_type (subject type) on 3 'bits':
 		# 	- labbeled item (0=first item labelled, 1=second item labelled)
 		# 	- first familiarisation item (1=labelled, 0=unlabelled)
 		#	- theory (0=LaF, 1=CR)
 		s_type = format(subject_i%8,'03b') # type: str
+		if subject_i % 6 == 0:
 		# Get background stimuli
 		bg_stims = self.create_subject_stims(s_type)
 		# Create subjects

@@ -136,7 +136,7 @@ class BackPropNetwork(object):
 			return gate(layer2)
 		return layer2
 	
-	def gradient_output(self, goal):
+	def gradient_output(self, goal, ignore_missing):
 		"""Compute gradient for the output layer given a goal.
 		
 		Assume the cost function is the euclidian distance between goal
@@ -148,8 +148,12 @@ class BackPropNetwork(object):
 		l_size = goal.size - self.neurons[-1].size
 		if l_size:
 			goal = np.delete(goal, range(l_size), axis=1)
-		# Missing values in goal should be np.nan, and are treated as no error
-		delta_c = np.nan_to_num(self.neurons[-1] - goal)
+		if ignore_missing:
+			# Missing values in goal should be np.nan, and are treated as no error
+			delta_c = np.nan_to_num(self.neurons[-1] - goal)
+		else:
+			# Missing values impact learning
+			delta_c = self.neurons[-1] - np.nan_to_num(goal)
 		self.error = delta_c 
 		sigma_prime = 1
 		sigma_prime += .1 # Adding an offset term to avoid local minima
@@ -202,13 +206,13 @@ class BackPropNetwork(object):
 		layer += 1
 		self.neurons[layer] = self.forward(layer-1, gate=None)
 
-	def backpropagate(self, goal, r=False):
+	def backpropagate(self, goal, r=False, ignore_missing=True):
 		"""Compute the backpropagation of the error."""
 		# Backward computing of gradients
 		# First value of gradients never used as no gradient for input layer
 		gradients = [None for _ in range(self.n_layers)]
 		# Start with output layer gradient
-		gradients[self.n_layers - 1] = self.gradient_output(goal)
+		gradients[self.n_layers -1] = self.gradient_output(goal, ignore_missing)
 		# Loop over gradients backwards, starting with last hidden layer
 		for layer in range(self.n_layers - 2, 0, -1):
 			gradients[layer] = self.gradient_back(gradients[layer + 1], layer)
@@ -402,11 +406,12 @@ class DualMemoryNetwork(BackPropNetwork):
 		# Linear gate function for connections to output layer for STM
 		self.STM.neurons[layer] = self.STM.forward(layer-1, gate=None)
 
-	def backpropagate(self, goal, r=False):
+	def backpropagate(self, goal, r=False, ignore_missing=True):
 		"""Compute the backpropagation of the error."""
 		# Backward computing of gradients
 		gradientsLTM = self.LTM.backpropagate(goal, r=True)
-		gradientsSTM = self.STM.backpropagate(goal, r=True)
+		gradientsSTM = self.STM.backpropagate(goal, r=True,
+											  ignore_missing=ignore_missing)
 		# Get update values for lateral connection weights
 		delta_LSTM = self.LTM.weight_delta(gradientsSTM[self.lat_i[1]],
 										   self.lat_i[0])
@@ -427,7 +432,7 @@ class DualMemoryNetwork(BackPropNetwork):
 		if r:
 			return gradientsLTM, gradientsSTM
 	
-	def run(self, stimulus, goal=None):
+	def run(self, stimulus, goal=None, ignore_missing=True):
 		"""Run the full propagation+backpropagation for a stimulus.
 		
 		Stimulus must be a numpy array of the same shape as the first
@@ -438,4 +443,4 @@ class DualMemoryNetwork(BackPropNetwork):
 		if goal is None:
 			goal = stimulus
 		self.propagate(stimulus)
-		self.backpropagate(goal)
+		self.backpropagate(goal, ignore_missing=ignore_missing)
