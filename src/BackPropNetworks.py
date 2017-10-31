@@ -150,7 +150,7 @@ class BackPropNetwork(object):
 			goal = np.delete(goal, range(l_size), axis=1)
 		# Missing values in goal should be np.nan, and are treated as no error
 		delta_c = np.nan_to_num(self.neurons[-1] - goal)
-		self.error = delta_c
+		self.error = delta_c 
 		sigma_prime = 1
 		sigma_prime += .1 # Adding an offset term to avoid local minima
 		return np.multiply(delta_c, sigma_prime)
@@ -380,8 +380,8 @@ class DualMemoryNetwork(BackPropNetwork):
 	def propagate(self, stimulus):
 		"""Compute the forward propagation."""
 		# Input stimulus to the network
-		self.LTM.neurons[0] = stimulus
-		self.STM.neurons[0] = stimulus
+		self.LTM.neurons[0] = np.nan_to_num(stimulus)
+		self.STM.neurons[0] = np.nan_to_num(stimulus)
 		# Forward propagation, up to lateral connection layer included
 		for layer in range(1, self.lat_i[0] + 1):
 			self.LTM.neurons[layer] = self.LTM.forward(layer-1)

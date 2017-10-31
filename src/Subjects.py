@@ -84,8 +84,7 @@ class Subject(object):
 			n_output_STM = n_output_LTM - l_size
 		else:
 			n_output_STM = n_output_LTM
-		n_hidden_LTM = int(n_output_LTM * h_ratio)
-		n_hidden_STM = int(n_output_STM * h_ratio)
+		n_hidden = int(n_output_LTM * h_ratio)
 		self.model = model
 		if model == "BPN":
 			if momentum:
@@ -97,18 +96,18 @@ class Subject(object):
 		elif model == "DMN":
 			if momentum:
 				self.net = bpn.DualMemoryNetwork([[n_input,
-												   n_hidden_LTM,
+												   n_hidden,
 												   n_output_LTM],
 												  [n_input,
-												   n_hidden_STM,
+												   n_hidden,
 												   n_output_STM]],
 												 lrn_rate, momentum=momentum)
 			else:
 				self.net = bpn.DualMemoryNetwork([[n_input,
-												   n_hidden_LTM,
+												   n_hidden,
 												   n_output_LTM],
 												  [n_input,
-												   n_hidden_STM,
+												   n_hidden,
 												   n_output_STM]],
 												 lrn_rate)
 	
