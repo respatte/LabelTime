@@ -72,43 +72,31 @@ LT$experiment <- factor(LT$experiment,
 
 # SINGLE OBJECT MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
-LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
-                            labelled:theory + trial:theory +
+LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + theory +
+                            trial:labelled + labelled:theory + trial:theory +
+                            trial:labelled:theory +
                             (1 + trial + labelled | subject),
-                          data = LT.SingObj) # 3. Adding trial:labelled:theory didn't improve the model
-#LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
-LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.0, . ~ . - trial:theory) # 3. Adding labelled:theory only marginally improved the model (>.1)
-LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory) # 2. Adding trial:labelled didn't improve the model
-#LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled) # 1. Adding theory didn't improve the model, removing from global model
-#LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)
-LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.3, . ~ . - labelled)
+                          data = LT.SingObj)
+LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
+LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - trial:theory)
+LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory)
+LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled)
+LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)
+LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.5, . ~ . - labelled)
 LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
                                LT.SingObj.lmer.6,
+                               LT.SingObj.lmer.5,
+                               LT.SingObj.lmer.4,
                                LT.SingObj.lmer.3,
                                LT.SingObj.lmer.2,
+                               LT.SingObj.lmer.1,
                                LT.SingObj.lmer.0)
-#print(LT.SingObj.comparison)
+print(LT.SingObj.comparison)
 # Select final fixed effects model
-LT.SingObj.fixed <- LT.SingObj.lmer.0
+LT.SingObj.final <- LT.SingObj.lmer.0
 
-# SINGLE OBJECT MODEL -- RANDOM EFFECTS
-LT.SingObj.random.0 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
-LT.SingObj.random.1 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
-LT.SingObj.random.2 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-#LT.SingObj.random.3 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
-# Didn't converge
-LT.SingObj.random.4 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
-LT.SingObj.random.5 <- update(LT.SingObj.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
-LT.SingObj.random.comparison <- anova(LT.SingObj.random.0,
-                                      LT.SingObj.random.1,
-                                      LT.SingObj.random.2,
-                                      LT.SingObj.random.4,
-                                      LT.SingObj.random.5)
-#print(LT.SingObj.random.comparison)
-# Selecting final model
-LT.SingObj.final <- LT.SingObj.random.5
 # Computing confidence intervals for parameter estimates, storing as a dataframe
 LT.SingObj.CI <- cbind(as.data.frame(confint(LT.SingObj.final, parm="beta_", level=0.89))[1:3,],
                        as.data.frame(confint(LT.SingObj.final, parm="beta_", level=0.97))[1:3,]) # Only keep effects without theory
