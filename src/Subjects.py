@@ -192,7 +192,8 @@ class Subject(object):
 				self.impaired.inertia.pop()
 	
 	def fam_training(self, test_stims, test_goals,
-					 pres_time, threshold, n_trials):
+					 pres_time, threshold, n_trials,
+					 record="error"):
 		"""Computes familiarisation training on test_stims.
 		
 		The model is presented with each stimulus, alternating, for
@@ -201,6 +202,9 @@ class Subject(object):
 		or for pres_time backpropagations.
 		stims is a set of two stimuli with values at zero for label and
 		exploration units.
+		If record is set to error, then the error of the network on first
+		epoch is recorded. If set to epoch, then the number of epochs
+		for full training of the model is recorded.
 		
 		Return a couple (looking_times, errors).
 		looking_times is a list of the number of backpropagations per
@@ -221,8 +225,11 @@ class Subject(object):
 					self.net.run(test_stims[stim], test_goals[stim],
 								 self.ignore_missing)
 					error = np.linalg.norm(self.net.error)
+					if record=="error" and time_left == pres_time:
+						looking_times_trial.append(error)
 					time_left -= 1
-				looking_times_trial.append(pres_time - time_left)
+				if record == "epoch":
+					looking_times_trial.append(pres_time - time_left)
 			looking_times.append(looking_times_trial)
 		return looking_times
 
