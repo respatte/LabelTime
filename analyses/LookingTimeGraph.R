@@ -48,8 +48,8 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 
 # DATA HANDLING
 # Import data, from both Category and SingleObject
-LT.SingObj <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
-LT.Cat <- read.csv("../Results/Category_LT.csv", head=TRUE)
+LT.SingObj <- read.csv("../results/SingleObject_LT.csv", head=TRUE)
+LT.Cat <- read.csv("../results/Category_LT.csv", head=TRUE)
 # Create experiment variable for each dataset
 LT.SingObj$experiment <- "SingleObject"
 LT.Cat$experiment <- "Category"
@@ -62,8 +62,7 @@ LT.data <- rbind(LT.SingObj, LT.Cat)
 LT.data$subject <- factor(LT.data$subject)
 LT.data$explo_overlap <- factor(LT.data$explo_overlap)
 LT.data$theory <- factor(LT.data$theory, labels = c("Compound Representations",
-                                                    "Labels as Features -- Ignore Missing Values",
-                                                    "Labels as Features -- Treat Missing Values"))
+                                                    "Labels as Features "))
 LT.data$experiment <- factor(LT.data$experiment, labels = c("Category",
                                                             "Single Object"))
 # Transform trial number to start at 1
@@ -108,7 +107,7 @@ LT.all.plot <- ggplot(LT.data.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_all.pdf", plot = LT.all.plot, height = 8.5, width = 6.5)
+ggsave("../results/LT_all.pdf", plot = LT.all.plot, height = 5.8, width = 6.5)
 
 # Graph for Single Object only
 LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
@@ -136,8 +135,8 @@ LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_SingleObject.pdf", plot = LT.SOb.plot,
-       height = 8.5, width = 3.1)
+ggsave("../results/LT_SingleObject.pdf", plot = LT.SOb.plot,
+       height = 5.8, width = 3.1)
 
 # Graph from data (not models), mean and error bars (CI)
 LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
@@ -165,5 +164,5 @@ LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../Results/LT_Category.pdf", plot = LT.Cat.plot,
-       height = 8.5, width = 3.1)
+ggsave("../results/LT_Category.pdf", plot = LT.Cat.plot,
+       height = 5.8, width = 3.1)
