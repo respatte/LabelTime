@@ -50,12 +50,6 @@ augment.ranef.mer <- function(x,
 # Import data, from both Category and SingleObject
 LT.SingObj <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
 LT.Cat <- read.csv("../Results/Category_LT.csv", head=TRUE)
-# Create experiment variable for each dataset
-LT.SingObj$experiment <- "SingleObject"
-LT.Cat$experiment <- "Category"
-# Increment subject from Cat to not overlap with SingObj
-n_subjects <- tail(LT.SingObj$subject, n=1) + 1
-LT.Cat$subject <- LT.Cat$subject + n_subjects
 # Set all factor variables to factors, with labels if meaningful
 LT.SingObj$explo_overlap <- factor(LT.SingObj$explo_overlap)
 LT.SingObj$theory <- factor(LT.SingObj$theory,
@@ -64,11 +58,6 @@ LT.SingObj$theory <- factor(LT.SingObj$theory,
 LT.Cat$explo_overlap <- factor(LT.Cat$explo_overlap)
 LT.Cat$theory <- factor(LT.Cat$theory, labels = c("Compound Representations",
                                                   "Labels as Features"))
-# Merge both datasets
-LT <- rbind(LT.SingObj, LT.Cat)
-LT$experiment <- factor(LT$experiment,
-                        labels = c("Category",
-                                   "Single Object"))
 
 # SINGLE OBJECT MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
@@ -81,7 +70,7 @@ LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
 LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - trial:theory)
 LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory)
 LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled)
-LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)
+LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)    # Labelled only marginally significant
 LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.5, . ~ . - labelled)
 LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
@@ -93,20 +82,20 @@ LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
                                LT.SingObj.lmer.2,
                                LT.SingObj.lmer.1,
                                LT.SingObj.lmer.0)
-print(LT.SingObj.comparison)
+#print(LT.SingObj.comparison)
 # Select final fixed effects model
-LT.SingObj.final <- LT.SingObj.lmer.0
+LT.SingObj.lmer.final <- update(LT.SingObj.lmer.0, . ~ . - labelled)
 
 # Computing confidence intervals for parameter estimates, storing as a dataframe
-LT.SingObj.CI <- cbind(as.data.frame(confint(LT.SingObj.final, parm="beta_", level=0.89))[1:3,],
-                       as.data.frame(confint(LT.SingObj.final, parm="beta_", level=0.97))[1:3,]) # Only keep effects without theory
-LT.SingObj.CI$estimate <- fixef(LT.SingObj.final)[1:3]
-LT.SingObj.CI$parameter <- c("Intercept","Trial","Condition (no label)") # Add meaningful names
-LT.SingObj.CI$intercept <- c("Intercept","Coefficients", "Coefficients")
-LT.SingObj.CI$theory <- "Both theories"
+#LT.SingObj.CI <- cbind(as.data.frame(confint(LT.SingObj.lmer.final, parm="beta_", level=0.89))[1:3,],
+#                       as.data.frame(confint(LT.SingObj.lmer.final, parm="beta_", level=0.97))[1:3,]) # Only keep effects without theory
+#LT.SingObj.CI$estimate <- fixef(LT.SingObj.lmer.final)[1:3]
+#LT.SingObj.CI$parameter <- c("Intercept","Trial","Condition (no label)") # Add meaningful names
+#LT.SingObj.CI$intercept <- c("Intercept","Coefficients", "Coefficients")
+#LT.SingObj.CI$theory <- "Both theories"
 
 # SINGLE OBJECT MODEL -- MAKE PREDICTIONS
-#LT.SingObj$fit <- predict(LT.SingObj.final, newdata=LT.SingObj, re.form=NA)
+#LT.SingObj$fit <- predict(LT.SingObj.lmer.final, newdata=LT.SingObj, re.form=NA)
 #write.csv(LT.SingObj, file="../Results/SingleObject_LT_fitted.csv", row.names=F)
 
 # SINGLE OBJECT PER THEORY -- MAIN EFFECTS
@@ -117,7 +106,7 @@ LT.SingObj.CR <- LT.SingObj[LT.SingObj$theory == "Compound Representations",]
 # All models taken as previous one minus last effect
 LT.SingObj.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
                                 (1 + trial + labelled | subject),
-                              data = LT.SingObj.LaF) # Adding the interaction only marginally improved the model
+                              data = LT.SingObj.LaF)
 LT.SingObj.LaF.lmer.1 <- update(LT.SingObj.LaF.lmer.0, . ~ . - trial:labelled)
 LT.SingObj.LaF.lmer.2 <- update(LT.SingObj.LaF.lmer.1, . ~ . - labelled)
 LT.SingObj.LaF.lmer.3 <- update(LT.SingObj.LaF.lmer.2, . ~ . - trial)
@@ -128,25 +117,25 @@ LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.3,
                                    LT.SingObj.LaF.lmer.0)
 #print(LT.SingObj.LaF.comparison)
 # Select final fixed effects model
-LT.SingObj.LaF.final <- LT.SingObj.LaF.lmer.0
+LT.SingObj.LaF.lmer.final <- LT.SingObj.LaF.lmer.0
 # Compute confidence intervals
-LT.SingObj.LaF.CI <- cbind(as.data.frame(confint(LT.SingObj.LaF.final, parm="beta_", level=0.89)),
-                           as.data.frame(confint(LT.SingObj.LaF.final, parm="beta_", level=0.97)))
-LT.SingObj.LaF.CI$estimate <- fixef(LT.SingObj.LaF.final)
-LT.SingObj.LaF.CI$parameter <- c("Intercept","Trial","Condition (no label)", "Trial * Condition (no label)") # Add meaningful names
-LT.SingObj.LaF.CI$intercept <- c("Intercept","Coefficients","Coefficients","Coefficients")
-LT.SingObj.LaF.CI$theory <- "Labels as Features"
-# Preparing random effects dataframe for caterpillar plots
-rf <- ranef(LT.SingObj.LaF.final, condVar=T)
-LT.SingObj.LaF.ranef <- augment(rf)
-LT.SingObj.LaF.ranef$theory <- "Labels as Features"
-levels(LT.SingObj.LaF.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
+# LT.SingObj.LaF.CI <- cbind(as.data.frame(confint(LT.SingObj.LaF.final, parm="beta_", level=0.89)),
+#                            as.data.frame(confint(LT.SingObj.LaF.final, parm="beta_", level=0.97)))
+# LT.SingObj.LaF.CI$estimate <- fixef(LT.SingObj.LaF.final)
+# LT.SingObj.LaF.CI$parameter <- c("Intercept","Trial","Condition (no label)", "Trial * Condition (no label)") # Add meaningful names
+# LT.SingObj.LaF.CI$intercept <- c("Intercept","Coefficients","Coefficients","Coefficients")
+# LT.SingObj.LaF.CI$theory <- "Labels as Features"
+# # Preparing random effects dataframe for caterpillar plots
+# rf <- ranef(LT.SingObj.LaF.final, condVar=T)
+# LT.SingObj.LaF.ranef <- augment(rf)
+# LT.SingObj.LaF.ranef$theory <- "Labels as Features"
+# levels(LT.SingObj.LaF.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
 LT.SingObj.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
                                (1 + trial + labelled | subject),
-                             data = LT.SingObj.CR)
-LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - trial:labelled) # No effect other than trial
+                             data = LT.SingObj.CR)                            # Small interaction effect
+LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - trial:labelled)  # No effect of labelled
 LT.SingObj.CR.lmer.2 <- update(LT.SingObj.CR.lmer.1, . ~ . - labelled)
 LT.SingObj.CR.lmer.3 <- update(LT.SingObj.CR.lmer.2, . ~ . - trial)
 # Model comparison against each other hierarchically
@@ -156,65 +145,54 @@ LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.3,
                                   LT.SingObj.CR.lmer.0)
 #print(LT.SingObj.CR.comparison)
 # Select final fixed effects model
-LT.SingObj.CR.final <- LT.SingObj.CR.lmer.2
+LT.SingObj.CR.lmer.final <- update(LT.SingObj.CR.lmer.0, . ~ . - labelled)
 # Compute confidence intervals
-LT.SingObj.CR.CI <- cbind(as.data.frame(confint(LT.SingObj.CR.final, parm="beta_", level=0.89)),
-                          as.data.frame(confint(LT.SingObj.CR.final, parm="beta_", level=0.97)))
-LT.SingObj.CR.CI$estimate <- fixef(LT.SingObj.CR.final)
-LT.SingObj.CR.CI$parameter <- c("Intercept","Trial") # Add meaningful names
-LT.SingObj.CR.CI$intercept <- c("Intercept","Coefficients")
-LT.SingObj.CR.CI$theory <- "Compound Representations"
-# Preparing random effects dataframe for caterpillar plots
-rf <- ranef(LT.SingObj.CR.final, condVar=T)
-LT.SingObj.CR.ranef <- augment(rf)
-LT.SingObj.CR.ranef$theory <- "Compound Representations"
-levels(LT.SingObj.CR.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
+# LT.SingObj.CR.CI <- cbind(as.data.frame(confint(LT.SingObj.CR.final, parm="beta_", level=0.89)),
+#                           as.data.frame(confint(LT.SingObj.CR.final, parm="beta_", level=0.97)))
+# LT.SingObj.CR.CI$estimate <- fixef(LT.SingObj.CR.final)
+# LT.SingObj.CR.CI$parameter <- c("Intercept","Trial") # Add meaningful names
+# LT.SingObj.CR.CI$intercept <- c("Intercept","Coefficients")
+# LT.SingObj.CR.CI$theory <- "Compound Representations"
+# # Preparing random effects dataframe for caterpillar plots
+# rf <- ranef(LT.SingObj.CR.final, condVar=T)
+# LT.SingObj.CR.ranef <- augment(rf)
+# LT.SingObj.CR.ranef$theory <- "Compound Representations"
+# levels(LT.SingObj.CR.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 
 # CATEGORY MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
-LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial +
-                        trial:labelled +
+LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + theory +
+                        trial:labelled + labelled:theory + trial:theory +
                         trial:labelled:theory +
                         (1 + trial + labelled | subject),
                       data = LT.Cat)
-LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory) # 4. Adding trial:theory didn't improve the model
-#LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory) # 3. Adding labelled:theory didn't improve the model
-#LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - labelled:theory)
-LT.Cat.lmer.4 <- update(LT.Cat.lmer.1, . ~ . - trial:labelled) # 2. Adding theory didn't improve the model
-#LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory) # 1. Adding labelled didn't improve the model
-#LT.Cat.lmer.6 <- update(LT.Cat.lmer.5, . ~ . - labelled)
-LT.Cat.lmer.7 <- update(LT.Cat.lmer.4, . ~ . - trial)
+LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory) # No effect of trial:theory
+LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory)
+LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - labelled:theory)
+LT.Cat.lmer.4 <- update(LT.Cat.lmer.3, . ~ . - trial:labelled)
+LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory)
+LT.Cat.lmer.6 <- update(LT.Cat.lmer.5, . ~ . - labelled)
+LT.Cat.lmer.7 <- update(LT.Cat.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.Cat.comparison <- anova(LT.Cat.lmer.7,
+                           LT.Cat.lmer.6,
+                           LT.Cat.lmer.5,
                            LT.Cat.lmer.4,
+                           LT.Cat.lmer.3,
+                           LT.Cat.lmer.2,
                            LT.Cat.lmer.1,
                            LT.Cat.lmer.0)
 #print(LT.Cat.comparison)
 # Select final fixed effects model
-LT.Cat.fixed <- LT.Cat.lmer.0
+LT.Cat.lmer.final <- update(LT.Cat.lmer.0, . ~ . - trial:theory)
 
-# CATEGORY MODEL -- RANDOM EFFECTS
-LT.Cat.random.0 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 | subject))
-LT.Cat.random.1 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + trial | subject))
-LT.Cat.random.2 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (0 + labelled | subject))
-LT.Cat.random.3 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial | subject))
-LT.Cat.random.4 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + labelled | subject))
-LT.Cat.random.5 <- update(LT.Cat.fixed, . ~ . - (1 + trial + labelled | subject) + (1 + trial + labelled | subject))
-LT.Cat.random.comparison <- anova(LT.Cat.random.0,
-                                  LT.Cat.random.1,
-                                  LT.Cat.random.2,
-                                  LT.Cat.random.3,
-                                  LT.Cat.random.4,
-                                  LT.Cat.random.5)
-#print(LT.Cat.random.comparison)
-# Select final model and compute CI
-LT.Cat.final <- LT.Cat.random.5
-LT.Cat.CI <- cbind(as.data.frame(confint(LT.Cat.final, parm="beta_", level=0.89)),
-                   as.data.frame(confint(LT.Cat.final, parm="beta_", level=0.97)))[1:4,]# Only keep effects without theory
-LT.Cat.CI$estimate <- fixef(LT.Cat.final)[1:4]
-LT.Cat.CI$parameter <- c("Intercept","Trial","Condition (no label)", "Trial * Condition (no label)") # Add meaningful names
-LT.Cat.CI$intercept <- c("Intercept","Coefficients","Coefficients","Coefficients")
-LT.Cat.CI$theory <- "Both theories"
+# Compute CI
+# LT.Cat.CI <- cbind(as.data.frame(confint(LT.Cat.final, parm="beta_", level=0.89)),
+#                    as.data.frame(confint(LT.Cat.final, parm="beta_", level=0.97)))[1:4,]# Only keep effects without theory
+# LT.Cat.CI$estimate <- fixef(LT.Cat.final)[1:4]
+# LT.Cat.CI$parameter <- c("Intercept","Trial","Condition (no label)", "Trial * Condition (no label)") # Add meaningful names
+# LT.Cat.CI$intercept <- c("Intercept","Coefficients","Coefficients","Coefficients")
+# LT.Cat.CI$theory <- "Both theories"
 
 # CATEGORY MODEL -- MAKE PREDICTIONS
 #LT.Cat$fit <- predict(LT.Cat.final, newdata=LT.Cat, re.form=NA)
@@ -230,7 +208,7 @@ LT.Cat.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
                             (1 + trial + labelled | subject),
                           data = LT.Cat.LaF)
 LT.Cat.LaF.lmer.1 <- update(LT.Cat.LaF.lmer.0, . ~ . - trial:labelled)
-LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - labelled) # Adding labelled only marginally improved the model
+LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - labelled)
 LT.Cat.LaF.lmer.3 <- update(LT.Cat.LaF.lmer.2, . ~ . - trial)
 # Model comparison against each other hierarchically
 LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.3,
@@ -239,25 +217,25 @@ LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.3,
                                LT.Cat.LaF.lmer.0)
 #print(LT.Cat.LaF.comparison)
 # Select final fixed effects model
-LT.Cat.LaF.final <- LT.Cat.LaF.lmer.0
+LT.Cat.LaF.lmer.final <- LT.Cat.LaF.lmer.0
 # Compute confidence intervals
-LT.Cat.LaF.CI <- cbind(as.data.frame(confint(LT.Cat.LaF.final, parm="beta_", level=0.89)),
-                       as.data.frame(confint(LT.Cat.LaF.final, parm="beta_", level=0.97)))
-LT.Cat.LaF.CI$estimate <- fixef(LT.Cat.LaF.final)
-LT.Cat.LaF.CI$parameter <- c("Intercept","Trial","Condition (no label)", "Trial * Condition (no label)") # Add meaningful names
-LT.Cat.LaF.CI$intercept <- c("Intercept","Coefficients","Coefficients","Coefficients")
-LT.Cat.LaF.CI$theory <- "Labels as Features"
-# Preparing random effects dataframe for caterpillar plots
-rf <- ranef(LT.Cat.LaF.final, condVar=T)
-LT.Cat.LaF.ranef <- augment(rf)
-LT.Cat.LaF.ranef$theory <- "Labels as Features"
-levels(LT.Cat.LaF.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
+# LT.Cat.LaF.CI <- cbind(as.data.frame(confint(LT.Cat.LaF.final, parm="beta_", level=0.89)),
+#                        as.data.frame(confint(LT.Cat.LaF.final, parm="beta_", level=0.97)))
+# LT.Cat.LaF.CI$estimate <- fixef(LT.Cat.LaF.final)
+# LT.Cat.LaF.CI$parameter <- c("Intercept","Trial","Condition (no label)", "Trial * Condition (no label)") # Add meaningful names
+# LT.Cat.LaF.CI$intercept <- c("Intercept","Coefficients","Coefficients","Coefficients")
+# LT.Cat.LaF.CI$theory <- "Labels as Features"
+# # Preparing random effects dataframe for caterpillar plots
+# rf <- ranef(LT.Cat.LaF.final, condVar=T)
+# LT.Cat.LaF.ranef <- augment(rf)
+# LT.Cat.LaF.ranef$theory <- "Labels as Features"
+# levels(LT.Cat.LaF.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
 LT.Cat.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
                            (1 + trial + labelled | subject),
-                         data = LT.Cat.CR)
-LT.Cat.CR.lmer.1 <- update(LT.Cat.CR.lmer.0, . ~ . - trial:labelled) # No effect other than trial
+                         data = LT.Cat.CR)                            # No interaction
+LT.Cat.CR.lmer.1 <- update(LT.Cat.CR.lmer.0, . ~ . - trial:labelled)  # No effect of labelled
 LT.Cat.CR.lmer.2 <- update(LT.Cat.CR.lmer.1, . ~ . - labelled)
 LT.Cat.CR.lmer.3 <- update(LT.Cat.CR.lmer.2, . ~ . - trial)
 # Model comparison against each other hierarchically
@@ -267,19 +245,19 @@ LT.Cat.CR.comparison <- anova(LT.Cat.CR.lmer.3,
                               LT.Cat.CR.lmer.0)
 #print(LT.Cat.CR.comparison)
 # Select final fixed effects model
-LT.Cat.CR.final <- LT.Cat.CR.lmer.2
+LT.Cat.CR.lmer.final <- LT.Cat.CR.lmer.2
 # Compute confidence intervals
-LT.Cat.CR.CI <- cbind(as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.89)),
-                      as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.97)))
-LT.Cat.CR.CI$estimate <- fixef(LT.Cat.CR.final)
-LT.Cat.CR.CI$parameter <- c("Intercept","Trial") # Add meaningful names
-LT.Cat.CR.CI$intercept <- c("Intercept","Coefficients")
-LT.Cat.CR.CI$theory <- "Compound Representations"
-# Preparing random effects dataframe for caterpillar plots
-rf <- ranef(LT.Cat.CR.final, condVar=T)
-LT.Cat.CR.ranef <- augment(rf)
-LT.Cat.CR.ranef$theory <- "Compound Representations"
-levels(LT.Cat.CR.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
+# LT.Cat.CR.CI <- cbind(as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.89)),
+#                       as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.97)))
+# LT.Cat.CR.CI$estimate <- fixef(LT.Cat.CR.final)
+# LT.Cat.CR.CI$parameter <- c("Intercept","Trial") # Add meaningful names
+# LT.Cat.CR.CI$intercept <- c("Intercept","Coefficients")
+# LT.Cat.CR.CI$theory <- "Compound Representations"
+# # Preparing random effects dataframe for caterpillar plots
+# rf <- ranef(LT.Cat.CR.final, condVar=T)
+# LT.Cat.CR.ranef <- augment(rf)
+# LT.Cat.CR.ranef$theory <- "Compound Representations"
+# levels(LT.Cat.CR.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 
 
 # # MIXED EFFECT MODELS GRAPHS

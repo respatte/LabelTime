@@ -30,10 +30,9 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                  },
                  measurevar
   )
-  
   # Rename the "mean" column    
-  datac <- rename(datac, c("mean" = measurevar))
-  
+  datac <- plyr::rename(datac, replace = c("mean" = measurevar))
+
   datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
   
   # Confidence interval multiplier for standard error
@@ -51,20 +50,14 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 LT.SingObj <- read.csv("../results/SingleObject_LT.csv", head=TRUE)
 LT.Cat <- read.csv("../results/Category_LT.csv", head=TRUE)
 # Create experiment variable for each dataset
-LT.SingObj$experiment <- "SingleObject"
-LT.Cat$experiment <- "Category"
-# Increment subject from Cat to not overlap with SingObj
-n_subjects <- tail(LT.SingObj$subject, n=1) + 1
-LT.Cat$subject <- LT.Cat$subject + n_subjects
+LT.SingObj$experiment <- factor("Single Object")
+LT.Cat$experiment <- factor("Category")
 # Merge both datasets
 LT.data <- rbind(LT.SingObj, LT.Cat)
 # Set all factor variables to factors, with labels if meaningful
-LT.data$subject <- factor(LT.data$subject)
 LT.data$explo_overlap <- factor(LT.data$explo_overlap)
 LT.data$theory <- factor(LT.data$theory, labels = c("Compound Representations",
-                                                    "Labels as Features "))
-LT.data$experiment <- factor(LT.data$experiment, labels = c("Category",
-                                                            "Single Object"))
+                                                    "Labels as Features"))
 # Transform trial number to start at 1
 LT.data$trial <- LT.data$trial + 1
 # Summarising data for mean+CI graph
