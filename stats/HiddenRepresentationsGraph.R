@@ -136,8 +136,9 @@ d.plot <- ggplot(d.sum,
                      y = mu,
                      colour = dist_type)) +
   facet_grid(abs_rel~theory, scales="free_y") +
-  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=8) +
-  theme(panel.grid.minor.x=element_blank(),
+  xlab("Step") + ylab("Mean distance") + theme_bw(base_size=10, base_family = "serif") +
+  theme(panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank(),
         legend.position = "top") + 
   scale_fill_brewer(name = "Distance type", palette="Dark2",
                     breaks=c("Labelled","Unlabelled","Between")) +
@@ -146,4 +147,5 @@ d.plot <- ggplot(d.sum,
   geom_line(size=.1) +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../results/Distances.png", plot = d.plot, height = 7, width = 5)
+ggsave("../results/Distances.png", plot = d.plot,
+       height = 7, width = 5, dpi = 600)
