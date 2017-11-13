@@ -132,7 +132,7 @@ LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
              size=.8, fill="white")
 
 ggsave("../results/LT_SingleObject.pdf", plot = LT.SOb.plot,
-       height = 5.8, width = 3.1, dpi = 600)
+       height = 5, width = 3.5, dpi = 600)
 
 # Graph from data (not models), mean and error bars (CI)
 LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
@@ -162,4 +162,4 @@ LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
              size=.8, fill="white")
 
 ggsave("../results/LT_Category.pdf", plot = LT.Cat.plot,
-       height = 5.8, width = 3.1, dpi = 600)
+       height = 5, width = 3.5, dpi = 600)

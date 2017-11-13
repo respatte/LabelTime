@@ -124,6 +124,8 @@ if (!compute_distances) {
 # Create two distance type columns (labeled/unlabeled/between, and absolute/relative/between)
 d$abs_rel <- recode(d$dist_type, "'r_labelled'='Relative - Within'; 'r_unlabelled'='Relative - Within'; 'labelled'='Absolute - Within'; 'unlabelled'='Absolute - Within'; 'between'='Between'")
 d$dist_type <- recode(d$dist_type, "'r_labelled'='Labelled'; 'r_unlabelled'='Unlabelled'; 'labelled'='Labelled'; 'unlabelled'='Unlabelled'; 'between'='Between'")
+d$theory <- factor(d$theory, labels = c("Compound-Representations",
+                                        "Labels-as-Features"))
 
 # GRAPH
 # Select observations for plot, dropping unusued factors
@@ -147,5 +149,5 @@ d.plot <- ggplot(d.sum,
   geom_line(size=.1) +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../results/Distances.tiff", plot = d.plot,
-       height = 7, width = 5, dpi = 600)
+ggsave("../results/Distances.png", plot = d.plot,
+       height = 7, width = 7.16, dpi = 600)
