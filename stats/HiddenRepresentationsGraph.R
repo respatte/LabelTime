@@ -141,7 +141,9 @@ d.plot <- ggplot(d.sum,
   xlab("Step") + ylab("Mean distance") + theme_bw(base_size=10, base_family = "serif") +
   theme(panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
-        legend.position = "top") + 
+        legend.position = "top",
+        legend.margin = margin(b=2,t=0,unit="mm"),
+        legend.box.spacing = unit(.01,"mm")) + 
   scale_fill_brewer(name = "Distance type", palette="Dark2",
                     breaks=c("Labelled","Unlabelled","Between")) +
   scale_colour_brewer(name = "Distance type", palette="Dark2",

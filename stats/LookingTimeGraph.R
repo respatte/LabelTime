@@ -101,7 +101,7 @@ LT.all.plot <- ggplot(LT.data.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../results/LT_all.pdf", plot = LT.all.plot,
+ggsave("../results/LT_all.png", plot = LT.all.plot,
        height = 5.8, width = 6.5, dpi = 600)
 
 # Graph for Single Object only
@@ -114,7 +114,9 @@ LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
   xlab("Trial") + ylab("Looking time") + theme_bw(base_size=10, base_family = "serif") +
   theme(panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
-        legend.position="top") +
+        legend.position="top",
+        legend.margin = margin(b=0,t=0,unit="mm"),
+        legend.box.spacing = unit(.01,"mm")) +
   scale_shape_manual(name = "Condition",
                      breaks = c("label","no_label"),
                      labels = c("label","no label"),
@@ -129,10 +131,10 @@ LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
                 colour="black", width=.2, size=.35,
                 position=position_dodge(0.3)) +
   geom_point(position=position_dodge(0.3),
-             size=.8, fill="white")
+             size=1.25, fill="white")
 
-ggsave("../results/LT_SingleObject.pdf", plot = LT.SOb.plot,
-       height = 5, width = 3.5, dpi = 600)
+ggsave("../results/LT_SingleObject.png", plot = LT.SOb.plot,
+       height = 4.5, width = 3.5, dpi = 600)
 
 # Graph from data (not models), mean and error bars (CI)
 LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
@@ -144,7 +146,9 @@ LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
   xlab("Trial") + ylab("Looking time") + theme_bw(base_size=10, base_family = "serif") +
   theme(panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
-        legend.position="top") +
+        legend.position="top",
+        legend.margin = margin(b=0,t=0,unit="mm"),
+        legend.box.spacing = unit(.01,"mm")) +
   scale_shape_manual(name = "Condition",
                      breaks = c("label","no_label"),
                      labels = c("label","no label"),
@@ -159,7 +163,7 @@ LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
                 colour="black", width=.2, size=.35,
                 position=position_dodge(0.3)) +
   geom_point(position=position_dodge(0.3),
-             size=.8, fill="white")
+             size=1.25, fill="white")
 
-ggsave("../results/LT_Category.pdf", plot = LT.Cat.plot,
-       height = 5, width = 3.5, dpi = 600)
+ggsave("../results/LT_Category.png", plot = LT.Cat.plot,
+       height = 4.5, width = 3.5, dpi = 600)
