@@ -1,7 +1,7 @@
 # LIBRARY IMPORTS
-library(ggplot2)
-library(Hmisc)
 library(plyr)
+library(tidyverse)
+library(Hmisc)
 library(car)
 
 ## Summarizes data.
@@ -14,13 +14,13 @@ library(car)
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                       conf.interval=.95, .drop=TRUE) {
   library(plyr)
-  
+
   # New version of length which can handle NA's: if na.rm==T, don't count them
   length2 <- function (x, na.rm=FALSE) {
     if (na.rm) sum(!is.na(x))
     else       length(x)
   }
-  
+
   # This does the summary. For each group's data frame, return a vector with
   # N, mean, and sd
   datac <- ddply(data, groupvars, .drop=.drop,
@@ -32,18 +32,18 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                  },
                  measurevar
   )
-  
-  # Rename the "mean" column    
+
+  # Rename the "mean" column
   datac <- plyr::rename(datac, c("mean" = measurevar))
-  
+
   datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
-  
+
   # Confidence interval multiplier for standard error
-  # Calculate t-statistic for confidence interval: 
+  # Calculate t-statistic for confidence interval:
   # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
   ciMult <- qt(conf.interval/2 + .5, datac$N-1)
   datac$ci <- datac$se * ciMult
-  
+
   return(datac)
 }
 
@@ -122,14 +122,21 @@ if (!compute_distances) {
 
 # DATA HANDLING
 # Create two distance type columns (labeled/unlabeled/between, and absolute/relative/between)
-d$abs_rel <- recode(d$dist_type, "'r_labelled'='Relative - Within'; 'r_unlabelled'='Relative - Within'; 'labelled'='Absolute - Within'; 'unlabelled'='Absolute - Within'; 'between'='Between'")
-d$dist_type <- recode(d$dist_type, "'r_labelled'='Labelled'; 'r_unlabelled'='Unlabelled'; 'labelled'='Labelled'; 'unlabelled'='Unlabelled'; 'between'='Between'")
-d$theory <- factor(d$theory, labels = c("Compound-Representations",
-                                        "Labels-as-Features"))
+d <- d %>%
+  mutate(abs_rel = case_when(grepl("r_", dist_type) ~ "Relative - Within",
+                             grepl("labelled", dist_type) ~ "Absolute - Within",
+                             dist_type == "between" ~ "Between"),
+         dist_type = case_when(grepl("unlabelled", dist_type) ~ "Labelled",
+                               grepl("labelled", dist_type) ~ "Unlabelled",
+                               dist_type == "between" ~ "Between"),
+         theory = factor(theory, labels = c("Compound-Representations",
+                                            "Labels-as-Features")))
 
 # GRAPH
 # Select observations for plot, dropping unusued factors
-d <- droplevels(d[d$step>0 & d$step <= 2000,])
+d <- d %>%
+  subset(step>0 & step <= 2000 & abs_rel != "Relative - Within") %>%
+  droplevels()
 # Get summary of the data
 d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "dist_type", "abs_rel"), conf.interval=.95)
 # Create plot
@@ -143,7 +150,7 @@ d.plot <- ggplot(d.sum,
         panel.grid.major=element_blank(),
         legend.position = "top",
         legend.margin = margin(b=2,t=0,unit="mm"),
-        legend.box.spacing = unit(.01,"mm")) + 
+        legend.box.spacing = unit(.01,"mm")) +
   scale_fill_brewer(name = "Distance type", palette="Dark2",
                     breaks=c("Labelled","Unlabelled","Between")) +
   scale_colour_brewer(name = "Distance type", palette="Dark2",
@@ -152,4 +159,4 @@ d.plot <- ggplot(d.sum,
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
 ggsave("../results/Distances.png", plot = d.plot,
-       height = 7, width = 7.16, dpi = 600)
+       height = 5, width = 7, dpi = 600)
