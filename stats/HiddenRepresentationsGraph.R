@@ -135,7 +135,7 @@ d <- d %>%
 # GRAPH
 # Select observations for plot, dropping unusued factors
 d <- d %>%
-  subset(step>0 & step <= 2000 & abs_rel != "Relative - Within") %>%
+  subset(step>0 & step <= 2000 & abs_rel == "Absolute - Within") %>%
   droplevels()
 # Get summary of the data
 d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "dist_type", "abs_rel"), conf.interval=.95)
@@ -144,7 +144,7 @@ d.plot <- ggplot(d.sum,
                  aes(x = step,
                      y = mu,
                      colour = dist_type)) +
-  facet_grid(abs_rel~theory, scales="free_y") +
+  facet_grid(theory~.) +
   xlab("Step") + ylab("Mean distance") + theme_bw(base_size=10, base_family = "serif") +
   theme(panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
@@ -159,4 +159,4 @@ d.plot <- ggplot(d.sum,
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
 ggsave("../results/Distances.png", plot = d.plot,
-       height = 5, width = 7, dpi = 600)
+       height = 4.5, width = 3.5, dpi = 600)
