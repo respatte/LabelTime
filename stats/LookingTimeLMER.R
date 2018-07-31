@@ -1,13 +1,11 @@
 # LIBRARY IMPORTS
-library(ggplot2)
-library(broom)
 library(reshape2)
 library(plyr)
-library(dplyr)
+library(tidyverse)
 library(lme4)
 
 ##' @importFrom reshape2 melt
-##' @importFrom plyr ldply name_rows 
+##' @importFrom plyr ldply name_rows
 augment.ranef.mer <- function(x,
                               ci.level=0.9,
                               reorder=TRUE,
@@ -48,8 +46,8 @@ augment.ranef.mer <- function(x,
 
 # DATA HANDLING
 # Import data, from both Category and SingleObject
-LT.SingObj <- read.csv("../Results/SingleObject_LT.csv", head=TRUE)
-LT.Cat <- read.csv("../Results/Category_LT.csv", head=TRUE)
+LT.SingObj <- read.csv("../results/SingleObject_LT.csv", head=TRUE)
+LT.Cat <- read.csv("../results/Category_LT.csv", head=TRUE)
 # Set all factor variables to factors, with labels if meaningful
 LT.SingObj$explo_overlap <- factor(LT.SingObj$explo_overlap)
 LT.SingObj$theory <- factor(LT.SingObj$theory,
@@ -62,21 +60,16 @@ LT.Cat$theory <- factor(LT.Cat$theory, labels = c("Compound Representations",
 # SINGLE OBJECT MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
 LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + theory +
-                            trial:labelled + labelled:theory + trial:theory +
-                            trial:labelled:theory +
+                            labelled:theory + trial:theory +
                             (1 + trial + labelled | subject),
                           data = LT.SingObj)
-LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
-LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - trial:theory)
-LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory)
-LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled)
-LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)    # Labelled only marginally significant
-LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.5, . ~ . - labelled)
-LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
+LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:theory)
+LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - labelled:theory)
+LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - theory)
+LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - labelled)  # Labelled marginally significant
+LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
-                               LT.SingObj.lmer.6,
-                               LT.SingObj.lmer.5,
+LT.SingObj.comparison <- anova(LT.SingObj.lmer.5,
                                LT.SingObj.lmer.4,
                                LT.SingObj.lmer.3,
                                LT.SingObj.lmer.2,
@@ -104,15 +97,13 @@ LT.SingObj.LaF <- LT.SingObj[LT.SingObj$theory == "Labels as Features",]
 LT.SingObj.CR <- LT.SingObj[LT.SingObj$theory == "Compound Representations",]
 # LABELS AS FEATURES
 # All models taken as previous one minus last effect
-LT.SingObj.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+LT.SingObj.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
                                 (1 + trial + labelled | subject),
                               data = LT.SingObj.LaF)
-LT.SingObj.LaF.lmer.1 <- update(LT.SingObj.LaF.lmer.0, . ~ . - trial:labelled)
-LT.SingObj.LaF.lmer.2 <- update(LT.SingObj.LaF.lmer.1, . ~ . - labelled)
-LT.SingObj.LaF.lmer.3 <- update(LT.SingObj.LaF.lmer.2, . ~ . - trial)
+LT.SingObj.LaF.lmer.1 <- update(LT.SingObj.LaF.lmer.0, . ~ . - labelled)
+LT.SingObj.LaF.lmer.2 <- update(LT.SingObj.LaF.lmer.1, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.3,
-                                   LT.SingObj.LaF.lmer.2,
+LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.2,
                                    LT.SingObj.LaF.lmer.1,
                                    LT.SingObj.LaF.lmer.0)
 #print(LT.SingObj.LaF.comparison)
@@ -132,15 +123,13 @@ LT.SingObj.LaF.lmer.final <- LT.SingObj.LaF.lmer.0
 # levels(LT.SingObj.LaF.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
-LT.SingObj.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+LT.SingObj.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
                                (1 + trial + labelled | subject),
-                             data = LT.SingObj.CR)                            # Small interaction effect
-LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - trial:labelled)  # No effect of labelled
-LT.SingObj.CR.lmer.2 <- update(LT.SingObj.CR.lmer.1, . ~ . - labelled)
-LT.SingObj.CR.lmer.3 <- update(LT.SingObj.CR.lmer.2, . ~ . - trial)
+                             data = LT.SingObj.CR)
+LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - labelled)  # No effect of labelled
+LT.SingObj.CR.lmer.2 <- update(LT.SingObj.CR.lmer.1, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.3,
-                                  LT.SingObj.CR.lmer.2,
+LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.2,
                                   LT.SingObj.CR.lmer.1,
                                   LT.SingObj.CR.lmer.0)
 #print(LT.SingObj.CR.comparison)
@@ -261,7 +250,7 @@ LT.Cat.CR.lmer.final <- LT.Cat.CR.lmer.2
 
 
 # # MIXED EFFECT MODELS GRAPHS
-# 
+#
 # # SINGLE OBJECT -- FIXED EFFECT
 # # Merge confindence intervals dataframes for global, LaF, and CR
 # LT.SingObj.all.CI <- rbind(LT.SingObj.CI, LT.SingObj.LaF.CI, LT.SingObj.CR.CI)
@@ -287,7 +276,7 @@ LT.Cat.CR.lmer.final <- LT.Cat.CR.lmer.2
 #              size=1, fill="white")
 # ggsave("../Results/FixedEffects_SingleObject.pdf", plot = LT.SingObj.plot.CI,
 #        height = 2, width = 10)
-# 
+#
 # # CATEGORY -- FIXED EFFECT
 # # Merge confindence intervals dataframes for global, LaF, and CR
 # LT.Cat.all.CI <- rbind(LT.Cat.CI, LT.Cat.LaF.CI, LT.Cat.CR.CI)
@@ -313,7 +302,7 @@ LT.Cat.CR.lmer.final <- LT.Cat.CR.lmer.2
 #              size=1, fill="white")
 # ggsave("../Results/FixedEffects_Category.pdf", plot = LT.Cat.plot.CI,
 #        height = 2, width = 10)
-# 
+#
 # # SINGLE OBJECT -- RANDOM EFFECTS
 # LT.SingObj.ranef <- rbind(LT.SingObj.LaF.ranef, LT.SingObj.CR.ranef)
 # LT.SingObj.plot.ranef <- ggplot(LT.SingObj.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
@@ -328,7 +317,7 @@ LT.Cat.CR.lmer.final <- LT.Cat.CR.lmer.2
 #   facet_grid(theory~variable, scale="free", space="free_x")
 # ggsave("../Results/RandomEffects_SingleObject.pdf", plot = LT.SingObj.plot.ranef,
 #        height = 4, width = 6)
-# 
+#
 # # CATEGORY -- RANDOM EFFECTS
 # LT.Cat.ranef <- rbind(LT.Cat.LaF.ranef, LT.Cat.CR.ranef)
 # LT.Cat.plot.ranef <- ggplot(LT.Cat.ranef, aes(estimate, level, xmin=lb, xmax=ub)) +
