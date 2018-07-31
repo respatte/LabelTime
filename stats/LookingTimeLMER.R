@@ -151,21 +151,16 @@ LT.SingObj.CR.lmer.final <- update(LT.SingObj.CR.lmer.0, . ~ . - labelled)
 # CATEGORY MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
 LT.Cat.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + theory +
-                        trial:labelled + labelled:theory + trial:theory +
-                        trial:labelled:theory +
+                        labelled:theory + trial:theory +
                         (1 + trial + labelled | subject),
                       data = LT.Cat)
-LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:labelled:theory) # No effect of trial:theory
-LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - trial:theory)
-LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - labelled:theory)
-LT.Cat.lmer.4 <- update(LT.Cat.lmer.3, . ~ . - trial:labelled)
-LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - theory)
-LT.Cat.lmer.6 <- update(LT.Cat.lmer.5, . ~ . - labelled)
-LT.Cat.lmer.7 <- update(LT.Cat.lmer.6, . ~ . - trial)
+LT.Cat.lmer.1 <- update(LT.Cat.lmer.0, . ~ . - trial:theory)    # No effect of trial:theory
+LT.Cat.lmer.2 <- update(LT.Cat.lmer.1, . ~ . - labelled:theory)
+LT.Cat.lmer.3 <- update(LT.Cat.lmer.2, . ~ . - theory)
+LT.Cat.lmer.4 <- update(LT.Cat.lmer.3, . ~ . - labelled)
+LT.Cat.lmer.5 <- update(LT.Cat.lmer.4, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.Cat.comparison <- anova(LT.Cat.lmer.7,
-                           LT.Cat.lmer.6,
-                           LT.Cat.lmer.5,
+LT.Cat.comparison <- anova(LT.Cat.lmer.5,
                            LT.Cat.lmer.4,
                            LT.Cat.lmer.3,
                            LT.Cat.lmer.2,
@@ -193,15 +188,13 @@ LT.Cat.LaF <- LT.Cat[LT.Cat$theory == "Labels as Features",]
 LT.Cat.CR <- LT.Cat[LT.Cat$theory == "Compound Representations",]
 # LABELS AS FEATURES
 # All models taken as previous one minus last effect
-LT.Cat.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+LT.Cat.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
                             (1 + trial + labelled | subject),
                           data = LT.Cat.LaF)
-LT.Cat.LaF.lmer.1 <- update(LT.Cat.LaF.lmer.0, . ~ . - trial:labelled)
-LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - labelled)
-LT.Cat.LaF.lmer.3 <- update(LT.Cat.LaF.lmer.2, . ~ . - trial)
+LT.Cat.LaF.lmer.1 <- update(LT.Cat.LaF.lmer.0, . ~ . - labelled)
+LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.3,
-                               LT.Cat.LaF.lmer.2,
+LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.2,
                                LT.Cat.LaF.lmer.1,
                                LT.Cat.LaF.lmer.0)
 #print(LT.Cat.LaF.comparison)
@@ -221,20 +214,18 @@ LT.Cat.LaF.lmer.final <- LT.Cat.LaF.lmer.0
 # levels(LT.Cat.LaF.ranef$variable) <- c("Intercept","Trial","Condition (no label)")
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
-LT.Cat.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + trial:labelled +
+LT.Cat.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
                            (1 + trial + labelled | subject),
-                         data = LT.Cat.CR)                            # No interaction
-LT.Cat.CR.lmer.1 <- update(LT.Cat.CR.lmer.0, . ~ . - trial:labelled)  # No effect of labelled
-LT.Cat.CR.lmer.2 <- update(LT.Cat.CR.lmer.1, . ~ . - labelled)
-LT.Cat.CR.lmer.3 <- update(LT.Cat.CR.lmer.2, . ~ . - trial)
+                         data = LT.Cat.CR)
+LT.Cat.CR.lmer.1 <- update(LT.Cat.CR.lmer.0, . ~ . - labelled)  # No effect of labelled
+LT.Cat.CR.lmer.2 <- update(LT.Cat.CR.lmer.1, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.Cat.CR.comparison <- anova(LT.Cat.CR.lmer.3,
-                              LT.Cat.CR.lmer.2,
+LT.Cat.CR.comparison <- anova(LT.Cat.CR.lmer.2,
                               LT.Cat.CR.lmer.1,
                               LT.Cat.CR.lmer.0)
 #print(LT.Cat.CR.comparison)
 # Select final fixed effects model
-LT.Cat.CR.lmer.final <- LT.Cat.CR.lmer.2
+LT.Cat.CR.lmer.final <- update(LT.Cat.CR.lmer.0, . ~ . - labelled)
 # Compute confidence intervals
 # LT.Cat.CR.CI <- cbind(as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.89)),
 #                       as.data.frame(confint(LT.Cat.CR.final, parm="beta_", level=0.97)))
