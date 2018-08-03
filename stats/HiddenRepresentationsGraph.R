@@ -126,9 +126,9 @@ d <- d %>%
   mutate(abs_rel = case_when(grepl("r_", dist_type) ~ "Relative - Within",
                              grepl("labelled", dist_type) ~ "Absolute - Within",
                              dist_type == "between" ~ "Between"),
-         dist_type = case_when(grepl("unlabelled", dist_type) ~ "Labelled",
-                               grepl("labelled", dist_type) ~ "Unlabelled",
-                               dist_type == "between" ~ "Between"),
+         dist_type = case_when(grepl("unlabelled", dist_type) ~ "no label",
+                               grepl("labelled", dist_type) ~ "label",
+                               dist_type == "between" ~ "between"),
          theory = factor(theory, labels = c("Compound-Representations",
                                             "Labels-as-Features")))
 
@@ -151,10 +151,8 @@ d.plot <- ggplot(d.sum,
         legend.position = "top",
         legend.margin = margin(b=2,t=0,unit="mm"),
         legend.box.spacing = unit(.01,"mm")) +
-  scale_fill_brewer(name = "Distance type", palette="Dark2",
-                    breaks=c("Labelled","Unlabelled","Between")) +
-  scale_colour_brewer(name = "Distance type", palette="Dark2",
-                      breaks=c("Labelled","Unlabelled","Between")) +
+  scale_fill_brewer(name = "Distance type", palette="Dark2") +
+  scale_colour_brewer(name = "Distance type", palette="Dark2") +
   geom_line(size=.1) +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot

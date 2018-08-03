@@ -24,12 +24,12 @@ distances.evol.lmer.0 <- lmer(mu ~ 1 + step + dist_type + theory +
                                 step:dist_type:theory +
                                 (1 + step + dist_type | subject),
                               data=distances.evol)
-distances.evol.lmer.1 <- update(distances.evol.lmer.0, . ~ . - step:dist_type:theory) # No effect of dist_type:theory
-distances.evol.lmer.2 <- update(distances.evol.lmer.1, . ~ . - dist_type:theory)
+distances.evol.lmer.1 <- update(distances.evol.lmer.0, . ~ . - step:dist_type:theory)
+distances.evol.lmer.2 <- update(distances.evol.lmer.1, . ~ . - dist_type:theory) # No effect of dist_type:theory
 distances.evol.lmer.3 <- update(distances.evol.lmer.2, . ~ . - step:theory)
 distances.evol.lmer.4 <- update(distances.evol.lmer.3, . ~ . - step:dist_type)
-distances.evol.lmer.5 <- update(distances.evol.lmer.4, . ~ . - theory)                # No effect of dist_type (marginal)
-distances.evol.lmer.6 <- update(distances.evol.lmer.5, . ~ . - dist_type)
+distances.evol.lmer.5 <- update(distances.evol.lmer.4, . ~ . - theory)
+distances.evol.lmer.6 <- update(distances.evol.lmer.5, . ~ . - dist_type) # No effect of dist_type (marginal)
 distances.evol.lmer.7 <- update(distances.evol.lmer.6, . ~ . - step)
 # Comparing models from bottom to top
 distances.evol.comparison <- anova(distances.evol.lmer.7,
