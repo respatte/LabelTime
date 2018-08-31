@@ -1,5 +1,5 @@
 # LIBRARY IMPORTS
-library(ggplot2)
+library(tidyverse)
 library(Hmisc)
 
 ## Summarizes data.
@@ -12,13 +12,13 @@ library(Hmisc)
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                       conf.interval=.95, .drop=TRUE) {
   library(plyr)
-  
+
   # New version of length which can handle NA's: if na.rm==T, don't count them
   length2 <- function (x, na.rm=FALSE) {
     if (na.rm) sum(!is.na(x))
     else       length(x)
   }
-  
+
   # This does the summary. For each group's data frame, return a vector with
   # N, mean, and sd
   datac <- ddply(data, groupvars, .drop=.drop,
@@ -30,17 +30,17 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                  },
                  measurevar
   )
-  # Rename the "mean" column    
+  # Rename the "mean" column
   datac <- plyr::rename(datac, replace = c("mean" = measurevar))
 
   datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
-  
+
   # Confidence interval multiplier for standard error
-  # Calculate t-statistic for confidence interval: 
+  # Calculate t-statistic for confidence interval:
   # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
   ciMult <- qt(conf.interval/2 + .5, datac$N-1)
   datac$ci <- datac$se * ciMult
-  
+
   return(datac)
 }
 
@@ -137,11 +137,12 @@ ggsave("../results/LT_SingleObject.png", plot = LT.SOb.plot,
        height = 4.5, width = 3.5, dpi = 600)
 
 # Graph from data (not models), mean and error bars (CI)
-LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
-                                       y = looking_time,
-                                       colour = labelled,
-                                       shape = labelled)) +
-  facet_grid(theory~.) +
+LT.Cat.plot <- LT.Cat.sum %>%
+  subset(theory == "Labels-as-Features") %>%
+  ggplot(aes(x = trial,
+             y = looking_time,
+             colour = labelled,
+             shape = labelled)) +
   scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8)) +
   xlab("Trial") + ylab("Looking time") + theme_bw(base_size=10, base_family = "serif") +
   theme(panel.grid.minor=element_blank(),
@@ -166,4 +167,4 @@ LT.Cat.plot <- ggplot(LT.Cat.sum, aes(x = trial,
              size=1.25, fill="white")
 
 ggsave("../results/LT_Category.png", plot = LT.Cat.plot,
-       height = 4.5, width = 3.5, dpi = 600)
+       height = 2.5, width = 3.5, dpi = 600)

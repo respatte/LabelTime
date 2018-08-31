@@ -135,7 +135,7 @@ d <- d %>%
 # GRAPH
 # Select observations for plot, dropping unusued factors
 d <- d %>%
-  subset(step>0 & step <= 2000 & abs_rel == "Absolute - Within") %>%
+  subset(step>0 & step<=2000 & abs_rel == "Absolute - Within" & theory == "Labels-as-Features") %>%
   droplevels()
 # Get summary of the data
 d.sum <- summarySE(d, measurevar="mu", groupvars=c("theory", "step", "dist_type", "abs_rel"), conf.interval=.95)
@@ -157,4 +157,4 @@ d.plot <- ggplot(d.sum,
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
 ggsave("../results/Distances.png", plot = d.plot,
-       height = 4.5, width = 3.5, dpi = 600)
+       height = 2.5, width = 3.5, dpi = 600)
