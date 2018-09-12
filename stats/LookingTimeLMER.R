@@ -200,12 +200,15 @@ LT.Cat.CR <- LT.Cat[LT.Cat$theory == "Compound Representations",]
 # LABELS AS FEATURES
 # All models taken as previous one minus last effect
 LT.Cat.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
+                            trial:labelled +
                             (1 + trial + labelled | subject),
                           data = LT.Cat.LaF)
-LT.Cat.LaF.lmer.1 <- update(LT.Cat.LaF.lmer.0, . ~ . - labelled)
-LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - trial)
+LT.Cat.LaF.lmer.1 <- update(LT.Cat.LaF.lmer.0, . ~ . - trial:labelled)
+LT.Cat.LaF.lmer.2 <- update(LT.Cat.LaF.lmer.1, . ~ . - labelled)
+LT.Cat.LaF.lmer.3 <- update(LT.Cat.LaF.lmer.2, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.2,
+LT.Cat.LaF.comparison <- anova(LT.Cat.LaF.lmer.3,
+                               LT.Cat.LaF.lmer.2,
                                LT.Cat.LaF.lmer.1,
                                LT.Cat.LaF.lmer.0)
 #print(LT.Cat.LaF.comparison)
