@@ -60,16 +60,21 @@ LT.Cat$theory <- factor(LT.Cat$theory, labels = c("Compound Representations",
 # SINGLE OBJECT MODEL -- FIXED EFFECTS
 # All models taken as previous one minus last effect
 LT.SingObj.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled + theory +
-                            labelled:theory + trial:theory +
+                            trial:labelled + labelled:theory + trial:theory +
+                            trial:labelled:theory +
                             (1 + trial + labelled | subject),
                           data = LT.SingObj)
-LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:theory)
-LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - labelled:theory)
-LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - theory)
-LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - labelled)  # Labelled marginally significant
-LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - trial)
+LT.SingObj.lmer.1 <- update(LT.SingObj.lmer.0, . ~ . - trial:labelled:theory)
+LT.SingObj.lmer.2 <- update(LT.SingObj.lmer.1, . ~ . - trial:theory)
+LT.SingObj.lmer.3 <- update(LT.SingObj.lmer.2, . ~ . - labelled:theory)
+LT.SingObj.lmer.4 <- update(LT.SingObj.lmer.3, . ~ . - trial:labelled)
+LT.SingObj.lmer.5 <- update(LT.SingObj.lmer.4, . ~ . - theory)
+LT.SingObj.lmer.6 <- update(LT.SingObj.lmer.5, . ~ . - labelled) # labelled marginally sig.
+LT.SingObj.lmer.7 <- update(LT.SingObj.lmer.6, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.SingObj.comparison <- anova(LT.SingObj.lmer.5,
+LT.SingObj.comparison <- anova(LT.SingObj.lmer.7,
+                               LT.SingObj.lmer.6,
+                               LT.SingObj.lmer.5,
                                LT.SingObj.lmer.4,
                                LT.SingObj.lmer.3,
                                LT.SingObj.lmer.2,
@@ -98,12 +103,15 @@ LT.SingObj.CR <- LT.SingObj[LT.SingObj$theory == "Compound Representations",]
 # LABELS AS FEATURES
 # All models taken as previous one minus last effect
 LT.SingObj.LaF.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
+                                trial:labelled +
                                 (1 + trial + labelled | subject),
                               data = LT.SingObj.LaF)
-LT.SingObj.LaF.lmer.1 <- update(LT.SingObj.LaF.lmer.0, . ~ . - labelled)
-LT.SingObj.LaF.lmer.2 <- update(LT.SingObj.LaF.lmer.1, . ~ . - trial)
+LT.SingObj.LaF.lmer.1 <- update(LT.SingObj.LaF.lmer.0, . ~ . - trial:labelled)
+LT.SingObj.LaF.lmer.2 <- update(LT.SingObj.LaF.lmer.1, . ~ . - labelled)
+LT.SingObj.LaF.lmer.3 <- update(LT.SingObj.LaF.lmer.2, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.2,
+LT.SingObj.LaF.comparison <- anova(LT.SingObj.LaF.lmer.3,
+                                   LT.SingObj.LaF.lmer.2,
                                    LT.SingObj.LaF.lmer.1,
                                    LT.SingObj.LaF.lmer.0)
 #print(LT.SingObj.LaF.comparison)
@@ -124,12 +132,15 @@ LT.SingObj.LaF.lmer.final <- LT.SingObj.LaF.lmer.0
 # COMPOUND REPRESENTATIONS
 # All models taken as previous one minus last effect
 LT.SingObj.CR.lmer.0 <- lmer(looking_time ~ 1 + trial + labelled +
+                               trial:labelled +
                                (1 + trial + labelled | subject),
                              data = LT.SingObj.CR)
-LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - labelled)  # No effect of labelled
-LT.SingObj.CR.lmer.2 <- update(LT.SingObj.CR.lmer.1, . ~ . - trial)
+LT.SingObj.CR.lmer.1 <- update(LT.SingObj.CR.lmer.0, . ~ . - trial:labelled)
+LT.SingObj.CR.lmer.2 <- update(LT.SingObj.CR.lmer.1, . ~ . - labelled)  # No effect of labelled
+LT.SingObj.CR.lmer.3 <- update(LT.SingObj.CR.lmer.2, . ~ . - trial)
 # Model comparison against each other hierarchically
-LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.2,
+LT.SingObj.CR.comparison <- anova(LT.SingObj.CR.lmer.3,
+                                  LT.SingObj.CR.lmer.2,
                                   LT.SingObj.CR.lmer.1,
                                   LT.SingObj.CR.lmer.0)
 #print(LT.SingObj.CR.comparison)
