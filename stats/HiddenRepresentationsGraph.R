@@ -144,7 +144,7 @@ d.plot <- ggplot(d.sum,
                  aes(x = step,
                      y = mu,
                      colour = dist_type)) +
-  facet_grid(theory~.) +
+  #facet_grid(theory~.) +
   xlab("Step") + ylab("Mean distance") + theme_bw(base_size=10, base_family = "serif") +
   theme(panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
