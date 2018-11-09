@@ -156,5 +156,5 @@ d.plot <- ggplot(d.sum,
   geom_line(size=.1) +
   geom_ribbon(aes(ymin=mu-ci, ymax=mu+ci, fill=dist_type), alpha=0.1, size=0)
 # Save plot
-ggsave("../results/Distances.png", plot = d.plot,
+ggsave("../results/Distances.tiff", plot = d.plot,
        height = 2.5, width = 3.5, dpi = 600)

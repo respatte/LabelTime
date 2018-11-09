@@ -4,7 +4,7 @@ library(Hmisc)
 library(plyr)
 
 # DATA HANDLING
-cat <- read.csv("../Results/CategoryStructure.csv", head=TRUE)
+cat <- read.csv("../results/CategoryStructure.csv", head=TRUE)
 cat$category <- factor(cat$category)
 cat$cat_phase <- factor(paste(cat$phase,cat$category))
 
@@ -24,5 +24,5 @@ cat.plot <- ggplot(data=cat, aes(x=dim0, y=dim1, colour=category, shape=cat_phas
   scale_colour_brewer(palette="Dark2", guide=F) +
   scale_shape_manual(values=c(0,2,15,17), guide=F) +
   geom_point(size=2.5)
-ggsave("../Results/CategoryStructure.png", plot=cat.plot,
+ggsave("../results/CategoryStructure.tiff", plot=cat.plot,
        width=3.5, height=1.5, dpi = 600)

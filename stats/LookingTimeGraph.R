@@ -101,7 +101,7 @@ LT.all.plot <- ggplot(LT.data.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=.8, fill="white")
 
-ggsave("../results/LT_all.png", plot = LT.all.plot,
+ggsave("../results/LT_all.tiff", plot = LT.all.plot,
        height = 5.8, width = 6.5, dpi = 600)
 
 # Graph for Single Object only
@@ -133,7 +133,7 @@ LT.SOb.plot <- ggplot(LT.SingObj.sum, aes(x = trial,
   geom_point(position=position_dodge(0.3),
              size=1.25, fill="white")
 
-ggsave("../results/LT_SingleObject.png", plot = LT.SOb.plot,
+ggsave("../results/LT_SingleObject.tiff", plot = LT.SOb.plot,
        height = 4.5, width = 3.5, dpi = 600)
 
 # Graph from data (not models), mean and error bars (CI)
@@ -166,5 +166,5 @@ LT.Cat.plot <- LT.Cat.sum %>%
   geom_point(position=position_dodge(0.3),
              size=1.25, fill="white")
 
-ggsave("../results/LT_Category.png", plot = LT.Cat.plot,
+ggsave("../results/LT_Category.tiff", plot = LT.Cat.plot,
        height = 2.5, width = 3.5, dpi = 600)
